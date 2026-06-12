@@ -1,0 +1,14 @@
+{
+  "name": "ai-sa-employee",
+  "version": "1.0.0",
+  "description": "AI System Analyst / Architect / PM Employee",
+  "private": true,
+  "dependencies": {
+    "claude-mem": "latest",
+    "context-mode": "latest",
+    "@opendataloader/pdf": "latest"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

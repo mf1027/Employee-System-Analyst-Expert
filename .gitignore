@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Project-local episodic memory (stays on machine, never pushed)
+.claude-mem/
+
+# Runtime memory files (fresh on every clone)
+.claude/MEMORY.md
+.claude/ONBOARDING.md
+.claude/memory/
+
+# Client data — confidential, never pushed
+memory/clients/
+
+# Client source documents — temp drop zone and per-client reference
+reference/*
+!reference/README.md
+
+# Generated deliverables — client-specific output
+deliverables/*
+!deliverables/README.md
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
