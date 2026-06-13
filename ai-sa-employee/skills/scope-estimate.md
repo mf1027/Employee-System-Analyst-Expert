@@ -24,7 +24,13 @@ If missing: ask for the description and constraints.
    and calculate the PERT estimate: (O + 4×ML + P) ÷ 6.
 6. Apply a confidence level. Lower it if `risks.md` has open HIGH risks touching
    this work, or if requirements have unresolved `[TBC]` items.
-7. List risks, assumptions, and blockers.
+7. **Apply the calibration correction:** read the project's `calibration.md` —
+   if a running ratio exists (3+ completed items), multiply the PERT totals by it
+   and show both numbers ("raw PERT: 5d, calibrated: 6.5d — past estimates ran 30% under").
+8. List risks, assumptions, and blockers.
+9. **Log the estimate to `calibration.md`** (date, item, PERT) — the actual gets
+   filled by `end-of-task` when the work completes. Every estimate is logged; an
+   unlogged estimate can never improve future ones.
 
 ## Output format
 ```

@@ -65,6 +65,7 @@ For each project subfolder found under `memory/clients/[name]/`:
 | `tasks.md` | In-progress and open tasks with owners |
 | `decisions.md` | Latest ADRs (last 3) |
 | `database.md` | Known platform, any open migration risks |
+| `calibration.md` | Running estimate ratio, risk hit rate (apply to future estimates) |
 
 If a file is missing → create an empty scaffold silently, flag as `[TBC]`.
 
@@ -97,7 +98,7 @@ Open tasks:       [N] — next: [task description / owner]
 Open REQ TBCs:    [N] items still unresolved
 Open questions:   [N]
 ─────────────────────────────────────────
-Files synced:     requirements ✓  risks ✓  plan ✓  tasks ✓  decisions ✓  database ✓
+Files synced:     requirements ✓  risks ✓  plan ✓  tasks ✓  decisions ✓  database ✓  calibration ✓
 Missing files:    [list or "none"]
 ```
 
@@ -130,7 +131,7 @@ Ask:
 
 - [ ] All client folders in `memory/clients/` detected?
 - [ ] Client record read or reconstructed?
-- [ ] All 6 project files read per project?
+- [ ] All 7 project files read per project?
 - [ ] Client Index in `memory/memory.md` updated?
 - [ ] Key context synced to claude-mem?
 - [ ] Status card shows open risks, tasks, and next milestone?

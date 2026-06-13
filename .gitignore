@@ -20,6 +20,10 @@ reference/*
 deliverables/*
 !deliverables/README.md
 
+# Local document engines — portable binaries (large, platform-specific)
+engines/*
+!engines/README.md
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

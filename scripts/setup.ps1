@@ -95,6 +95,57 @@ try {
     Write-WARN "chromadb install failed - semantic memory search will fall back to keyword mode"
 }
 
+# Document-skills packages (docx/pptx/xlsx/pdf generation + reading)
+try {
+    pip install defusedxml lxml openpyxl pdf2image pdfplumber pillow pypdf --quiet | Out-Null
+    python -c "import defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf" 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-OK "document-skills Python packages (7) ready"
+    } else {
+        Write-WARN "some document-skills packages failed to import - docx/pptx/xlsx/pdf skills may not work"
+    }
+} catch {
+    Write-WARN "document-skills package install failed - docx/pptx/xlsx/pdf skills may not work"
+}
+
+# -- 3b. Document engines: LibreOffice + Poppler (Phase 2) ----------------------
+
+Write-Step "Checking document engines (LibreOffice + Poppler)"
+
+$wingetOK = $null -ne (Get-Command winget -ErrorAction SilentlyContinue)
+
+# LibreOffice - needed for docx/pptx/xlsx conversion and recalc.
+# Resolution mirrors get_soffice_cmd(): in-project engines/ -> PATH -> system install.
+$sofficePath = "C:\Program Files\LibreOffice\program\soffice.exe"
+$engineSoffice = Get-ChildItem (Join-Path $root "engines") -Recurse -Filter "soffice.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($engineSoffice) {
+    Write-OK "LibreOffice present (in-project engines\)"
+} elseif ((Test-Path $sofficePath) -or (Get-Command soffice -ErrorAction SilentlyContinue)) {
+    Write-OK "LibreOffice present (system)"
+} elseif ($wingetOK) {
+    Write-INFO "Installing LibreOffice via winget (~355 MB, takes a few minutes)..."
+    winget install --id TheDocumentFoundation.LibreOffice -e --accept-source-agreements --accept-package-agreements --silent
+    if (Test-Path $sofficePath) { Write-OK "LibreOffice installed (system)" }
+    else { Write-WARN "LibreOffice install did not complete - docx/pptx/xlsx skills unavailable" }
+} else {
+    Write-WARN "winget unavailable - falling back to in-project install (no admin needed)"
+    Write-INFO "Running scripts\fetch-libreoffice-local.ps1 ..."
+    & (Join-Path $PSScriptRoot "fetch-libreoffice-local.ps1")
+    if ($LASTEXITCODE -eq 0) { Write-OK "LibreOffice installed into engines\" }
+    else { Write-WARN "In-project install failed - install manually: https://www.libreoffice.org" }
+}
+
+# Poppler - needed for PDF -> image conversion (pdf2image)
+if (Get-Command pdftoppm -ErrorAction SilentlyContinue) {
+    Write-OK "Poppler present"
+} elseif ($wingetOK) {
+    Write-INFO "Installing Poppler via winget..."
+    winget install --id oschwartz10612.Poppler -e --accept-source-agreements --accept-package-agreements --silent
+    Write-OK "Poppler installed (restart your shell so PATH updates apply)"
+} else {
+    Write-WARN "Poppler not found and winget unavailable - install manually: https://github.com/oschwartz10612/poppler-windows"
+}
+
 # -- 4. Claude Code plugin check -----------------------------------------------
 
 Write-Step "Checking Claude Code plugins"
@@ -132,7 +183,17 @@ if (-not $claudeMemOK -or -not $contextModeOK) {
     Write-Host "    Then restart Claude Code." -ForegroundColor White
 }
 
-# -- 5. Summary ----------------------------------------------------------------
+# -- 5. Verify document engines ------------------------------------------------
+
+Write-Step "Verifying document engines (end-to-end)"
+$verify = Join-Path $PSScriptRoot "verify-engines.ps1"
+if (Test-Path $verify) {
+    & $verify
+} else {
+    Write-WARN "verify-engines.ps1 not found - skipping engine verification"
+}
+
+# -- 6. Summary ----------------------------------------------------------------
 
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan

@@ -26,13 +26,13 @@ If missing: ask which client/project and what the document should contain.
 
 | Request | Output format | Skill to invoke | Dependency |
 |---|---|---|---|
-| SRS, PRD, BRD, SDD, formal spec | Word (.docx) | `document-skills/docx/SKILL.md` | ⚠️ LibreOffice |
-| Status report, meeting minutes, memo | Word (.docx) | `document-skills/docx/SKILL.md` | ⚠️ LibreOffice |
-| Presentation, deck, slides | PowerPoint (.pptx) | `document-skills/pptx/SKILL.md` | ⚠️ LibreOffice |
-| Project tracker, RAID log, budget | Excel (.xlsx) | `document-skills/xlsx/SKILL.md` | ⚠️ LibreOffice |
-| PDF creation / form filling | PDF | `document-skills/pdf/SKILL.md` | ⚠️ Poppler |
-| Read an uploaded/shared file | Any format | `document-skills/file-reading/SKILL.md` | ✅ Ready |
-| Read / inspect a PDF | PDF | `document-skills/pdf-reading/SKILL.md` | ✅ Ready |
+| SRS, PRD, BRD, SDD, formal spec | Word (.docx) | `ai-sa-employee/document-skills/docx/SKILL.md` | ✅ Ready |
+| Status report, meeting minutes, memo | Word (.docx) | `ai-sa-employee/document-skills/docx/SKILL.md` | ✅ Ready |
+| Presentation, deck, slides | PowerPoint (.pptx) | `ai-sa-employee/document-skills/pptx/SKILL.md` | ✅ Ready |
+| Project tracker, RAID log, budget | Excel (.xlsx) | `ai-sa-employee/document-skills/xlsx/SKILL.md` | ✅ Ready |
+| PDF creation / form filling | PDF | `ai-sa-employee/document-skills/pdf/SKILL.md` | ✅ Ready |
+| Read an uploaded/shared file | Any format | `ai-sa-employee/document-skills/file-reading/SKILL.md` | ✅ Ready |
+| Read / inspect a PDF | PDF | `ai-sa-employee/document-skills/pdf-reading/SKILL.md` | ✅ Ready |
 
 ---
 
@@ -40,13 +40,14 @@ If missing: ask which client/project and what the document should contain.
 
 ### For document generation (docx / pptx / xlsx / pdf)
 
-1. **Check dependency.** Ask: is LibreOffice on PATH?
+1. **Check dependency.** Is LibreOffice available? Check PATH *and* the default
+   install dir (the patched `get_soffice_cmd()` checks both):
    ```
-   PowerShell: (Get-Command soffice -ErrorAction SilentlyContinue)?.Source
+   PowerShell: (Get-Command soffice -ErrorAction SilentlyContinue) -or (Test-Path "C:\Program Files\LibreOffice\program\soffice.exe")
    Bash: which soffice
    ```
-   If not found → inform the operator (see "Phase 2 fallback" below) and offer
-   a Markdown alternative.
+   If not found → inform the operator (see "Fallback" below), offer a Markdown
+   alternative, and point to `scripts/setup.ps1` which auto-installs it.
 
 2. **Identify document type** from the operator's request. Map to routing table above.
 
@@ -72,8 +73,8 @@ If missing: ask which client/project and what the document should contain.
 1. **Identify the file type** from extension or the operator's description.
 
 2. **Route immediately** — no dependency check needed, both are ✅ Ready:
-   - Any file type → follow `document-skills/file-reading/SKILL.md` dispatch table
-   - PDF specifically → follow `document-skills/pdf-reading/SKILL.md`
+   - Any file type → follow `ai-sa-employee/document-skills/file-reading/SKILL.md` dispatch table
+   - PDF specifically → follow `ai-sa-employee/document-skills/pdf-reading/SKILL.md`
 
 3. **Note: file paths in Claude Code** — unlike claude.ai uploads (which land at
    `/mnt/user-data/uploads/`), files in this project are on the local Windows
@@ -85,17 +86,18 @@ If missing: ask which client/project and what the document should contain.
 
 ---
 
-## Phase 2 fallback (LibreOffice not installed)
+## Fallback (LibreOffice not installed on this machine)
 
-If LibreOffice is missing, offer:
+Engines are installed automatically by `scripts/setup.ps1` / `setup.sh`. If
+LibreOffice is still missing (setup not run yet), offer:
 
 ```
-LibreOffice is not installed — Word/PowerPoint/Excel generation (Phase 2) is
+LibreOffice is not installed — Word/PowerPoint/Excel generation is
 unavailable on this machine. I can:
 
-Option A: Generate the full document in Markdown → you copy-paste into Word
-Option B: Generate a structured template you can fill in Word directly
-Option C: Walk you through installing LibreOffice (run `scripts/setup.ps1`)
+Option A: Run `scripts/setup.ps1` — installs LibreOffice + Poppler automatically
+Option B: Generate the full document in Markdown → you copy-paste into Word
+Option C: Generate a structured template you can fill in Word directly
 
 Which do you prefer?
 ```
@@ -126,4 +128,4 @@ the document as a `.md` file in `deliverables/documents/[client]/[project]/`.
 - [ ] Deliverable saved to `deliverables/documents/[client]/[project]/`
 - [ ] KB- entry logged to claude-mem with path and client/project tags
 - [ ] Triple-lens applied to extracted content (REQ-/RISK-/REC- auto-logged)
-- [ ] Phase 2 dependency handled gracefully if LibreOffice missing
+- [ ] Engine dependency handled gracefully if LibreOffice missing (setup.ps1 fixes it)

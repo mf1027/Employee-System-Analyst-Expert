@@ -86,7 +86,19 @@
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('readme',''\\)[:3000]\\)\")",
       "Bash(npx --yes @opendataloader/pdf --help)",
       "Bash(node_modules\\\\.bin\\\\opendataloader-pdf --version)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\ai-sa-employee\\\\references\\\\gstack-reference.md\" -Force)"
+      "Bash(Remove-Item \"c:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\ai-sa-employee\\\\references\\\\gstack-reference.md\" -Force)",
+      "PowerShell(winget install --id TheDocumentFoundation.LibreOffice -e --accept-source-agreements --accept-package-agreements --silent)",
+      "PowerShell(winget search poppler --accept-source-agreements)",
+      "PowerShell(winget install --id oschwartz10612.Poppler -e --accept-source-agreements --accept-package-agreements --silent)",
+      "PowerShell(python -m pip install --quiet defusedxml lxml openpyxl pdf2image pdfplumber pillow pypdf validators)",
+      "PowerShell(python -c \"import defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf, validators; print\\('all 8 packages import OK'\\)\")",
+      "PowerShell(git mv skills ai-sa-employee/skills)",
+      "PowerShell(git mv document-skills ai-sa-employee/document-skills)",
+      "PowerShell(New-Item -ItemType Directory -Force engines)",
+      "PowerShell(\"--- moving ---\")",
+      "PowerShell(if \\($?\\) { \"moved skills/ -> ai-sa-employee/skills/\" })",
+      "PowerShell(if \\($?\\) { \"moved document-skills/ -> ai-sa-employee/document-skills/\" })",
+      "PowerShell(\"--- verify ---\")"
     ]
   },
   "enabledPlugins": {

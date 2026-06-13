@@ -15,7 +15,7 @@
 ## Employee Behavior Notes
 
 - **Triple-lens** on every deliverable: SA (requirements + process) + PM (risk + governance) + DBA (data + schema)
-- **Understanding Check** HARD GATE — restate understanding + wait for confirmation before ANY output
+- **Understanding Check** TIERED (2026-06-12) — Tier 1 hard gate for deliverables/file changes/client-facing/estimates; Tier 2 direct answer for read-only informational asks
 - **Auto-capture** — decisions, requirements, risks, assumptions logged mid-conversation without being asked
 - **Meeting notes** = immediate extraction: ADR / REQ / RISK / action items / open questions
 - **Client outputs** — drafts only, never sent directly; operator reviews before sending
@@ -33,9 +33,25 @@
 
 ### Last Session
 
-- **Date:** [TBC]
-- **What happened:** [TBC]
-- **Next step:** [TBC]
+- **Date:** 2026-06-13 (PM) — Phase 2 hardening + restructure (approved plan, all 5 phases):
+  (1) Consolidated `skills/` and `document-skills/` under `ai-sa-employee/` via `git mv` — one
+  self-contained package; ~64 path refs updated; CLAUDE.md declared canonical. (2) Hybrid engine
+  strategy: `engines/` folder (gitignored) + patched `get_soffice_cmd()` in all 3 soffice.py to
+  resolve engines/ → PATH → system; precedence tested both ways. (3) `scripts/fetch-libreoffice-local.ps1`
+  (msiexec /a extract, no admin). (4) setup §3b idempotent + in-project fallback + auto-runs verify.
+  (5) `scripts/verify-engines.ps1/.sh` — 9/9 PASS. **Bug caught:** had installed an unnecessary PyPI
+  `validators` package that shadowed the skill's local `office/validators/` — uninstalled; correct
+  dep count is 7 packages. Engines unchanged on disk (LibreOffice 26.2.4 system, Poppler 25.07.0).
+- **Date:** 2026-06-13 (AM) — Phase 2 document engines first install: LibreOffice + Poppler via
+  winget, packages installed, pipeline verified, setup §3b added, skills flipped to ✅ Ready.
+- **Previous (2026-06-12):**
+- **What happened:** System upgrade — RISK-001 (backup scripts), REC-001 (canonical source
+  + drift fixes), REC-002 (session-close audit in end-of-task), REC-003 (calibration.md,
+  10th project file), REC-004 (env check step 0), REC-005 (Next-ID headers), REC-006
+  (weekly-review skill), REC-007 (system-drill skill), REC-008 (tiered Understanding Check).
+  README updated. Skill count now 30.
+- **Next step:** Run `scripts/backup.ps1` once to create the first backup; run a system
+  drill ("run a drill") to validate the upgraded pipeline before the next real client.
 
 ## Client Index
 

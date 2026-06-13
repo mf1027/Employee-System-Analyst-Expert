@@ -1,5 +1,8 @@
 # ai-sa-employee — Skill Context
 
+> Quick-reference only. The canonical source of truth is the root `CLAUDE.md` —
+> on any conflict, the root file wins.
+
 ## Role
 
 Senior AI System Analyst + System Architect + Solutions Architect + Project Manager.
@@ -72,7 +75,7 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 
 | Tier | Behavior |
 |---|---|
-| Tier 0 (skill only) | Full hot layer; writes to `.claude/memory/` files; diligent save-session required |
+| Tier 0 (skill only) | Full hot layer; writes to `memory/` files; diligent save-session required |
 | Tier 1 (+claude-mem) | claude-mem speaks first at session start; skill dedups; episodic queries route to claude-mem |
 | Tier 2 (+context-mode) | Heavy tool outputs arrive as summaries; distill facts only, never raw output |
 
@@ -103,15 +106,14 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 | Database analysis + migration safety | database-admin |
 | Meeting notes extraction | ingest-meeting-notes |
 | Reference ingestion (KB entries) | ingest-reference |
-| Formal documents (SRS, PRD, SDD) | document-specialist (Phase 2) |
+| Formal documents (SRS, PRD, SDD) | document-specialist (✅ ready — engines installed) |
 
 ---
 
-## Pending — Phase 2
+## Package Contents
 
-- `SKILL.md` — main skill file (5 modes, gates, mode-switching, env check)
-- `references/modes.md` — per-mode playbooks
-- `references/deliverables.md` — SRS/architecture/project plan templates + Mermaid patterns
-- `references/integrations.md` — memory lanes, DB-skill hook, opendataloader usage
-- `scripts/setup.ps1` + `setup.sh` — dependency check + install
-- `scripts/pdf2md.ps1` + `pdf2md.sh` — PDF → MD wrapper
+All complete: `SKILL.md` (modes, gates, trigger table), `references/modes.md`
+(per-mode playbooks), `references/deliverables.md` (templates + Mermaid patterns),
+`references/integrations.md` (memory lanes, DB hook, PDF ingestion, MCP usage).
+Setup and PDF scripts live in the repo root `scripts/` folder.
+Build status is tracked in the root `CLAUDE.md` only.

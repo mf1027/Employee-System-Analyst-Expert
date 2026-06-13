@@ -99,6 +99,44 @@ else
     warn "chromadb install failed — semantic memory search will fall back to keyword mode"
 fi
 
+# Document-skills packages (docx/pptx/xlsx/pdf generation + reading)
+if "$PY_CMD" -m pip install defusedxml lxml openpyxl pdf2image pdfplumber pillow pypdf --quiet 2>/dev/null \
+   && "$PY_CMD" -c "import defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf" 2>/dev/null; then
+    ok "document-skills Python packages (7) ready"
+else
+    warn "document-skills packages failed — docx/pptx/xlsx/pdf skills may not work"
+fi
+
+# -- 3b. Document engines: LibreOffice + Poppler (Phase 2) ----------------------
+
+step "Checking document engines (LibreOffice + Poppler)"
+
+# LibreOffice — needed for docx/pptx/xlsx conversion and recalc
+if command -v soffice &>/dev/null; then
+    ok "LibreOffice present"
+elif command -v brew &>/dev/null; then
+    info "Installing LibreOffice via Homebrew..."
+    brew install --cask libreoffice && ok "LibreOffice installed" || warn "LibreOffice install failed"
+elif command -v apt-get &>/dev/null; then
+    info "Installing LibreOffice via apt (needs sudo)..."
+    sudo apt-get install -y libreoffice && ok "LibreOffice installed" || warn "LibreOffice install failed"
+else
+    warn "LibreOffice not found — install manually: https://www.libreoffice.org"
+fi
+
+# Poppler — needed for PDF -> image conversion (pdf2image)
+if command -v pdftoppm &>/dev/null; then
+    ok "Poppler present"
+elif command -v brew &>/dev/null; then
+    info "Installing Poppler via Homebrew..."
+    brew install poppler && ok "Poppler installed" || warn "Poppler install failed"
+elif command -v apt-get &>/dev/null; then
+    info "Installing Poppler via apt (needs sudo)..."
+    sudo apt-get install -y poppler-utils && ok "Poppler installed" || warn "Poppler install failed"
+else
+    warn "Poppler not found — install manually (poppler / poppler-utils package)"
+fi
+
 # -- 4. Claude Code plugin check -----------------------------------------------
 
 step "Checking Claude Code plugins"
@@ -139,7 +177,16 @@ if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ]; then
     echo -e "    ${BOLD}Then restart Claude Code.${NC}"
 fi
 
-# -- 5. Summary ----------------------------------------------------------------
+# -- 5. Verify document engines ------------------------------------------------
+
+step "Verifying document engines (end-to-end)"
+if [ -f "$SCRIPT_DIR/verify-engines.sh" ]; then
+    bash "$SCRIPT_DIR/verify-engines.sh" || true
+else
+    warn "verify-engines.sh not found - skipping engine verification"
+fi
+
+# -- 6. Summary ----------------------------------------------------------------
 
 echo ""
 echo -e "${CYAN}======================================${NC}"

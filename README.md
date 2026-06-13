@@ -56,16 +56,23 @@ The script checks and installs:
 
 Every session starts with a hard gate:
 
-1. The employee reads `CLAUDE.md` and `memory/memory.md`
-2. Searches claude-mem for recent decisions and open items
-3. Surfaces any open items from the last session before you say anything
+1. **Environment check** — the employee verifies claude-mem and context-mode are responding
+   and announces the active memory tier; if memory is degraded it says so explicitly
+2. Reads `CLAUDE.md` and `memory/memory.md`
+3. Searches claude-mem for recent decisions and open items
+4. Surfaces any open items from the last session before you say anything
 
-**Understanding Check** — before producing any analysis, recommendation, or deliverable, the
-employee restates its understanding of your request in 1–3 lines and waits for explicit
-confirmation. Nothing is produced until you confirm. This is non-negotiable.
+**Understanding Check (tiered)** — anything that creates/modifies files, produces a
+deliverable, is client-facing, or commits to scope/estimates gets a hard gate: the employee
+restates its understanding in 1–3 lines and waits for your confirmation. Quick informational
+questions are answered directly with assumptions stated inline — no round trip.
 
 **Triple-lens review** — every deliverable is reviewed through SA (requirements), PM (risk/plan),
 and DBA (data/schema) lenses before delivery.
+
+**Session-close audit** — when a task closes (`end-of-task`), the employee verifies every
+decision/risk has an ID in the right file, Next-ID counters were incremented, and working
+memory was updated. A task isn't closed until the audit passes.
 
 ---
 
@@ -78,7 +85,7 @@ The employee runs `new-client-setup` which walks you through a short wizard:
 | Step | What happens |
 |---|---|
 | Client name | Folder `memory/clients/[name]/` created immediately |
-| Project name | Full project scaffold created immediately (9 files + deliverables) |
+| Project name | Full project scaffold created immediately (10 files + deliverables) |
 | Problem statement | One sentence — pain, not solution |
 | Engagement type | New build / Enhancement / Migration / Audit |
 | Timeline + dev team | Batched — one question |
@@ -113,7 +120,49 @@ The employee runs `resume-client`:
 memory/clients/          ← copy this whole folder
 ```
 
-Everything else (`CLAUDE.md`, `skills/`, `scripts/`, etc.) comes from the repo.
+Everything else (`CLAUDE.md`, `ai-sa-employee/`, `scripts/`, etc.) comes from the repo.
+
+---
+
+## Backing Up Client Data
+
+Client data is gitignored by design — which means **git is not your backup**. The backup
+script is the safety net. Run it weekly (or say **"backup client data"**):
+
+```powershell
+# Windows
+scripts\backup.ps1
+scripts\backup.ps1 -Destination "D:\Backups" -Keep 20
+
+# Linux / Mac
+bash scripts/backup.sh
+bash scripts/backup.sh /path/to/backups
+```
+
+It zips `memory/clients/`, `.claude-mem/`, `reference/`, and `deliverables/` into a
+timestamped archive (default: `Documents/EmployeeBackups/`, keeps the newest 10).
+To restore: extract the zip into a fresh clone's root, then say
+*"I have an ongoing client that I manually inserted"*.
+
+The weekly review checks backup age and nags you if it's older than 7 days.
+
+---
+
+## Keeping the System Healthy
+
+**Weekly review** — say **"weekly review"** (or "portfolio check"). The employee sweeps
+every active project — aging risks, stale tasks, milestones due within 14 days, blocked
+questions — plus audits itself (memory freshness, backup age, untracked decisions) and
+delivers one cross-client RAG digest with a Top-3 action list.
+
+**System drill** — say **"run a drill"** after changing skills or CLAUDE.md. The employee
+onboards a synthetic client (`_drill`), runs the full pipeline (onboard → IDs → write lanes
+→ calibration → resume), reports PASS/FAIL per step, and cleans up after itself.
+
+**Calibration** — every project has a `calibration.md`. Estimates are logged when made
+(`scope-estimate`), actuals are filled when work completes (`end-of-task`), and once 3+
+items are complete the running ratio corrects future estimates automatically — the employee
+learns its own bias.
 
 ---
 
@@ -157,7 +206,7 @@ bash scripts/pdf2md.sh "reference/brief.pdf" "reference/brief.md"
 
 ## Skills Reference
 
-The employee has 26 invokable skills. Trigger them by saying the phrases in the right column.
+The employee has 30 invokable skills. Trigger them by saying the phrases in the right column.
 
 | Skill | Trigger phrases |
 |---|---|
@@ -176,6 +225,8 @@ The employee has 26 invokable skills. Trigger them by saying the phrases in the 
 | `new-client-setup` | "new client", "onboard client" |
 | `new-project` | "new project", "bagong project" |
 | `resume-client` | "resume client", "I have an ongoing client", "I copied the client folder" |
+| `weekly-review` | "weekly review", "portfolio check", "sweep all projects" |
+| `system-drill` | "run a drill", "test the system", "system check" |
 | `ingest-reference` | "ingest this", file dropped in `reference/` |
 | `ingest-meeting-notes` | "meeting notes", "notes from the call", "sinabi ng client" |
 | `database-admin` | "database", "schema", "migration", "query", "performance", "HA/DR" |
@@ -227,26 +278,27 @@ Employee System Analyst Expert/
 ├── .gitignore
 ├── package.json
 │
-├── ai-sa-employee/                    ← Distributable skill package
+├── ai-sa-employee/                    ← THE employee — self-contained skill package
 │   ├── SKILL.md                       ← Main skill file (5 modes, gates, trigger table)
 │   ├── CLAUDE.md                      ← Compact quick-reference
-│   └── references/
-│       ├── modes.md                   ← Per-mode playbooks
-│       ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
-│       ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
-│       └── skill-creator.md           ← How to build new skills
+│   ├── references/
+│   │   ├── modes.md                   ← Per-mode playbooks
+│   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
+│   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
+│   │   └── skill-creator.md           ← How to build new skills
+│   ├── skills/                        ← 30 SA/PM/DBA skills (flat)
+│   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
+│   │   └── [30 individual skill files]
+│   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
+│       ├── file-reading/  ✅ Ready
+│       ├── pdf-reading/   ✅ Ready
+│       ├── pdf/           ✅ Ready
+│       ├── docx/          ✅ Ready
+│       ├── pptx/          ✅ Ready
+│       └── xlsx/          ✅ Ready
 │
-├── skills/                            ← 26 SA/PM/DBA skills (flat)
-│   ├── skills.md                      ← Master index + interaction protocol + quality checklist
-│   └── [25 individual skill files]
-│
-├── document-skills/                   ← Document generation (Anthropic official, Windows-patched)
-│   ├── file-reading/  ✅ Ready
-│   ├── pdf-reading/   ✅ Ready
-│   ├── pdf/           ⚠️ Phase 2
-│   ├── docx/          ⚠️ Phase 2
-│   ├── pptx/          ⚠️ Phase 2
-│   └── xlsx/          ⚠️ Phase 2
+├── engines/                           ← 🚫 GITIGNORED — portable LibreOffice/Poppler (in-project)
+│   └── README.md                      ← how it's populated + resolution order
 │
 ├── memory/                            ← Runtime memory
 │   ├── memory.md                      ← Operator profile + working memory + client index
@@ -264,15 +316,17 @@ Employee System Analyst Expert/
 │               ├── stakeholders.md
 │               ├── communication.md
 │               ├── database.md
+│               ├── calibration.md
 │               └── deliverables/
 │
 ├── reference/                         ← 🚫 GITIGNORED — PDF drop zone (convert then ingest)
 ├── deliverables/                      ← 🚫 GITIGNORED — generated client output
 ├── scripts/
-│   ├── setup.ps1                      ← Windows first-time setup
-│   ├── setup.sh                       ← Linux/Mac first-time setup
-│   ├── pdf2md.ps1                     ← PDF → Markdown (Windows)
-│   └── pdf2md.sh                      ← PDF → Markdown (Linux/Mac)
+│   ├── setup.ps1 / setup.sh           ← First-time setup (deps + document engines)
+│   ├── pdf2md.ps1 / pdf2md.sh         ← PDF → Markdown
+│   ├── fetch-libreoffice-local.ps1    ← Install LibreOffice into engines/ (in-project)
+│   ├── verify-engines.ps1 / .sh       ← Test document engines end-to-end
+│   └── backup.ps1 / backup.sh         ← Client data + engines backup
 │
 └── node_modules/                      ← gitignored
 ```
@@ -286,8 +340,8 @@ Employee System Analyst Expert/
 | Node.js ≥ 20 | claude-mem, context-mode, @opendataloader/pdf | https://nodejs.org |
 | Python ≥ 3.10 | chromadb semantic search | https://python.org |
 | Bun | context-mode hooks | `irm bun.sh/install.ps1 \| iex` (Windows) |
-| LibreOffice | DOCX/PPTX/XLSX creation | Phase 2 only |
-| Poppler | PDF image conversion | Phase 2 only |
+| LibreOffice | DOCX/PPTX/XLSX creation | Auto-installed by setup script (winget/brew/apt) |
+| Poppler | PDF image conversion | Auto-installed by setup script (winget/brew/apt) |
 | Claude Code | Required — this is a Claude Code workspace | https://claude.ai/code |
 
 The `setup.ps1` / `setup.sh` scripts check and install everything automatically.
@@ -307,4 +361,7 @@ The `setup.ps1` / `setup.sh` scripts check and install everything automatically.
 "I have an ongoing client I manually inserted" → resume-client: scan, rebuild, status card
 "security review"                            → STRIDE analysis, PII map, RISK-SEC entries
 "research [technology]"                      → web research via brightdata MCP
+"weekly review"                              → portfolio sweep + system audit, RAG digest
+"run a drill"                                → synthetic client smoke test, PASS/FAIL report
+"backup client data"                         → zip all local-only data with retention
 ```

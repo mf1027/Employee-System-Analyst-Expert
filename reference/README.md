@@ -7,6 +7,6 @@ The employee reads each file once, distills it into claude-mem as tagged KB entr
 the raw file unless asked.
 
 **Supported formats:** `.md`, `.txt`, `.pdf`, `.png`, `.jpg`, `.csv`, `.mermaid`, SQL DDL, API specs,
-schema dumps, ERD exports — see `skills/skills.md §2` for the full list.
+schema dumps, ERD exports — see `ai-sa-employee/skills/skills.md §2` for the full list.
 
 **Subfolder suggestion:** `reference/[client-name]/[project-name]/` for multi-client work.

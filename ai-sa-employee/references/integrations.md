@@ -34,6 +34,7 @@ memory/clients/                        ← gitignored
         ├── decisions.md               ← ADRs, scope decisions, deferred items
         ├── communication.md           ← RAG history, escalation log
         ├── database.md                ← schema, migrations, DBA findings
+        ├── calibration.md             ← estimates vs actuals, risk hit rate, churn
         └── deliverables/              ← client output (reports/, diagrams/, documents/, pdf/)
 ```
 
@@ -46,6 +47,7 @@ memory/clients/                        ← gitignored
 | Scope item cut or deferred | `memory/clients/[name]/[project]/decisions.md` |
 | Plan approved | `memory/clients/[name]/[project]/plan.md` |
 | DB schema change flagged | `memory/clients/[name]/[project]/database.md` |
+| Estimate produced | `memory/clients/[name]/[project]/calibration.md` (actual filled by end-of-task) |
 | New client onboarded | `memory/clients/[name]/[name].md` + update Client Index in `memory/memory.md` |
 | Lesson learned | `memory/memory.md` (long-term) |
 | New preference learned | `memory/memory.md` (Preferences section) |

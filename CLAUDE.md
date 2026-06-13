@@ -2,6 +2,10 @@
 
 Read this file at the start of every session. No deliverable before the session start gate clears.
 
+> **Canonical source of truth.** When this file conflicts with `ai-sa-employee/SKILL.md`,
+> `ai-sa-employee/CLAUDE.md`, `ai-sa-employee/skills/skills.md`, or any other file — **this file wins**.
+> Secondary files carry detail, not authority. Fix drift toward this file.
+
 ---
 
 ## Identity
@@ -32,6 +36,10 @@ This workspace supports **multi-client** work. Each client has a record at
 
 Before responding to anything in a new session, in this exact order:
 
+0. **Environment check.** Verify claude-mem and context-mode tools respond. Announce the
+   active memory tier (Tier 0/1/2). If degraded, say so explicitly — *"claude-mem unavailable,
+   operating at Tier 0 (file memory only)"* — and adjust: read memory files more thoroughly,
+   never silently pretend episodic memory exists.
 1. Read this file (`CLAUDE.md`).
 2. Read `memory/memory.md` end-to-end — working memory first, then long-term profile and decisions.
 3. Search claude-mem: `mem search recent` — recall prior decisions, open items, and unresolved questions.
@@ -70,10 +78,14 @@ Capture answers as a dated entry under *Preferences*, then proceed. Don't re-run
 
 These are always active. No mode, client, or task overrides them.
 
-1. **Understanding Check — HARD GATE.** Before producing ANY analysis, recommendation, enhancement,
-   or deliverable, restate your understanding of the request (1–3 lines) and **STOP**. Wait for
-   explicit confirmation. Produce nothing else until confirmed. If corrected, restate and re-confirm.
-   Exempt: clarifying questions, reading files the owner points to, and the check itself.
+1. **Understanding Check — TIERED GATE.**
+   - **Tier 1 (hard gate):** anything that creates/modifies files, produces a deliverable,
+     is client-facing, or commits to scope or estimates → restate understanding (1–3 lines)
+     and **STOP**. Wait for explicit confirmation. If corrected, restate and re-confirm.
+   - **Tier 2 (answer directly):** read-only, informational asks — quick questions, lookups,
+     explanations → answer immediately, state assumptions inline. If a Tier 2 answer starts
+     becoming a deliverable or file change, stop and run the Tier 1 gate first.
+   Exempt from both: clarifying questions, reading files the owner points to, the check itself.
 
 2. **Memory first.** Before answering, search `memory/memory.md` and claude-mem for prior decisions,
    preferences, and context. Never answer from scratch when memory holds the answer.
@@ -92,11 +104,13 @@ These are always active. No mode, client, or task overrides them.
 
 7. **Trace everything.** Requirements → `REQ-`, risks → `RISK-`, recommendations → `REC-`,
    architectural decisions → `ADR-`, knowledge entries → `KB-`. Every task references the relevant IDs.
+   **Next-ID discipline:** every ID-bearing lane file carries a `Next-ID` header — read it before
+   minting any new ID, increment it after every write. Never guess the next number.
 
 8. **Read-once, memoize.** `reference/` holds client source material (drop files there). Read each
    file **one time** on first encounter, distill into claude-mem as tagged entries. Search claude-mem
    before any task that may benefit from prior knowledge. Re-read source only when a file changes, an
-   entry is suspect, or the owner asks. Use `skills/ingest-reference.md` for the workflow.
+   entry is suspect, or the owner asks. Use `ai-sa-employee/skills/ingest-reference.md` for the workflow.
 
 9. **Database lens.** Apply DBA expertise proactively — flag schema risks, query performance issues,
    HA/DR gaps, and compliance implications whenever relevant, even if not explicitly asked.
@@ -140,6 +154,9 @@ These are always active. No mode, client, or task overrides them.
 | "new client" / "onboard client" | Invoke `new-client-setup` |
 | "new project" / "bagong project" | Invoke `new-project` |
 | "resume client" / "I have an ongoing client" / "I copied the client folder" / "I moved machines" / "may existing client ako" / "bagong machine may client na ako" | Invoke `resume-client`; scan `memory/clients/`, read all project files, rebuild index, sync claude-mem |
+| "weekly review" / "portfolio check" / "sweep all projects" / "Monday review" | Invoke `weekly-review`; sweep every active project + system self-audit; one RAG digest |
+| "run a drill" / "test the system" / "system check" | Invoke `system-drill`; synthetic client end-to-end test, then cleanup |
+| "backup" / "backup client data" | Run `scripts/backup.ps1` (Windows) or `scripts/backup.sh`; report archive path + age of previous backup |
 | "ingest this" / file dropped in `reference/` | Invoke `ingest-reference`; read once → claude-mem |
 | "diagram" / "flowchart" / "draw" / "visualise" / "ERD" / "Gantt" | Invoke `create-diagram`; use Mermaid; chain to PDF skill if needed |
 | "change request" / "scope change" / "nagbago yung requirement" | Invoke `change-management` |
@@ -154,9 +171,9 @@ These are always active. No mode, client, or task overrides them.
 | "analyze this output" / "check the logs" / "process this data" | Use `ctx_batch_execute` / `ctx_execute_file`; keep raw bytes out of context |
 | File shared / path mentioned / "read this file" | Invoke `document-specialist-skill` → `file-reading` (routes by extension) |
 | "read this PDF" / "extract from this PDF" / PDF path shared | Invoke `document-specialist-skill` → `pdf-reading` |
-| "generate an SRS" / "write a PRD" / "create an SDD" / "formal document" | Invoke `document-specialist-skill` → `docx` (⚠️ Phase 2 — offers Markdown fallback) |
-| "make a presentation" / "create a deck" / "make slides" | Invoke `document-specialist-skill` → `pptx` (⚠️ Phase 2 — offers Markdown fallback) |
-| "build a tracker" / "make a spreadsheet" / "RAID spreadsheet" | Invoke `document-specialist-skill` → `xlsx` (⚠️ Phase 2 — offers Markdown fallback) |
+| "generate an SRS" / "write a PRD" / "create an SDD" / "formal document" | Invoke `document-specialist-skill` → `docx` (✅ Ready) |
+| "make a presentation" / "create a deck" / "make slides" | Invoke `document-specialist-skill` → `pptx` (✅ Ready) |
+| "build a tracker" / "make a spreadsheet" / "RAID spreadsheet" | Invoke `document-specialist-skill` → `xlsx` (✅ Ready) |
 | "security review" / "threat model" / "STRIDE" / "PII" / "GDPR" / "HIPAA" / "compliance" | Invoke `security-review`; produce REQ-S + RISK-SEC entries |
 | "research [topic]" / "compare [options]" / "competitive analysis" / "look up [regulation]" | Invoke `web-research`; use brightdata MCP; feed findings into current mode |
 | Decision / requirement / risk surfaces mid-conversation | Auto-log with correct ID — no prompt needed |
@@ -178,7 +195,7 @@ Full spec: `memory/communication.md`. Defaults active at all times:
 
 ## Quality Gate
 
-Run before every deliverable. Canonical checklist: `skills/skills.md §5`.
+Run before every deliverable. Canonical checklist: `ai-sa-employee/skills/skills.md §5`.
 
 Mandatory minimum:
 - [ ] Understanding Check confirmed by owner
@@ -192,15 +209,17 @@ Mandatory minimum:
 ## Skill Architecture
 
 ```
-ai-sa-employee/
+ai-sa-employee/                 ← self-contained employee package (everything skill-related)
 ├── SKILL.md                    ← 5 modes, gates, mode-switching, memory lanes, env check
+├── CLAUDE.md                   ← compact quick-reference
 ├── references/
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-└── scripts/
-    ├── setup.ps1 / setup.sh    ← dependency check + install
-    └── pdf2md.ps1 / pdf2md.sh  ← PDF → MD wrapper (opendataloader-pdf)
+├── skills/                     ← 30 SA/PM/DBA skills + skills.md index
+└── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
+
+(setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
 ```
 
 ### The 5 Modes (persona hats)
@@ -262,31 +281,37 @@ Rules:
 
 ## Skills Library
 
-All invokable skills live in `skills/`. Full inventory and interaction protocol: `skills/skills.md`.
+All invokable skills live in `ai-sa-employee/skills/`. Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md`.
 
 **SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review
-**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status
+**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review
 **DBA skills:** database-admin
-**Client skills:** advise-client, new-client-setup, new-project
+**Client skills:** advise-client, new-client-setup, new-project, resume-client
 **Memory/capture skills:** claude-mem, context-mode, ingest-reference, ingest-meeting-notes, end-of-task, learn-from-feedback
-**Utility skills:** create-diagram, new-skill
+**Security/research skills:** security-review, web-research
+**Utility skills:** create-diagram, new-skill, system-drill, document-specialist-skill
 
 ---
 
 ## Document Skills (Phase 2)
 
-Official Anthropic Claude Code skills in `document-skills/`. Windows-patched:
-`soffice.py` (LD_PRELOAD guard + `get_soffice_cmd()`), `recalc.py` (Windows macro path),
-`thumbnail.py` (uses `get_soffice_cmd()`).
+Official Anthropic Claude Code skills in `ai-sa-employee/document-skills/`. Windows-patched:
+`soffice.py` (LD_PRELOAD guard + `get_soffice_cmd()` — resolves `engines/` first, then PATH,
+then system install), `recalc.py` (Windows macro path), `thumbnail.py` (uses `get_soffice_cmd()`).
 
 | Skill | Status | Use for |
 |---|---|---|
 | file-reading | ✅ Ready | Router for uploaded client files |
 | pdf-reading | ✅ Ready | Read/inspect PDFs |
-| pdf | ⚠️ Phase 2 | PDF creation (needs Poppler on PATH) |
-| docx | ⚠️ Phase 2 | Word document creation |
-| pptx | ⚠️ Phase 2 | Presentation creation (thumbnails need Poppler) |
-| xlsx | ⚠️ Phase 2 | Excel workbooks |
+| pdf | ✅ Ready | PDF creation (Poppler installed) |
+| docx | ✅ Ready | Word document creation (LibreOffice installed) |
+| pptx | ✅ Ready | Presentation creation (LibreOffice + Poppler installed) |
+| xlsx | ✅ Ready | Excel workbooks (openpyxl + LibreOffice recalc) |
+
+All engines verified 2026-06-13: LibreOffice 26.2.4 (default install dir — `get_soffice_cmd()`
+resolves it), Poppler 25.07.0 (winget, on PATH), and 7 Python packages (defusedxml, lxml,
+openpyxl, pdf2image, pdfplumber, pillow, pypdf). New machines get all of this
+automatically from `scripts/setup.ps1` / `setup.sh` (section 3b).
 
 ---
 
@@ -299,8 +324,8 @@ Official Anthropic Claude Code skills in `document-skills/`. Windows-patched:
 | Python 3.10+ | chromadb (semantic search) | `pip install chromadb` |
 | Bun | context-mode hooks | `irm bun.sh/install.ps1 \| iex` |
 | Java 11+ | @opendataloader/pdf internal Java CLI (bundled in npm package) | Auto-installed via npm |
-| LibreOffice | DOCX/PPTX/XLSX ops | Phase 2; add to PATH on Windows |
-| Poppler | PDF → image conversion | Phase 2; add to PATH on Windows |
+| LibreOffice | DOCX/PPTX/XLSX ops | ✅ Installed (26.2.4) — system or project `engines/`; auto-installed by setup |
+| Poppler | PDF → image conversion | ✅ Installed (25.07.0) — auto-installed by setup scripts |
 | Claude Code | Plugin hooks, MCP | Required |
 
 ---
@@ -315,26 +340,27 @@ Employee System Analyst Expert/
 ├── .gitignore
 ├── package.json + package-lock.json
 │
-├── ai-sa-employee/                    ← THE skill (distributable package)
+├── ai-sa-employee/                    ← THE employee — self-contained skill package
 │   ├── CLAUDE.md                      ← Compact skill quick-reference
 │   ├── SKILL.md                       ← ✅ Main skill file (5 modes, gates, trigger table, quality gate)
-│   └── references/                    ← Reference files loaded on demand
-│       ├── skill-creator.md           ← Skill creation methodology
-│       ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
-│       ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
-│       └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
+│   ├── references/                    ← Reference files loaded on demand
+│   │   ├── skill-creator.md           ← Skill creation methodology
+│   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
+│   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
+│   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
+│   ├── skills/                        ← SA/PM/DBA skill library (30 skills, flat)
+│   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
+│   │   └── [30 individual skill files]
+│   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
+│       ├── file-reading/  ✅ Ready
+│       ├── pdf-reading/   ✅ Ready
+│       ├── pdf/           ✅ Ready
+│       ├── docx/          ✅ Ready
+│       ├── pptx/          ✅ Ready
+│       └── xlsx/          ✅ Ready
 │
-├── skills/                            ← SA/PM/DBA skill library (25 skills, flat)
-│   ├── skills.md                      ← Master index + interaction protocol + quality checklist
-│   └── [24 individual skill files]
-│
-├── document-skills/                   ← Document generation engines (Anthropic official, Windows-patched)
-│   ├── file-reading/  ✅ Ready
-│   ├── pdf-reading/   ✅ Ready
-│   ├── pdf/           ⚠️ Phase 2
-│   ├── docx/          ⚠️ Phase 2
-│   ├── pptx/          ⚠️ Phase 2
-│   └── xlsx/          ⚠️ Phase 2
+├── engines/                           ← 🚫 GITIGNORED — portable LibreOffice/Poppler (in-project)
+│   └── README.md                      ← How engines/ is populated + resolution order  ✅ pushed
 │
 ├── memory/                            ← Runtime memory
 │   ├── memory.md                      ← Operator profile + working memory + client index  ✅ pushed
@@ -353,6 +379,7 @@ Employee System Analyst Expert/
 │               ├── decisions.md       ← ADRs
 │               ├── communication.md   ← RAG history, escalation log
 │               ├── database.md        ← schema, migrations, DBA notes
+│               ├── calibration.md     ← estimates vs actuals, risk hit rate, churn
 │               └── deliverables/      ← reports/, diagrams/, documents/, pdf/
 │
 ├── reference/                         ← Client source material input (drop files here → ingest-reference)
@@ -361,11 +388,12 @@ Employee System Analyst Expert/
 ├── deliverables/                      ← Generated document output (document-specialist-skill writes here)
 │   └── README.md
 │
-├── scripts/                           ← Setup + PDF conversion
-│   ├── setup.ps1                      ← ✅ Done (Windows)
-│   ├── setup.sh                       ← ✅ Done (Linux/Mac)
-│   ├── pdf2md.ps1                     ← ✅ Done (Windows — @opendataloader/pdf → pypdf fallback)
-│   └── pdf2md.sh                      ← ✅ Done (Linux/Mac — @opendataloader/pdf → pypdf fallback)
+├── scripts/                           ← Setup + PDF conversion + engines + verify + backup
+│   ├── setup.ps1 / setup.sh           ← ✅ Dependency check + install (incl. document engines §3b)
+│   ├── pdf2md.ps1 / pdf2md.sh         ← ✅ @opendataloader/pdf → pypdf fallback
+│   ├── fetch-libreoffice-local.ps1    ← ✅ Extract LibreOffice MSI into engines/ (no system install)
+│   ├── verify-engines.ps1 / .sh       ← ✅ End-to-end document engine test (PASS/FAIL checklist)
+│   └── backup.ps1 / backup.sh         ← ✅ Zip client data + engines, retention-aware
 │
 ├── archive/                           ← Superseded reference files
 │
@@ -384,8 +412,8 @@ Employee System Analyst Expert/
 | claude-mem plugin (global + project) | ✅ Done — project-local DB at `.claude-mem/` |
 | memory/memory.md | ✅ Done |
 | memory/communication.md | ✅ Done |
-| skills/ library (22 + 2 new skills) | ✅ Done + enhanced |
-| document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done |
+| ai-sa-employee/skills/ library (30 skills) | ✅ Done + enhanced — consolidated under ai-sa-employee/ |
+| ai-sa-employee/document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done — consolidated under ai-sa-employee/ |
 | context-mode plugin (global + project) | ✅ Done — context-mode@context-mode v1.0.162, marketplace registered |
 | chromadb (semantic memory search) | ✅ Done — v1.5.9, Python 3.14 |
 | Bun runtime | ✅ Present — v1.3.14 (needed for context-mode hooks) |
@@ -400,5 +428,18 @@ Employee System Analyst Expert/
 | ai-sa-employee/references/integrations.md | ✅ Done — memory lanes, DB hook, PDF ingestion, brightdata/Postman/context-mode/claude-mem |
 | scripts/setup.sh | ✅ Done — mirrors setup.ps1, detects python3/python, bash colours |
 | scripts/pdf2md.ps1 + pdf2md.sh | ✅ Done — @opendataloader/pdf (primary) → pypdf (fallback) |
-| skills/resume-client.md | ✅ Done — scan clients/, read project files, rebuild index, sync claude-mem |
+| ai-sa-employee/skills/resume-client.md | ✅ Done — scan clients/, read project files, rebuild index, sync claude-mem |
 | README.md | ✅ Done — full project documentation |
+| scripts/backup.ps1 + backup.sh | ✅ Done — RISK-001 fix: client data backup with retention (+ opt-in engines) |
+| ai-sa-employee/skills/weekly-review.md | ✅ Done — REC-006: portfolio sweep + system self-audit |
+| ai-sa-employee/skills/system-drill.md | ✅ Done — REC-007: synthetic client end-to-end smoke test |
+| calibration.md in project scaffold | ✅ Done — REC-003: estimates vs actuals, risk hit rate |
+| Next-ID headers in lane templates | ✅ Done — REC-005: ID collision guard |
+| Tiered Understanding Check | ✅ Done — REC-008: hard gate for deliverables, direct answers for info asks |
+| Session-start environment check | ✅ Done — REC-004: announce memory tier, degrade explicitly |
+| Canonical source declaration | ✅ Done — REC-001: this file wins on conflict |
+| Phase 2 document engines | ✅ Done 2026-06-13 — LibreOffice 26.2.4 + Poppler 25.07.0 + 8 Python pkgs, verified end-to-end; added to setup scripts §3b |
+| Restructure: skills + document-skills under ai-sa-employee/ | ✅ Done 2026-06-13 — consolidated to one self-contained package; ~64 refs updated; verify-engines 9/9 PASS |
+| Hybrid in-project engines (engines/ + resolver) | ✅ Done 2026-06-13 — get_soffice_cmd() resolves engines/ → PATH → system; precedence tested both paths |
+| scripts/fetch-libreoffice-local.ps1 | ✅ Done — msiexec /a extracts LibreOffice into engines/ (no admin, no system install) |
+| scripts/verify-engines.ps1 + .sh | ✅ Done — REC: reusable end-to-end engine test; setup runs it automatically |

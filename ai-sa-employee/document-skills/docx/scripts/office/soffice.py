@@ -29,11 +29,48 @@ _WINDOWS_SOFFICE_PATHS = [
 ]
 
 
+def _find_engines_soffice():
+    """Look for a project-local LibreOffice under engines/ (in-project copy).
+
+    Resolution: $EMPLOYEE_ENGINES_DIR, else walk up from this file to the first
+    parent containing an engines/ directory. Supports the msiexec /a admin-install
+    layout (engines/LibreOffice/program/) and the PortableApps layout.
+    """
+    exe = "soffice.exe" if sys.platform == "win32" else "soffice"
+    bases = []
+    env_dir = os.environ.get("EMPLOYEE_ENGINES_DIR")
+    if env_dir:
+        bases.append(Path(env_dir))
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        eng = parent / "engines"
+        if eng.is_dir():
+            bases.append(eng)
+            break
+    suffixes = [
+        Path("LibreOffice") / "program" / exe,
+        Path("LibreOfficePortable") / "App" / "libreoffice" / "program" / exe,
+        Path("program") / exe,
+    ]
+    for base in bases:
+        for suf in suffixes:
+            candidate = base / suf
+            if candidate.exists():
+                return str(candidate)
+    return None
+
+
 def get_soffice_cmd() -> str:
-    """Return the soffice executable, checking Windows common install locations."""
+    """Return the soffice executable.
+
+    Resolution order: project-local engines/ -> PATH -> system install dir.
+    """
+    local = _find_engines_soffice()
+    if local:
+        return local
+    if shutil.which("soffice"):
+        return "soffice"
     if sys.platform == "win32":
-        if shutil.which("soffice"):
-            return "soffice"
         for path in _WINDOWS_SOFFICE_PATHS:
             if Path(path).exists():
                 return path

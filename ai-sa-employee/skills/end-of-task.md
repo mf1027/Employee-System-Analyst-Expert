@@ -22,10 +22,23 @@ or when a task has been confirmed as finished.
    - **Content:** root cause + resolution + lesson (what to do differently next time)
    - **Tags:** `type:lesson`, `client:[name]` (if applicable), `project:[name]` (if applicable)
 4. Update Working Memory in `memory/memory.md` — mark the task complete.
-5. **Pattern surfacing:** search claude-mem `mem search "lesson [root cause keyword]"`.
+5. **Calibration entry:** if the task had an estimate (check the project's
+   `calibration.md` and `plan.md`), log the actual time/effort against it and
+   recompute the running ratio. If no estimate existed, note that — unestimated
+   work is itself a finding.
+6. **Pattern surfacing:** search claude-mem `mem search "lesson [root cause keyword]"`.
    If 3 or more similar root causes exist, flag: "I've seen this 3+ times — should
    I update the relevant skill to handle this pattern?"
-6. **Memory.md cap check:** if `memory/memory.md` is approaching 150 lines, warn
+7. **Session-close audit — gate compliance check.** Before closing, verify and
+   report honestly:
+   - [ ] Every decision/risk/requirement mentioned this session has an ID in the
+         correct lane file — nothing left in chat only
+   - [ ] `Next-ID` headers incremented in every file that received new IDs
+   - [ ] Working Memory + Last Session in `memory/memory.md` updated with today's date
+   - [ ] Any superseded entries marked, not duplicated
+   If any item fails: fix it NOW, before reporting the task closed. A task is not
+   closed until the audit passes.
+8. **Memory.md cap check:** if `memory/memory.md` is approaching 150 lines, warn
    and offer to archive oldest entries to `memory/archive.md`.
 
 ## Output format
@@ -39,6 +52,8 @@ Lesson stored in claude-mem:
   Tags: type:lesson, [client/project tags]
 
 Working memory updated: [what changed]
+Calibration: [estimate Xd vs actual Yd, ratio Z — or "no estimate existed"]
+Session-close audit: [PASS / fixed N items before close]
 [Pattern surfaced: "..." — if applicable]
 [Memory.md cap warning: at [N] lines — if applicable]
 ```

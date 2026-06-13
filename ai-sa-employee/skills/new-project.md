@@ -28,8 +28,9 @@ If missing: ask for project name, description, and which client.
    - What is the core problem this project solves?
    - Who are the primary users / beneficiaries?
 
-4. Create the project folder and generate all 9 files populated with what is known.
-   Mark unknowns as `[TBC]`.
+4. Create the project folder and generate all 10 files populated with what is known.
+   Mark unknowns as `[TBC]`. Every ID-bearing file carries a `Next-ID` header —
+   read it before minting any new ID, increment it after every write.
 
 5. Output a summary of what was created and flag which `[TBC]` items need filling
    before work begins.
@@ -49,11 +50,12 @@ memory/clients/[client-name]/[project-name]/
 ├── decisions.md         ← ADRs and decisions log
 ├── communication.md     ← Comms log — RAG history, escalations, notification log
 ├── database.md          ← Database context — schemas, migration notes, DB risks
+├── calibration.md       ← Estimates vs actuals, risk hit rate, requirement churn
 └── deliverables/        ← All outputs sent to or prepared for the client
     ├── reports/         ← Date-stamped RAG status reports
     ├── diagrams/        ← Standalone diagram files (flowcharts, ERDs, Gantt)
     ├── documents/       ← Formal documents (SRS, PRD, SDD) — versioned
-    └── pdf/             ← PDF exports (document-skills/pdf output)
+    └── pdf/             ← PDF exports (ai-sa-employee/document-skills/pdf output)
 ```
 
 ---
@@ -97,6 +99,8 @@ memory/clients/[client-name]/[project-name]/
 ### requirements.md
 ```markdown
 # Requirements — [Project Name]
+
+> Next-ID: REQ-F02 · REQ-NF04 — read this line before minting a new ID; increment after every write.
 
 ## Confirmed Scope
 
@@ -154,6 +158,8 @@ memory/clients/[client-name]/[project-name]/
 ### risks.md
 ```markdown
 # RAID Log — [Project Name]
+
+> Next-ID: RISK-002 · ASS-002 · ISS-002 · DEP-002 — read before minting; increment after every write.
 
 ## Risks
 | ID | Risk | Category | P | I | Score | RAG | Response | Owner | Status |
@@ -225,6 +231,8 @@ memory/clients/[client-name]/[project-name]/
 ```markdown
 # Decisions Log — [Project Name]
 
+> Next-ID: ADR-002 — read before minting; increment after every write.
+
 ## Architecture Decision Records (ADRs)
 
 ### ADR-001 — [Decision title]
@@ -244,6 +252,8 @@ memory/clients/[client-name]/[project-name]/
 ### tasks.md
 ```markdown
 # Active Tasks — [Project Name]
+
+> Next-ID: TASK-002 — read before minting; increment after every write.
 
 ## Current Tasks
 | ID | Task | Owner | Due | Status | Linked |
@@ -315,6 +325,34 @@ memory/clients/[client-name]/[project-name]/
 [Data residency, encryption, audit logging requirements — or TBC]
 ```
 
+### calibration.md
+```markdown
+# Calibration Log — [Project Name]
+
+> Every estimate is logged here when made; the actual is filled when the work
+> completes. Reviewed during weekly-review — running ratio feeds future estimates.
+
+## Estimates vs Actuals
+| Date | Item | PERT est. | Actual | Ratio (A/E) | Notes |
+|---|---|---|---|---|---|
+| [TBC] | | | | | |
+
+## Risk Calibration
+| RISK-ID | Predicted P×I | Materialised? | Notes |
+|---|---|---|---|
+| [TBC] | | | |
+
+## Requirement Churn
+| Month | REQ- added | REQ- changed | REQ- dropped | Churn % |
+|---|---|---|---|---|
+| [TBC] | | | | |
+
+## Running Accuracy
+- **Estimate ratio (avg actual ÷ estimate):** [TBC — needs 3+ completed items]
+- **Risk hit rate (materialised ÷ predicted):** [TBC]
+- **Correction factor to apply to new estimates:** [TBC]
+```
+
 ---
 
 ## Output format
@@ -334,6 +372,7 @@ Files created:
   ✓ decisions.md        — ADRs and decisions log
   ✓ communication.md    — RAG history, escalation log, notification log
   ✓ database.md         — DB context, migration plan, DB risks
+  ✓ calibration.md      — Estimates vs actuals, risk hit rate, churn tracking
   ✓ deliverables/       — Output folders ready:
       reports/          ← RAG status reports (YYYY-MM-DD-status-report.md)
       diagrams/         ← Standalone diagram files (YYYY-MM-DD-[type]-[name].md)

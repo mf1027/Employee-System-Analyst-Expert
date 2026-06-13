@@ -63,6 +63,7 @@ memory/clients/[client-name]/[project-name]/
 ├── decisions.md
 ├── communication.md
 ├── database.md
+├── calibration.md
 └── deliverables/
     ├── reports/
     ├── diagrams/
@@ -71,7 +72,7 @@ memory/clients/[client-name]/[project-name]/
 ```
 
 Confirm to operator:
-> Created: `memory/clients/[client-name]/[project-name]/` — 9 files + deliverables scaffold.
+> Created: `memory/clients/[client-name]/[project-name]/` — 10 files + deliverables scaffold.
 
 ---
 
@@ -211,6 +212,7 @@ memory/clients/                        ← gitignored — never pushed
         ├── decisions.md
         ├── communication.md
         ├── database.md
+        ├── calibration.md
         └── deliverables/
             ├── reports/
             ├── diagrams/

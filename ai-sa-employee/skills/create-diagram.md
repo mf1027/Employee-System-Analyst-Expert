@@ -4,7 +4,7 @@
 Generate flowcharts, process maps, architecture diagrams (including C4 model),
 ERDs, Gantt charts, swimlane diagrams, and other visual artifacts using Mermaid —
 the format that renders natively in GitHub, VS Code, Notion, and most documentation
-platforms. PDF export via `document-skills/pdf` (Phase 2).
+platforms. PDF export via `ai-sa-employee/document-skills/pdf` (✅ ready — Poppler installed).
 
 ## Trigger
 Invoke when the operator says "create a diagram", "draw a flowchart", "map this
@@ -49,7 +49,7 @@ If missing: ask what to visualise and which project it relates to.
 5. Output the diagram with a plain-English description of what it shows and why
    it was structured this way.
 6. Confirm before writing to a project file.
-7. If a PDF export is requested: chain to `document-skills/pdf` (Phase 2 — note if not yet available).
+7. If a PDF export is requested: chain to `ai-sa-employee/document-skills/pdf`.
 
 ---
 
@@ -68,7 +68,7 @@ deliverable it supports]
 ```
 
 Saved to: [project file where this will be embedded — or "standalone file"]
-PDF export: [available via document-skills/pdf (Phase 2) — or "not requested"]
+PDF export: [done via ai-sa-employee/document-skills/pdf — or "not requested"]
 ````
 
 ---
@@ -165,7 +165,7 @@ stateDiagram-v2
 
 **Rule:** diagrams referenced in your own working analysis stay embedded in the relevant project file.
 Diagrams prepared for a client or included in a formal document go to `deliverables/diagrams/`.
-PDF export of any diagram: chain to `document-skills/pdf` (Phase 2) → saves to `deliverables/pdf/`.
+PDF export of any diagram: chain to `ai-sa-employee/document-skills/pdf` → saves to `deliverables/pdf/`.
 
 ---
 

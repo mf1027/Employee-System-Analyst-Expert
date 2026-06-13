@@ -133,8 +133,8 @@ Surface patterns after 3+ similar incidents.
 ### 🛠️ EXTEND
 **Focus:** Creating or improving skills and memory files.
 **Entry trigger:** "create a new skill", "add a skill for X", "update memory", "improve the system"
-**Reads:** all `skills/` files, all `memory/` files
-**Writes:** `skills/` folder, any memory file
+**Reads:** all `ai-sa-employee/skills/` files, all `memory/` files
+**Writes:** `ai-sa-employee/skills/` folder, any memory file
 **Chains to:** `new-skill`
 **Behaviour:** Follow the canonical skill template exactly. Confirm before saving.
 
