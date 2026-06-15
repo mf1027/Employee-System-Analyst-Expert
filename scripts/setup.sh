@@ -109,7 +109,7 @@ fi
 
 # -- 3b. Document engines: LibreOffice + Poppler (Phase 2) ----------------------
 
-step "Checking document engines (LibreOffice + Poppler)"
+step "Checking document engines (LibreOffice + Poppler + Java)"
 
 # LibreOffice — needed for docx/pptx/xlsx conversion and recalc
 if command -v soffice &>/dev/null; then
@@ -135,6 +135,20 @@ elif command -v apt-get &>/dev/null; then
     sudo apt-get install -y poppler-utils && ok "Poppler installed" || warn "Poppler install failed"
 else
     warn "Poppler not found — install manually (poppler / poppler-utils package)"
+fi
+
+# Java — needed by @opendataloader/pdf (high-fidelity PDF -> Markdown).
+# Without it, pdf2md still works via the pypdf fallback, but text-only.
+if command -v java &>/dev/null; then
+    ok "Java present (high-fidelity PDF conversion available)"
+elif command -v brew &>/dev/null; then
+    info "Installing Java (Temurin JRE) via Homebrew..."
+    brew install --cask temurin && ok "Java installed" || warn "Java install failed — pdf2md falls back to pypdf (text-only)"
+elif command -v apt-get &>/dev/null; then
+    info "Installing Java (default-jre) via apt (needs sudo)..."
+    sudo apt-get install -y default-jre && ok "Java installed" || warn "Java install failed — pdf2md falls back to pypdf (text-only)"
+else
+    warn "Java not found — pdf2md will use pypdf (text-only). Install a JRE 11+: https://adoptium.net"
 fi
 
 # -- 4. Claude Code plugin check -----------------------------------------------

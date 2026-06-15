@@ -19,8 +19,9 @@ full-time senior employee with defined roles, memory, skills, and governance rul
 - Advises on databases (schema design, migration safety, HA/DR, cost)
 - Produces formal documents (SRS, PRD, SDD, status reports)
 
-**What the employee does not do:** write application code. It analyses, plans, governs, and advises.
-It hands off to the developer (you or your team) with complete specifications.
+**What the employee does NOT do:** write application code, build features, or debug programs —
+that's the developer's lane (you or your team). It stays in the thinking-and-specifying lane:
+it **analyses, plans, governs, and advises**, then hands the developer complete specifications to build from.
 
 ---
 
@@ -187,23 +188,32 @@ learns its own bias.
 
 To use a client PDF (contract, brief, RFP, spec):
 
-1. Drop the PDF into `reference/` (root drop zone) or `memory/clients/[name]/reference/`
-2. Convert to Markdown:
+1. Drop the PDF(s) into **`pdf-source/`** (the default drop folder)
+2. Convert to Markdown — `pdf2md` finds them for you:
 
 ```powershell
-# Windows — primary converter: @opendataloader/pdf (bundled in node_modules)
-scripts\pdf2md.ps1 -InputFile "reference\brief.pdf"
-scripts\pdf2md.ps1 -InputFile "reference\brief.pdf" -OutputFile "reference\brief.md"
+# Windows
+scripts\pdf2md.ps1                          # convert EVERY *.pdf in pdf-source\
+scripts\pdf2md.ps1 -InputFile "brief.pdf"   # by name — pdf-source\ is checked first, then current dir
+scripts\pdf2md.ps1 -InputFile "reference\brief.pdf"   # or an explicit path
 ```
 ```
 # Linux / Mac
-bash scripts/pdf2md.sh "reference/brief.pdf"
-bash scripts/pdf2md.sh "reference/brief.pdf" "reference/brief.md"
+bash scripts/pdf2md.sh                       # convert every *.pdf in pdf-source/
+bash scripts/pdf2md.sh brief.pdf             # by name
 ```
+
+Each PDF produces `<name>.md` next to it. Pass `-Recurse` (PowerShell) / `RECURSE=1` (bash)
+to include subfolders.
 
 3. Tell the employee: **"ingest this"** (or drop the path)
 4. The employee runs `ingest-reference`: reads the `.md` once → distils to claude-mem as `KB-` entries
 5. Future sessions search claude-mem — the file is not re-read unless it changes
+
+> **Converter quality:** the high-fidelity converter (`@opendataloader/pdf`) needs **Java**,
+> which the **setup script installs for you** (winget / brew / apt). If Java is ever absent,
+> `pdf2md` automatically falls back to **pypdf** (text-only — tables and layout not preserved)
+> and tells you so, so a conversion never silently fails.
 
 ---
 

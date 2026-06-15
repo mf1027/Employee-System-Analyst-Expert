@@ -1,20 +1,27 @@
-# pdf2md.ps1 - Convert PDF to Markdown for ingestion into reference/
+# pdf2md.ps1 - Convert PDF(s) to Markdown for ingestion into reference/
 # Usage:
-#   .\scripts\pdf2md.ps1 -InputFile "reference\document.pdf"
-#   .\scripts\pdf2md.ps1 -InputFile "reference\document.pdf" -OutputFile "reference\out.md"
+#   .\scripts\pdf2md.ps1                                # convert every *.pdf in pdf-source\
+#   .\scripts\pdf2md.ps1 -InputFile "sample.pdf"        # bare name: pdf-source\ first, then current dir
+#   .\scripts\pdf2md.ps1 -InputFile "reference\doc.pdf" # explicit path (relative or absolute)
+#   .\scripts\pdf2md.ps1 -InputFile "reference\"        # a folder: convert all *.pdf inside it
+#   .\scripts\pdf2md.ps1 -InputFile "doc.pdf" -OutputFile "out.md"   # single file, custom output
+#   .\scripts\pdf2md.ps1 -Recurse                       # include subfolders when batching
 #
 # Converter priority:
-#   1. @opendataloader/pdf  (installed in node_modules — primary, best quality)
-#   2. pypdf                (pip install pypdf — fallback, plain text extraction only)
+#   1. @opendataloader/pdf  (installed in node_modules - primary, best quality)
+#   2. pypdf                (pip install pypdf - fallback, plain text extraction only)
 #
-# After conversion: ensure the .md is in reference/ then run ingest-reference in Claude Code.
+# Output: <name>.md next to each source PDF (unless -OutputFile is given for a single file).
+# After conversion: put the .md in reference/ (or ingest from pdf-source/) then run ingest-reference.
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false, Position=0)]
     [string]$InputFile,
 
     [Parameter(Mandatory=$false)]
-    [string]$OutputFile
+    [string]$OutputFile,
+
+    [switch]$Recurse
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,89 +31,144 @@ function Write-FAIL { param($msg) Write-Host "[FAIL] $msg" -ForegroundColor Red 
 function Write-WARN { param($msg) Write-Host "[WARN] $msg" -ForegroundColor Yellow }
 function Write-INFO { param($msg) Write-Host "       $msg" -ForegroundColor Gray }
 
-# -- Resolve root and paths ----------------------------------------------------
+$root      = Split-Path $PSScriptRoot -Parent
+$pdfSource = Join-Path $root "pdf-source"
+$childArgs = @{ Filter = "*.pdf"; File = $true }
+if ($Recurse) { $childArgs.Recurse = $true }
 
-$root = Split-Path $PSScriptRoot -Parent
+# -- Resolve which PDF(s) to convert -------------------------------------------
 
-if (-not (Test-Path $InputFile)) {
-    Write-FAIL "File not found: $InputFile"
-    exit 1
-}
-$inputAbs = (Resolve-Path $InputFile).Path
-$inputDir  = Split-Path $inputAbs -Parent
-$inputBase = [System.IO.Path]::GetFileNameWithoutExtension($inputAbs)
+$pdfs = @()
 
-# Derive expected output path
-if (-not $OutputFile) {
-    $OutputFile = Join-Path $inputDir "$inputBase.md"
-}
-if (-not [System.IO.Path]::IsPathRooted($OutputFile)) {
-    $OutputFile = Join-Path (Get-Location) $OutputFile
-}
-$outputDir  = Split-Path $OutputFile -Parent
-$outputBase = [System.IO.Path]::GetFileNameWithoutExtension($OutputFile)
-
-Write-Host "Input:  $inputAbs" -ForegroundColor Cyan
-Write-Host "Output: $OutputFile" -ForegroundColor Cyan
-Write-Host ""
-
-$converted = $false
-$tempPy    = [System.IO.Path]::GetTempFileName() + ".py"
-
-# -- Attempt 1: @opendataloader/pdf (node_modules) -----------------------------
-
-$odlBin = Join-Path $root "node_modules\.bin\opendataloader-pdf"
-if (Test-Path $odlBin) {
-    Write-INFO "Using: @opendataloader/pdf"
-    & $odlBin $inputAbs -f markdown -o $outputDir -q --image-output off
-    if ($LASTEXITCODE -eq 0) {
-        # Rename if the converter used the input base name and it differs from desired output name
-        $producedFile = Join-Path $outputDir "$inputBase.md"
-        if ((Test-Path $producedFile) -and ($producedFile -ne $OutputFile)) {
-            Move-Item -Path $producedFile -Destination $OutputFile -Force
-        }
-        $converted = $true
-    } else {
-        Write-WARN "@opendataloader/pdf returned exit code $LASTEXITCODE — trying fallback"
+if ([string]::IsNullOrWhiteSpace($InputFile)) {
+    # No argument -> batch the pdf-source\ folder
+    if (-not (Test-Path $pdfSource)) {
+        Write-WARN "No file given and pdf-source\ does not exist yet."
+        Write-INFO "Drop PDFs into pdf-source\ and re-run, or pass -InputFile <path>."
+        exit 0
     }
-} else {
-    Write-WARN "@opendataloader/pdf binary not found at $odlBin"
-    Write-INFO "Run: npm install  (from project root) to install it"
+    $pdfs = @(Get-ChildItem -Path $pdfSource @childArgs)
+    if ($pdfs.Count -eq 0) { Write-WARN "No PDFs found in pdf-source\."; exit 0 }
+    Write-INFO "Batch: $($pdfs.Count) PDF(s) from pdf-source\"
+}
+elseif (Test-Path $InputFile -PathType Container) {
+    # A folder -> batch every *.pdf inside it
+    $pdfs = @(Get-ChildItem -Path $InputFile @childArgs)
+    if ($pdfs.Count -eq 0) { Write-WARN "No PDFs found in $InputFile"; exit 0 }
+    Write-INFO "Batch: $($pdfs.Count) PDF(s) from $InputFile"
+}
+else {
+    # A file: explicit path vs bare name (pdf-source\ first, then current dir)
+    $hasDir = ($InputFile -match '[\\/]') -or [System.IO.Path]::IsPathRooted($InputFile)
+    $resolved = $null
+    if ($hasDir) {
+        if (Test-Path $InputFile -PathType Leaf) { $resolved = (Resolve-Path $InputFile).Path }
+    }
+    else {
+        $inSource = Join-Path $pdfSource $InputFile
+        $inCwd    = Join-Path (Get-Location).Path $InputFile
+        if (Test-Path $inSource -PathType Leaf) {
+            $resolved = (Resolve-Path $inSource).Path
+            Write-INFO "Found in pdf-source\: $InputFile"
+        }
+        elseif (Test-Path $inCwd -PathType Leaf) {
+            $resolved = (Resolve-Path $inCwd).Path
+            Write-INFO "Found in current directory: $InputFile"
+        }
+    }
+    if (-not $resolved) {
+        Write-FAIL "Not found: '$InputFile'"
+        if (-not $hasDir) { Write-INFO "Looked in pdf-source\ then the current directory." }
+        exit 1
+    }
+    if ([System.IO.Path]::GetExtension($resolved).ToLower() -ne ".pdf") {
+        Write-WARN "Not a .pdf extension: $resolved (trying anyway)"
+    }
+    $pdfs = @(Get-Item $resolved)
 }
 
-# -- Attempt 2: pypdf fallback -------------------------------------------------
+if ($OutputFile -and $pdfs.Count -gt 1) {
+    Write-WARN "-OutputFile ignored for a batch of $($pdfs.Count); writing <name>.md next to each PDF."
+    $OutputFile = $null
+}
 
-if (-not $converted) {
-    $check = python -c "import pypdf" 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-WARN "Using: pypdf (text extraction only — tables and layout not preserved)"
-        @'
+# -- Converters ----------------------------------------------------------------
+
+# Resolve the opendataloader shim - on Windows the runnable one is the .cmd,
+# not the extensionless bash shim (calling the latter silently no-ops).
+$odlBin = Join-Path $root "node_modules\.bin\opendataloader-pdf"
+if ($env:OS -eq 'Windows_NT' -and (Test-Path "$odlBin.cmd")) { $odlBin = "$odlBin.cmd" }
+$odlAvailable = Test-Path $odlBin
+$tempPy = [System.IO.Path]::GetTempFileName() + ".py"
+$script:pypdfChecked = $false
+$script:pypdfReady   = $false
+$script:usedFallback = $false
+
+function Test-Pypdf {
+    if (-not $script:pypdfChecked) {
+        $script:pypdfChecked = $true
+        python -c "import pypdf" 2>&1 | Out-Null
+        $script:pypdfReady = ($LASTEXITCODE -eq 0)
+        if ($script:pypdfReady) {
+            @'
 import pypdf, sys
 reader = pypdf.PdfReader(sys.argv[1])
-lines = []
+out = []
 for i, page in enumerate(reader.pages, 1):
-    lines.append(f"## Page {i}")
-    text = page.extract_text() or ""
-    lines.append(text)
-    lines.append("")
-with open(sys.argv[2], 'w', encoding='utf-8') as f:
-    f.write('\n'.join(lines))
+    out.append(f"## Page {i}")
+    out.append(page.extract_text() or "")
+    out.append("")
+open(sys.argv[2], "w", encoding="utf-8").write("\n".join(out))
 '@ | Out-File -FilePath $tempPy -Encoding utf8
-        python $tempPy $inputAbs $OutputFile
-        $converted = $true
+        }
     }
+    return $script:pypdfReady
 }
 
-# -- Clean up ------------------------------------------------------------------
+function Convert-OnePdf {
+    # Success is judged by the output FILE existing, not by exit codes - that is
+    # robust to the opendataloader shim no-opping or Java being absent.
+    param($inputAbs, $outPath)
+    $base = [System.IO.Path]::GetFileNameWithoutExtension($inputAbs)
+    $outDir = Split-Path $outPath -Parent
+    if (Test-Path $outPath) { [System.IO.File]::Delete($outPath) }   # clear stale output
+
+    if ($odlAvailable) {
+        try { & $odlBin $inputAbs -f markdown -o $outDir -q --image-output off 2>$null | Out-Null } catch {}
+        $produced = Join-Path $outDir "$base.md"
+        if ((Test-Path $produced) -and ($produced -ne $outPath)) { Move-Item $produced $outPath -Force }
+        if ((Test-Path $outPath) -and ((Get-Item $outPath).Length -gt 0)) { return "opendataloader" }
+    }
+    if (Test-Pypdf) {
+        try { python $tempPy $inputAbs $outPath 2>$null | Out-Null } catch {}
+        if (Test-Path $outPath) { $script:usedFallback = $true; return "pypdf" }
+    }
+    return $null
+}
+
+# -- Run -----------------------------------------------------------------------
+
+$converted = 0; $failed = 0; $failList = @()
+foreach ($pdf in $pdfs) {
+    $inputAbs = $pdf.FullName
+    if ($OutputFile) {
+        $outPath = $OutputFile
+        if (-not [System.IO.Path]::IsPathRooted($outPath)) { $outPath = Join-Path (Get-Location).Path $outPath }
+    } else {
+        $base = [System.IO.Path]::GetFileNameWithoutExtension($inputAbs)
+        $outPath = Join-Path (Split-Path $inputAbs -Parent) "$base.md"
+    }
+    Write-Host "-> $($pdf.Name)" -ForegroundColor Cyan
+    $via = Convert-OnePdf $inputAbs $outPath
+    if ($via) { Write-OK "  $outPath  [$via]"; $converted++ }
+    else { Write-FAIL "  failed: $($pdf.Name)"; $failed++; $failList += $pdf.Name }
+}
 
 if (Test-Path $tempPy) { Remove-Item $tempPy -Force }
 
-# -- Result --------------------------------------------------------------------
-
-if (-not $converted) {
+if ($converted -eq 0 -and -not $odlAvailable -and -not $script:pypdfReady) {
     Write-Host ""
     Write-FAIL "No converter available."
-    Write-Host ""
     Write-Host "    Primary:  npm install   (installs @opendataloader/pdf in node_modules)" -ForegroundColor Yellow
     Write-Host "    Fallback: pip install pypdf" -ForegroundColor Yellow
     Write-Host ""
@@ -114,9 +176,12 @@ if (-not $converted) {
 }
 
 Write-Host ""
-Write-OK "Converted: $OutputFile"
+Write-Host "Summary: $converted converted, $failed failed" -ForegroundColor $(if ($failed -eq 0) { "Green" } else { "Yellow" })
+foreach ($f in $failList) { Write-INFO "failed: $f" }
+if ($script:usedFallback) {
+    Write-WARN "Used pypdf (text-only) - tables/layout not preserved."
+    Write-INFO "For best quality install Java so @opendataloader/pdf can run, then re-convert."
+}
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-INFO "1. Ensure the .md file is in reference/"
-Write-INFO "2. Open Claude Code and run: ingest-reference"
-Write-Host ""
+Write-Host "Next: put the .md in reference\ (or ingest from pdf-source\), then run ingest-reference." -ForegroundColor Cyan
+if ($failed -gt 0) { exit 1 } else { exit 0 }

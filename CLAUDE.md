@@ -313,6 +313,13 @@ resolves it), Poppler 25.07.0 (winget, on PATH), and 7 Python packages (defusedx
 openpyxl, pdf2image, pdfplumber, pillow, pypdf). New machines get all of this
 automatically from `scripts/setup.ps1` / `setup.sh` (section 3b).
 
+**Vendored-path note (not a defect):** these skills reference each other internally via
+`/mnt/skills/public/...` — Anthropic's cloud-sandbox path convention, upstream and pre-existing.
+The employee's entry point `document-specialist-skill.md` uses correct
+`ai-sa-employee/document-skills/...` paths, and the conversion scripts are local and verified
+working. The `/mnt/` references were deliberately **not** rewritten: it would diverge from
+upstream and make future re-vendoring harder, for no functional gain.
+
 ---
 
 ## Tool Dependencies
@@ -323,7 +330,7 @@ automatically from `scripts/setup.ps1` / `setup.sh` (section 3b).
 | npm | Package management | Bundled with Node |
 | Python 3.10+ | chromadb (semantic search) | `pip install chromadb` |
 | Bun | context-mode hooks | `irm bun.sh/install.ps1 \| iex` |
-| Java 11+ | @opendataloader/pdf internal Java CLI (bundled in npm package) | Auto-installed via npm |
+| Java 11+ | @opendataloader/pdf (high-fidelity PDF→MD) | ✅ Auto-installed by setup §3b (winget OpenJDK 21 / brew / apt); without it `pdf2md` falls back to pypdf (text-only) |
 | LibreOffice | DOCX/PPTX/XLSX ops | ✅ Installed (26.2.4) — system or project `engines/`; auto-installed by setup |
 | Poppler | PDF → image conversion | ✅ Installed (25.07.0) — auto-installed by setup scripts |
 | Claude Code | Plugin hooks, MCP | Required |
@@ -382,6 +389,9 @@ Employee System Analyst Expert/
 │               ├── calibration.md     ← estimates vs actuals, risk hit rate, churn
 │               └── deliverables/      ← reports/, diagrams/, documents/, pdf/
 │
+├── pdf-source/                        ← 🚫 GITIGNORED — raw client PDFs; pdf2md's default drop folder
+│   └── README.md                      ← usage + resolution order  ✅ pushed
+│
 ├── reference/                         ← Client source material input (drop files here → ingest-reference)
 │   └── README.md
 │
@@ -390,7 +400,7 @@ Employee System Analyst Expert/
 │
 ├── scripts/                           ← Setup + PDF conversion + engines + verify + backup
 │   ├── setup.ps1 / setup.sh           ← ✅ Dependency check + install (incl. document engines §3b)
-│   ├── pdf2md.ps1 / pdf2md.sh         ← ✅ @opendataloader/pdf → pypdf fallback
+│   ├── pdf2md.ps1 / pdf2md.sh         ← ✅ batch/bare-name/path resolution → @opendataloader/pdf → pypdf fallback
 │   ├── fetch-libreoffice-local.ps1    ← ✅ Extract LibreOffice MSI into engines/ (no system install)
 │   ├── verify-engines.ps1 / .sh       ← ✅ End-to-end document engine test (PASS/FAIL checklist)
 │   └── backup.ps1 / backup.sh         ← ✅ Zip client data + engines, retention-aware
@@ -443,3 +453,6 @@ Employee System Analyst Expert/
 | Hybrid in-project engines (engines/ + resolver) | ✅ Done 2026-06-13 — get_soffice_cmd() resolves engines/ → PATH → system; precedence tested both paths |
 | scripts/fetch-libreoffice-local.ps1 | ✅ Done — msiexec /a extracts LibreOffice into engines/ (no admin, no system install) |
 | scripts/verify-engines.ps1 + .sh | ✅ Done — REC: reusable end-to-end engine test; setup runs it automatically |
+| pdf-source/ folder + smart pdf2md | ✅ Done 2026-06-15 — default PDF drop folder; resolution: no-arg batch / bare-name (pdf-source→cwd) / path / folder; tested |
+| pdf2md robustness fix | ✅ Done 2026-06-15 — Windows .cmd shim + output-file existence check (was false-OK on stale exit code); honest pypdf fallback when Java absent |
+| Java in pre-install | ✅ Done 2026-06-15 — setup §3b installs OpenJDK 21 (winget/brew/apt); verified opendataloader now produces high-fidelity output (was falling back to pypdf) |

@@ -108,9 +108,9 @@ try {
     Write-WARN "document-skills package install failed - docx/pptx/xlsx/pdf skills may not work"
 }
 
-# -- 3b. Document engines: LibreOffice + Poppler (Phase 2) ----------------------
+# -- 3b. Document engines: LibreOffice + Poppler + Java (Phase 2) ---------------
 
-Write-Step "Checking document engines (LibreOffice + Poppler)"
+Write-Step "Checking document engines (LibreOffice + Poppler + Java)"
 
 $wingetOK = $null -ne (Get-Command winget -ErrorAction SilentlyContinue)
 
@@ -144,6 +144,20 @@ if (Get-Command pdftoppm -ErrorAction SilentlyContinue) {
     Write-OK "Poppler installed (restart your shell so PATH updates apply)"
 } else {
     Write-WARN "Poppler not found and winget unavailable - install manually: https://github.com/oschwartz10612/poppler-windows"
+}
+
+# Java - needed by @opendataloader/pdf (high-fidelity PDF -> Markdown).
+# Without it, pdf2md still works via the pypdf fallback, but text-only.
+if (Get-Command java -ErrorAction SilentlyContinue) {
+    Write-OK "Java present (high-fidelity PDF conversion available)"
+} elseif ($wingetOK) {
+    Write-INFO "Installing Java (Microsoft Build of OpenJDK 21) via winget..."
+    winget install --id Microsoft.OpenJDK.21 -e --accept-source-agreements --accept-package-agreements --silent
+    if (Get-Command java -ErrorAction SilentlyContinue) { Write-OK "Java installed" }
+    else { Write-WARN "Java installed but not yet on PATH - restart your shell, then pdf2md uses @opendataloader/pdf" }
+} else {
+    Write-WARN "Java not found and winget unavailable - pdf2md will use pypdf (text-only)."
+    Write-INFO "  For high-fidelity PDFs install a JRE 11+: https://adoptium.net"
 }
 
 # -- 4. Claude Code plugin check -----------------------------------------------

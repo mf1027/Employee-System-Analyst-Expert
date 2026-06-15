@@ -16,6 +16,10 @@ memory/clients/
 reference/*
 !reference/README.md
 
+# Raw client PDFs awaiting conversion — confidential, never pushed
+pdf-source/*
+!pdf-source/README.md
+
 # Generated deliverables — client-specific output
 deliverables/*
 !deliverables/README.md

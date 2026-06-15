@@ -1,135 +1,158 @@
 #!/usr/bin/env bash
-# pdf2md.sh - Convert PDF to Markdown for ingestion into reference/
+# pdf2md.sh - Convert PDF(s) to Markdown for ingestion into reference/
 # Usage:
-#   bash scripts/pdf2md.sh "reference/document.pdf"
-#   bash scripts/pdf2md.sh "reference/document.pdf" "reference/out.md"
+#   bash scripts/pdf2md.sh                       # convert every *.pdf in pdf-source/
+#   bash scripts/pdf2md.sh sample.pdf            # bare name: pdf-source/ first, then current dir
+#   bash scripts/pdf2md.sh reference/doc.pdf     # explicit path
+#   bash scripts/pdf2md.sh reference/            # a folder: convert all *.pdf inside it
+#   bash scripts/pdf2md.sh doc.pdf out.md        # single file, custom output
+#   RECURSE=1 bash scripts/pdf2md.sh             # include subfolders when batching
 #
 # Converter priority:
-#   1. @opendataloader/pdf  (installed in node_modules — primary, best quality)
-#   2. pypdf                (pip install pypdf — fallback, plain text extraction only)
+#   1. @opendataloader/pdf  (node_modules - primary, best quality)
+#   2. pypdf                (pip install pypdf - fallback, text only)
 #
-# After conversion: ensure the .md is in reference/ then run ingest-reference in Claude Code.
+# Output: <name>.md next to each source PDF (unless a 2nd arg gives a custom output for one file).
 
 set -euo pipefail
 
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-RED='\033[0;31m'
-CYAN='\033[0;36m'
-GRAY='\033[0;90m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(dirname "$SCRIPT_DIR")"
+PDF_SOURCE="$ROOT/pdf-source"
+INPUT="${1:-}"
+OUTPUT="${2:-}"
+RECURSE="${RECURSE:-0}"
 
+GREEN='\033[0;32m'; RED='\033[0;31m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; GRAY='\033[0;90m'; NC='\033[0m'
 ok()   { echo -e "${GREEN}[OK]   $1${NC}"; }
 fail() { echo -e "${RED}[FAIL] $1${NC}"; }
 warn() { echo -e "${YELLOW}[WARN] $1${NC}"; }
 info() { echo -e "${GRAY}       $1${NC}"; }
 
-# -- Args and paths ------------------------------------------------------------
-
-if [ $# -lt 1 ]; then
-    echo "Usage: bash scripts/pdf2md.sh <input.pdf> [output.md]"
-    exit 1
-fi
-
-INPUT="$1"
-if [ ! -f "$INPUT" ]; then
-    fail "File not found: $INPUT"
-    exit 1
-fi
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(dirname "$SCRIPT_DIR")"
-
-INPUT_ABS="$(cd "$(dirname "$INPUT")" && pwd)/$(basename "$INPUT")"
-INPUT_BASE="$(basename "$INPUT_ABS" .pdf)"
-INPUT_DIR="$(dirname "$INPUT_ABS")"
-
-if [ $# -ge 2 ]; then
-    OUTPUT="$2"
-    if [[ "$OUTPUT" != /* ]]; then
-        OUTPUT="$(pwd)/$OUTPUT"
-    fi
-else
-    OUTPUT="$INPUT_DIR/$INPUT_BASE.md"
-fi
-
-OUTPUT_DIR="$(dirname "$OUTPUT")"
-OUTPUT_BASE="$(basename "$OUTPUT" .md)"
-
-echo -e "${CYAN}Input:  $INPUT_ABS${NC}"
-echo -e "${CYAN}Output: $OUTPUT${NC}"
-echo ""
-
-CONVERTED=0
-TEMP_PY="$(mktemp /tmp/pdf2md_XXXXXX.py)"
-trap 'rm -f "$TEMP_PY"' EXIT
-
-# Detect Python
-PY_CMD=""
-for cmd in python3 python; do
-    if command -v "$cmd" &>/dev/null; then
-        PY_CMD="$cmd"
-        break
-    fi
-done
-
-# -- Attempt 1: @opendataloader/pdf (node_modules) ----------------------------
-
 ODL_BIN="$ROOT/node_modules/.bin/opendataloader-pdf"
+PY_CMD="$(command -v python3 || command -v python || true)"
+TMP_PY="$(mktemp).py"
+trap 'rm -f "$TMP_PY"' EXIT
+PYPDF_CHECKED=0; PYPDF_READY=0
+USED_FALLBACK=0
 
-if [ -x "$ODL_BIN" ]; then
-    info "Using: @opendataloader/pdf"
-    if "$ODL_BIN" "$INPUT_ABS" -f markdown -o "$OUTPUT_DIR" -q --image-output off; then
-        # Rename if the converter produced input-base.md but desired name differs
-        PRODUCED="$OUTPUT_DIR/$INPUT_BASE.md"
-        if [ -f "$PRODUCED" ] && [ "$PRODUCED" != "$OUTPUT" ]; then
-            mv "$PRODUCED" "$OUTPUT"
-        fi
-        CONVERTED=1
+# Collect *.pdf from a directory into the PDFS array
+collect_dir() {
+    local dir="$1"
+    if [ "$RECURSE" = "1" ]; then
+        while IFS= read -r -d '' f; do PDFS+=("$f"); done \
+            < <(find "$dir" -type f -iname '*.pdf' -print0 2>/dev/null)
     else
-        warn "@opendataloader/pdf failed — trying fallback"
+        while IFS= read -r -d '' f; do PDFS+=("$f"); done \
+            < <(find "$dir" -maxdepth 1 -type f -iname '*.pdf' -print0 2>/dev/null)
     fi
+}
+
+PDFS=()
+if [ -z "$INPUT" ]; then
+    # No argument -> batch pdf-source/
+    if [ ! -d "$PDF_SOURCE" ]; then
+        warn "No file given and pdf-source/ does not exist yet."
+        info "Drop PDFs into pdf-source/ and re-run, or pass a path."
+        exit 0
+    fi
+    collect_dir "$PDF_SOURCE"
+    [ ${#PDFS[@]} -eq 0 ] && { warn "No PDFs found in pdf-source/."; exit 0; }
+    info "Batch: ${#PDFS[@]} PDF(s) from pdf-source/"
+elif [ -d "$INPUT" ]; then
+    collect_dir "$INPUT"
+    [ ${#PDFS[@]} -eq 0 ] && { warn "No PDFs found in $INPUT"; exit 0; }
+    info "Batch: ${#PDFS[@]} PDF(s) from $INPUT"
 else
-    warn "@opendataloader/pdf binary not found at $ODL_BIN"
-    info "Run: npm install  (from project root) to install it"
+    # A file: explicit path vs bare name
+    RESOLVED=""
+    case "$INPUT" in
+        */*|/*) [ -f "$INPUT" ] && RESOLVED="$INPUT" ;;          # has a dir component
+        *)                                                       # bare name
+            if [ -f "$PDF_SOURCE/$INPUT" ]; then RESOLVED="$PDF_SOURCE/$INPUT"; info "Found in pdf-source/: $INPUT"
+            elif [ -f "./$INPUT" ];        then RESOLVED="./$INPUT";          info "Found in current directory: $INPUT"
+            fi ;;
+    esac
+    if [ -z "$RESOLVED" ]; then
+        fail "Not found: '$INPUT'"
+        case "$INPUT" in */*|/*) : ;; *) info "Looked in pdf-source/ then the current directory." ;; esac
+        exit 1
+    fi
+    case "$RESOLVED" in *.pdf|*.PDF) : ;; *) warn "Not a .pdf extension: $RESOLVED (trying anyway)" ;; esac
+    PDFS=("$RESOLVED")
 fi
 
-# -- Attempt 2: pypdf fallback -------------------------------------------------
+if [ -n "$OUTPUT" ] && [ ${#PDFS[@]} -gt 1 ]; then
+    warn "custom output ignored for a batch of ${#PDFS[@]}; writing <name>.md next to each PDF."
+    OUTPUT=""
+fi
 
-if [ "$CONVERTED" -eq 0 ] && [ -n "$PY_CMD" ] && "$PY_CMD" -c "import pypdf" 2>/dev/null; then
-    warn "Using: pypdf (text extraction only — tables and layout not preserved)"
-    cat > "$TEMP_PY" <<'PYEOF'
+ensure_pypdf() {
+    if [ "$PYPDF_CHECKED" -eq 0 ]; then
+        PYPDF_CHECKED=1
+        if [ -n "$PY_CMD" ] && "$PY_CMD" -c "import pypdf" 2>/dev/null; then
+            PYPDF_READY=1
+            cat > "$TMP_PY" <<'PYEOF'
 import pypdf, sys
 reader = pypdf.PdfReader(sys.argv[1])
-lines = []
+out = []
 for i, page in enumerate(reader.pages, 1):
-    lines.append(f"## Page {i}")
-    text = page.extract_text() or ""
-    lines.append(text)
-    lines.append("")
-with open(sys.argv[2], 'w', encoding='utf-8') as f:
-    f.write('\n'.join(lines))
+    out.append(f"## Page {i}")
+    out.append(page.extract_text() or "")
+    out.append("")
+open(sys.argv[2], "w", encoding="utf-8").write("\n".join(out))
 PYEOF
-    "$PY_CMD" "$TEMP_PY" "$INPUT_ABS" "$OUTPUT"
-    CONVERTED=1
-fi
+        fi
+    fi
+    return $((1 - PYPDF_READY))
+}
 
-# -- Result --------------------------------------------------------------------
+# Success is judged by the output FILE existing, not by exit codes - robust to
+# the opendataloader binary failing (e.g. Java absent). Echoes the converter used.
+convert_one() {
+    local in="$1" out="$2"
+    local base outdir produced
+    base="$(basename "${in%.*}")"
+    outdir="$(dirname "$out")"
+    [ -f "$out" ] && rm -f "$out"
+    if [ -x "$ODL_BIN" ]; then
+        "$ODL_BIN" "$in" -f markdown -o "$outdir" -q --image-output off >/dev/null 2>&1 || true
+        produced="$outdir/$base.md"
+        [ -f "$produced" ] && [ "$produced" != "$out" ] && mv -f "$produced" "$out"
+        if [ -s "$out" ]; then echo "opendataloader"; return 0; fi
+    fi
+    if ensure_pypdf; then
+        "$PY_CMD" "$TMP_PY" "$in" "$out" >/dev/null 2>&1 || true
+        if [ -f "$out" ]; then USED_FALLBACK=1; echo "pypdf"; return 0; fi
+    fi
+    return 1
+}
 
-if [ "$CONVERTED" -eq 0 ]; then
+CONVERTED=0; FAILED=0; FAILLIST=()
+for pdf in "${PDFS[@]}"; do
+    name="$(basename "$pdf")"
+    if [ -n "$OUTPUT" ]; then outpath="$OUTPUT"
+    else outpath="$(dirname "$pdf")/$(basename "${pdf%.*}").md"; fi
+    echo -e "${CYAN}-> $name${NC}"
+    if via="$(convert_one "$pdf" "$outpath")"; then ok "  $outpath  [$via]"; CONVERTED=$((CONVERTED+1))
+    else fail "  failed: $name"; FAILED=$((FAILED+1)); FAILLIST+=("$name"); fi
+done
+
+if [ "$CONVERTED" -eq 0 ] && [ ! -x "$ODL_BIN" ] && [ "$PYPDF_READY" -eq 0 ]; then
     echo ""
     fail "No converter available."
-    echo ""
-    echo -e "    ${YELLOW}Primary:  npm install   (installs @opendataloader/pdf in node_modules)${NC}"
-    echo -e "    ${YELLOW}Fallback: pip install pypdf${NC}"
-    echo ""
+    echo -e "${YELLOW}    Primary:  npm install   (installs @opendataloader/pdf)${NC}"
+    echo -e "${YELLOW}    Fallback: pip install pypdf${NC}"
     exit 1
 fi
 
 echo ""
-ok "Converted: $OUTPUT"
+if [ "$FAILED" -eq 0 ]; then echo -e "${GREEN}Summary: $CONVERTED converted, 0 failed${NC}"
+else echo -e "${YELLOW}Summary: $CONVERTED converted, $FAILED failed${NC}"; for f in "${FAILLIST[@]}"; do info "failed: $f"; done; fi
+if [ "$USED_FALLBACK" -eq 1 ]; then
+    warn "Used pypdf (text-only) - tables/layout not preserved."
+    info "For best quality install Java so @opendataloader/pdf can run, then re-convert."
+fi
 echo ""
-echo -e "${CYAN}Next steps:${NC}"
-info "1. Ensure the .md file is in reference/"
-info "2. Open Claude Code and run: ingest-reference"
-echo ""
+echo -e "${CYAN}Next: put the .md in reference/ (or ingest from pdf-source/), then run ingest-reference.${NC}"
+[ "$FAILED" -eq 0 ] && exit 0 || exit 1

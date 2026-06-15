@@ -83,28 +83,43 @@ Even when not explicitly invoked — apply DB lens whenever any component:
 ### Purpose
 Convert client-provided PDFs to Markdown before reading them. Raw PDF bytes are not read directly — converting once and ingesting to claude-mem avoids re-reading every session.
 
-### Package
-`@opendataloader/pdf` — installed in `node_modules` as part of this project (`npm install`). No global install needed.
-CLI: `node_modules/.bin/opendataloader-pdf <input.pdf> -f markdown -o <output-dir> -q --image-output off`
+### Converters (priority order)
+1. `@opendataloader/pdf` — installed in `node_modules` (`npm install`). High-fidelity, but **requires Java** on PATH.
+2. `pypdf` — automatic fallback when Java/opendataloader is unavailable. Text-only (no tables/layout). `pdf2md` warns when it falls back.
+
+`pdf2md` judges success by the **output file existing**, not exit codes — so a silent opendataloader failure (e.g. missing Java) cleanly falls through to pypdf.
+
+### Default drop folder: `pdf-source/`
+Raw client PDFs go in `pdf-source/` (gitignored). `pdf2md` reads from there by default.
+
+### Input resolution
+| Passed | Behaviour |
+|---|---|
+| nothing | batch every `*.pdf` in `pdf-source/` |
+| bare name (`brief.pdf`) | check `pdf-source/` first → then current dir → else error |
+| a path (`reference/x.pdf`) | use as given |
+| a folder | batch every `*.pdf` in it |
+| `-Recurse` / `RECURSE=1` | descend into subfolders when batching |
 
 ### Script
 ```powershell
 # Windows
-scripts/pdf2md.ps1 -InputFile "reference/[filename].pdf"
-scripts/pdf2md.ps1 -InputFile "reference/[filename].pdf" -OutputFile "reference/[filename].md"
+scripts/pdf2md.ps1                            # batch pdf-source\
+scripts/pdf2md.ps1 -InputFile "brief.pdf"     # by name (pdf-source\ first)
+scripts/pdf2md.ps1 -InputFile "reference\x.pdf"
 ```
-
 ```bash
 # Linux/Mac
-bash scripts/pdf2md.sh "reference/[filename].pdf"
-bash scripts/pdf2md.sh "reference/[filename].pdf" "reference/[filename].md"
+bash scripts/pdf2md.sh                         # batch pdf-source/
+bash scripts/pdf2md.sh brief.pdf
 ```
+Each PDF produces `<name>.md` next to it.
 
 ### Workflow
-1. Client drops PDF into `reference/`
-2. Run `pdf2md` script → produces `.md` file in same folder
-3. Invoke `ingest-reference` skill → read the `.md` once → distill to claude-mem as `KB-NNN` entries
-4. Search claude-mem for KB entries before any future task that may benefit from that knowledge
+1. Client drops PDF(s) into `pdf-source/`
+2. Run `pdf2md` → produces `.md` next to each PDF (note converter used; pypdf = degraded)
+3. Move/keep the `.md` in `reference/`, then invoke `ingest-reference` → distill to claude-mem as `KB-NNN`
+4. Search claude-mem for KB entries before any future task that may benefit
 5. Do NOT re-read the source `.md` unless the file changes or an entry is suspect
 
 ---

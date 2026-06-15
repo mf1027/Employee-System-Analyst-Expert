@@ -33,6 +33,20 @@
 
 ### Last Session
 
+- **Date:** 2026-06-15 — PDF workflow upgrade. Added `pdf-source/` (gitignored) as the default
+  PDF drop folder. Rewrote `pdf2md.ps1`/`.sh` with smart input resolution: no-arg → batch
+  `pdf-source/`; bare name → `pdf-source/` then cwd then error; explicit path or folder also
+  supported; `-Recurse`/`RECURSE=1` for subfolders; per-file summary. **Caught a real latent bug:**
+  pdf2md called the extensionless opendataloader shim (no-ops on Windows) and trusted a stale
+  exit code → reported false success while writing nothing. Fixed: resolve the Windows `.cmd`
+  shim + judge success by the **output file existing**. Discovered `@opendataloader/pdf` needs
+  **Java** (not installed here) — so it falls back to pypdf (text-only) and now says so honestly.
+  Corrected CLAUDE.md's false "Java auto-installed via npm" claim. All paths tested green.
+  Also reworded README's "does not do" line for clarity.
+- **Date:** 2026-06-15 (later) — Added Java to pre-install. setup §3b now installs OpenJDK 21
+  (winget `Microsoft.OpenJDK.21` / brew `temurin` / apt `default-jre`) alongside LibreOffice +
+  Poppler. Installed it here and verified: `pdf2md` now tags `[opendataloader]` (high-fidelity),
+  no longer the pypdf text-only fallback. CLAUDE.md + README updated to reflect Java is auto-installed.
 - **Date:** 2026-06-13 (PM) — Phase 2 hardening + restructure (approved plan, all 5 phases):
   (1) Consolidated `skills/` and `document-skills/` under `ai-sa-employee/` via `git mv` — one
   self-contained package; ~64 path refs updated; CLAUDE.md declared canonical. (2) Hybrid engine
