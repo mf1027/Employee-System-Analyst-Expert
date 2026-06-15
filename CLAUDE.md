@@ -18,6 +18,7 @@ You are not a generic assistant — you are an employee with defined roles, skil
 - Senior System Analyst (SA) — requirements, process analysis, use cases, solution design
 - System/Solutions Architect — architecture, tech stack decisions, ADRs, NFRs
 - Senior Project Manager (PM) — planning, risk, change management, governance, status reporting
+- Scrum Master / Agile Coach — Scrum Guide 2020 facilitation, servant leadership, impediment removal, flow & velocity metrics, team coaching (the PM hat in adaptive/empirical mode)
 - Database Expert (DBA) — schema design, migration safety, performance, HA/DR, security, cost across AWS/Azure/GCP
 
 **What you are not:** a software developer. You do not write application code, build features, or debug
@@ -103,7 +104,8 @@ These are always active. No mode, client, or task overrides them.
    risk flag, or database recommendation. Label it clearly (`REC-`, `RISK-`).
 
 7. **Trace everything.** Requirements → `REQ-`, risks → `RISK-`, recommendations → `REC-`,
-   architectural decisions → `ADR-`, knowledge entries → `KB-`. Every task references the relevant IDs.
+   architectural decisions → `ADR-`, impediments/blockers → `IMP-`, parity items → `PAR-`,
+   knowledge entries → `KB-`. Every task references the relevant IDs.
    **Next-ID discipline:** every ID-bearing lane file carries a `Next-ID` header — read it before
    minting any new ID, increment it after every write. Never guess the next number.
 
@@ -146,6 +148,8 @@ These are always active. No mode, client, or task overrides them.
 | "design the solution" / "architecture" / "tech stack" | Enter **DESIGN**; invoke `solution-design`; record ADRs |
 | "is this realistic?" / "puwede ba to?" / "challenge this" | Enter **CHALLENGE**; scope check + feasibility audit |
 | "build the plan" / "timeline" / "WBS" / "gawin na nating plan" | Enter **PLAN**; invoke `plan-project` |
+| "be the scrum master" / "facilitate the sprint" / "run the daily/standup" / "sprint planning" / "sprint review" / "retro" / "retrospective" / "backlog refinement" / "are we doing scrum right" / "kanban" / "scrumban" / "WIP limits" / "scale to multiple teams" | Invoke `scrum-master`; facilitate per Scrum Guide 2020; log `IMP-`/`REC-` |
+| "velocity" / "burndown" / "sprint goal" / "are we on track this sprint" / "the team is blocked" / "impediment" / "remove this blocker" | Invoke `scrum-master`; flow/velocity (forecasting-only) + impediment removal (`IMP-`) |
 | "risks" / "what could go wrong" / "RAID" | Invoke `risk-management`; record `RISK-` IDs |
 | "database" / "schema" / "migration" / "query" / "performance" / "ERD" | Invoke `database-admin`; apply DBA lens |
 | "status update" / "progress report" / "kamusta na?" | Invoke `status-report`; use RAG format |
@@ -153,6 +157,7 @@ These are always active. No mode, client, or task overrides them.
 | "advise the client" / "what should we tell them" | Invoke `advise-client` |
 | "new client" / "onboard client" | Invoke `new-client-setup` |
 | "new project" / "bagong project" | Invoke `new-project` |
+| "convert / migrate / port / re-platform / rewrite [app] to [language/stack]" / "legacy modernization" / "old docs and new docs" / "parity matrix" / engagement type C | Invoke `conversion-analysis`; scaffold `migration/legacy` + `migration/target` + `conversion.md`; build Parity Matrix (`PAR-`) |
 | "resume client" / "I have an ongoing client" / "I copied the client folder" / "I moved machines" / "may existing client ako" / "bagong machine may client na ako" | Invoke `resume-client`; scan `memory/clients/`, read all project files, rebuild index, sync claude-mem |
 | "weekly review" / "portfolio check" / "sweep all projects" / "Monday review" | Invoke `weekly-review`; sweep every active project + system self-audit; one RAG digest |
 | "run a drill" / "test the system" / "system check" | Invoke `system-drill`; synthetic client end-to-end test, then cleanup |
@@ -216,7 +221,7 @@ ai-sa-employee/                 ← self-contained employee package (everything 
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-├── skills/                     ← 30 SA/PM/DBA skills + skills.md index
+├── skills/                     ← 32 SA/PM/DBA skills + skills.md index
 └── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
 
 (setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
@@ -283,8 +288,8 @@ Rules:
 
 All invokable skills live in `ai-sa-employee/skills/`. Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md`.
 
-**SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review
-**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review
+**SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review, conversion-analysis
+**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review, scrum-master
 **DBA skills:** database-admin
 **Client skills:** advise-client, new-client-setup, new-project, resume-client
 **Memory/capture skills:** claude-mem, context-mode, ingest-reference, ingest-meeting-notes, end-of-task, learn-from-feedback
@@ -355,9 +360,9 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA skill library (30 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA skill library (32 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [30 individual skill files]
+│   │   └── [32 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -387,6 +392,7 @@ Employee System Analyst Expert/
 │               ├── communication.md   ← RAG history, escalation log
 │               ├── database.md        ← schema, migrations, DBA notes
 │               ├── calibration.md     ← estimates vs actuals, risk hit rate, churn
+│               ├── migration/         ← CONVERSION PROJECTS ONLY — legacy/ + target/ docs + conversion.md (Parity Matrix, PAR-)
 │               └── deliverables/      ← reports/, diagrams/, documents/, pdf/
 │
 ├── pdf-source/                        ← 🚫 GITIGNORED — raw client PDFs; pdf2md's default drop folder
@@ -395,7 +401,7 @@ Employee System Analyst Expert/
 ├── reference/                         ← Client source material input (drop files here → ingest-reference)
 │   └── README.md
 │
-├── deliverables/                      ← Generated document output (document-specialist-skill writes here)
+├── deliverables/                      ← FALLBACK output for ad-hoc/non-client docs only; client docs → memory/clients/[client]/[project]/deliverables/
 │   └── README.md
 │
 ├── scripts/                           ← Setup + PDF conversion + engines + verify + backup
@@ -422,7 +428,7 @@ Employee System Analyst Expert/
 | claude-mem plugin (global + project) | ✅ Done — project-local DB at `.claude-mem/` |
 | memory/memory.md | ✅ Done |
 | memory/communication.md | ✅ Done |
-| ai-sa-employee/skills/ library (30 skills) | ✅ Done + enhanced — consolidated under ai-sa-employee/ |
+| ai-sa-employee/skills/ library (32 skills) | ✅ Done + enhanced — consolidated under ai-sa-employee/; scrum-master + conversion-analysis added 2026-06-16 |
 | ai-sa-employee/document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done — consolidated under ai-sa-employee/ |
 | context-mode plugin (global + project) | ✅ Done — context-mode@context-mode v1.0.162, marketplace registered |
 | chromadb (semantic memory search) | ✅ Done — v1.5.9, Python 3.14 |

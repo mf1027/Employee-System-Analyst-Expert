@@ -154,6 +154,10 @@ stateDiagram-v2
 
 ## Where diagrams live
 
+> Paths below are relative to the **project's own deliverables folder**:
+> `memory/clients/[client]/[project]/deliverables/` (gitignored, backed up, co-located with the
+> project). Use the repo-root `deliverables/` only for ad-hoc diagrams with no client/project.
+
 | Diagram type | When embedded | When standalone (sent to client) |
 |---|---|---|
 | Process flow (AS-IS/TO-BE) | `requirements.md` (quick reference) | `deliverables/diagrams/[YYYY-MM-DD]-process-flow.md` |

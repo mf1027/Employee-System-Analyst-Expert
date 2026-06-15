@@ -48,10 +48,39 @@ foreach ($t in $existing) {
     Write-Host "    + $($t.Label)" -ForegroundColor Gray
 }
 
-Compress-Archive -Path ($existing | ForEach-Object { $_.Path }) -DestinationPath $zipPath -CompressionLevel Optimal
+# Build the archive file-by-file so we can (a) exclude stray nested .claude-mem stores
+# that can appear inside a client folder if a shell ever ran with CWD there, and
+# (b) skip any file held open by a live process (e.g. an active claude-mem log) instead
+# of failing the whole backup. The top-level .claude-mem store is still included.
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$script:skipped = 0
+$zip = [System.IO.Compression.ZipFile]::Open($zipPath, 'Create')
+try {
+    foreach ($t in $existing) {
+        Get-ChildItem -LiteralPath $t.Path -Recurse -File -Force | ForEach-Object {
+            $rel = $_.FullName.Substring($root.Length + 1)
+            # Skip nested claude-mem strays (keep the top-level store, whose rel path starts with ".claude-mem\")
+            if ($rel -match '\\\.claude-mem\\' -and -not $rel.StartsWith('.claude-mem\')) { return }
+            $entry = ($rel -replace '\\', '/')
+            try {
+                [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                    $zip, $_.FullName, $entry, 'Optimal') | Out-Null
+            } catch {
+                $script:skipped++
+                Write-Host "    [skip] locked/unreadable: $rel" -ForegroundColor Yellow
+            }
+        }
+    }
+} finally {
+    $zip.Dispose()
+}
 
 $size = [math]::Round((Get-Item $zipPath).Length / 1MB, 2)
 Write-Host "    [OK] $zipPath ($size MB)" -ForegroundColor Green
+if ($script:skipped -gt 0) {
+    Write-Host "    [WARN] Skipped $($script:skipped) locked/unreadable file(s) - see list above." -ForegroundColor Yellow
+}
 
 # Retention - keep newest $Keep, delete the rest
 $old = Get-ChildItem $Destination -Filter "employee-client-data_*.zip" |

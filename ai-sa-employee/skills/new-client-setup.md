@@ -92,8 +92,14 @@ Ask:
 > Type of engagement?
 > A) New build — greenfield
 > B) Enhancement — adding to existing system
-> C) Migration — moving from old system
+> C) Migration / Conversion — porting or rewriting an existing app into a new language/stack
 > D) Audit / review only
+
+**Conversion profile detection:** if the answer is **C**, or **B** where the work is actually a
+language/stack rewrite (e.g. "rebuild the old PHP app in Node"), set the **conversion profile** on
+this project. `new-project` then also scaffolds the `migration/legacy/` + `migration/target/`
+dual resource + `conversion.md`, and you invoke `conversion-analysis` to map parity. Capture the
+source→target stack here so it's ready for Step 8.
 
 ---
 

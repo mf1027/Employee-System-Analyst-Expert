@@ -139,6 +139,7 @@ Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion p
 | A9 | Business case & benefits | ROI, NPV, cost-benefit | Quantified justification |
 | A10 | Prototyping & wireframing | Low-fi mockups, clickable flows | Wireframes that validate requirements |
 | A11 | Integration & API analysis | Interface mapping, data contracts | Integration spec + contracts |
+| A13 | Conversion / migration analysis | Dual legacy↔target resource, Parity Matrix (`PAR-`), stack delta, divergence log, equivalence verification, cutover/rollback | Conversion plan with provable parity coverage — via `conversion-analysis` skill |
 | A12 | Security, privacy & compliance | STRIDE, PII mapping, GDPR/HIPAA/SOX | Security + compliance requirements |
 
 ### B. Project Management
@@ -154,7 +155,7 @@ Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion p
 | B7 | Resource & capacity planning | RACI, utilization forecast | Resource plan |
 | B8 | Issue tracking & resolution | RAID log, root cause analysis | Issue log |
 | B9 | Continuous improvement | Retrospectives, lessons learned | Improvement backlog |
-| B10 | Agile delivery | Backlog grooming, sprint ceremonies, velocity | Groomed backlog + sprint cadence |
+| B10 | Agile delivery & Scrum Mastery | Scrum Guide 2020 facilitation, servant-leadership coaching, backlog refinement, sprint ceremonies, flow/velocity metrics, impediment removal, scaling (LeSS/Nexus/Scrum@Scale/SAFe) | Facilitated ceremonies, Sprint Goals, groomed backlog, impediment log (`IMP-`), retro actions — via `scrum-master` skill |
 | B11 | Change & adoption management | ADKAR, training, comms planning | Adoption plan |
 | B12 | Procurement & vendor management | RFP/SOW, vendor scoring, SLA tracking | Vendor selection + SLA register |
 | B13 | Budget & cost management | Cost baseline, forecast vs. actual | Budget tracker with variance flags |
@@ -339,11 +340,13 @@ All invokable skills live in `ai-sa-employee/skills/`:
 | `change-management.md` | "change request", "scope change" |
 | `status-report.md` | "status update", "RAG report" |
 | `plan-project.md` | "build the plan", "timeline", "WBS" |
+| `scrum-master.md` | "be the scrum master", "facilitate the sprint", "run the standup/daily", "sprint planning/review", "retrospective", "backlog refinement", "velocity", "burndown", "impediment/blocker", "are we doing scrum right", "kanban", "scrumban", "WIP limits", "scale to multiple teams" |
 | `scope-estimate.md` | "estimate this", "how long will X take" |
 | `advise-client.md` | "advise the client", "what should we tell them" |
 | `project-status.md` | "what are we working on", "where are we" |
 | `new-client-setup.md` | "new client", "onboard client" |
 | `new-project.md` | "new project", "set up project docs" |
+| `conversion-analysis.md` | "convert/migrate/port/re-platform/rewrite [app] to [stack]", "legacy modernization", "old docs and new docs", "parity matrix", engagement type C |
 | `ingest-reference.md` | "ingest this", file dropped in `reference/` |
 | `end-of-task.md` | "done", "task complete" |
 | `learn-from-feedback.md` | "the client said X", "got feedback" |
@@ -352,7 +355,7 @@ All invokable skills live in `ai-sa-employee/skills/`:
 | `claude-mem.md` | "update memory", "what do we know about X", "clean up memory" |
 | `create-diagram.md` | "create a diagram", "flowchart", "draw the process", "ERD", "Gantt", "architecture diagram" |
 | `nfr-review.md` | "NFR review", "non-functional requirements", "performance requirements", "compliance check", "quality attributes" |
-| `document-specialist-skill.md` | "generate an SRS", "write a PRD", "create an SDD", "formal document", "make a presentation", "build a tracker", "read this file", "read this PDF" → routes to correct document-skill; saves to `deliverables/documents/[client]/[project]/` |
+| `document-specialist-skill.md` | "generate an SRS", "write a PRD", "create an SDD", "formal document", "make a presentation", "build a tracker", "read this file", "read this PDF" → routes to correct document-skill; saves to `memory/clients/[client]/[project]/deliverables/documents/` (repo-root `deliverables/` fallback for non-client docs) |
 | `new-skill.md` | "create a new skill", "add a skill for X" |
 | `ingest-meeting-notes.md` | "meeting notes", "notes from the call", "transcript", "client said" (context update), "got feedback from client" |
 | `security-review.md` | "security review", "threat model", "STRIDE", "PII", "GDPR", "HIPAA", "compliance", "auth review", "what are the security risks" |

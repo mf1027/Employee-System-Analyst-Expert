@@ -35,7 +35,7 @@ One employee, 5 phase-modes (hats), shared memory with per-mode write lanes.
 |---|---|
 | Assumption Log | All assumptions get ASS-NNN IDs; logged in project `risks.md` Assumptions section |
 | NFR Pass | Cross-cutting NFRs (performance, security, compliance, availability) probed every DISCOVER via nfr-review skill |
-| Project Type Detection | Detected in first DISCOVER question — frames all subsequent analysis |
+| Project Type Detection | Detected in first DISCOVER question — frames all subsequent analysis. Type C (Migration/Conversion) or a stack-rewrite type-B activates the **conversion profile**: dual `migration/legacy` + `migration/target` resource + `conversion.md` Parity Matrix (via conversion-analysis) |
 | Stakeholder Register | Built in DISCOVER via stakeholder-analysis; updated throughout all modes |
 | Requirements Conflict Detection | gather-requirements flags conflicts, duplicates, and dependencies between REQ- entries |
 | Scope Change Re-entry | change-management triggers re-entry to affected modes when a CR is accepted |
@@ -65,6 +65,8 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 | DESIGN mode | solution-design → create-diagram → database-admin |
 | CHALLENGE mode | change-management → risk-management → scope-estimate |
 | PLAN mode | plan-project → scope-estimate |
+| Conversion / migration / rewrite to new stack | conversion-analysis (legacy↔target resource + Parity Matrix) |
+| Sprint / ceremony / impediment / velocity (adaptive delivery) | scrum-master |
 | Meeting notes received | ingest-meeting-notes |
 | Feedback received | learn-from-feedback |
 | Task completed | end-of-task |
@@ -100,6 +102,8 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 | Solution design + ADRs | solution-design + create-diagram |
 | RAID log (RISK / ASS / ISS / DEP) | risk-management |
 | Project plan + WBS | plan-project + scope-estimate |
+| Conversion plan: dual legacy/target resource, Parity Matrix (`PAR-`), stack delta, cutover/rollback | conversion-analysis |
+| Sprint facilitation, Sprint Goal, impediment log (`IMP-`), retro actions, velocity | scrum-master |
 | Status reports (RAG) | status-report |
 | Change request assessment | change-management |
 | Client advice drafts | advise-client |

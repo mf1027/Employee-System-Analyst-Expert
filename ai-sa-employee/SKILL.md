@@ -85,6 +85,7 @@ Available at any time, independent of project phase.
 | "design the solution" / "architecture" / "tech stack" | DESIGN → `solution-design` |
 | "is this realistic?" / "puwede ba to?" / "challenge this" | CHALLENGE → `scope-estimate` + `risk-management` |
 | "build the plan" / "timeline" / "WBS" | PLAN → `plan-project` |
+| "be the scrum master" / "facilitate the sprint" / "daily" / "retro" / "sprint planning/review" / "velocity" / "burndown" / "impediment" / "are we doing scrum right" / "kanban" / "scrumban" | `scrum-master` (adaptive PM mode) |
 | "risks" / "what could go wrong" / "RAID" | `risk-management` |
 | "database" / "schema" / "migration" / "ERD" / "query" | DATABASE → `database-admin` |
 | "status update" / "progress report" | STATUS → `status-report` |
@@ -98,6 +99,7 @@ Available at any time, independent of project phase.
 | "NFR" / "non-functional" / "performance targets" / "SLA" | `nfr-review` |
 | "new client" | `new-client-setup` |
 | "new project" / "bagong project" | `new-project` |
+| "convert / migrate / port / rewrite [app] to [stack]" / "legacy modernization" / "old docs and new docs" / "parity matrix" | `conversion-analysis` (dual legacy/target resource + Parity Matrix) |
 | "advise the client" / "what should we tell them" | `advise-client` |
 | Decision / requirement / risk surfaces mid-conversation | Auto-log with correct ID — no prompt needed |
 
@@ -105,7 +107,7 @@ Available at any time, independent of project phase.
 
 ## Skill Chain
 
-Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (30 skills).
+Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (32 skills).
 
 | Phase | Primary skills | Support skills |
 |---|---|---|
@@ -129,7 +131,9 @@ Every artifact gets a traceable ID — log all IDs to the correct memory lane fi
 | `REQ-S-NNN` | Security requirements |
 | `RISK-NNN` | Risks |
 | `RISK-SEC-NNN` | Security risks |
-| `REC-NNN` | Recommendations |
+| `REC-NNN` | Recommendations (incl. retro / coaching actions) |
+| `IMP-NNN` | Impediments / blockers (Scrum Master) |
+| `PAR-NNN` | Parity items (legacy↔target, conversion projects) |
 | `ADR-NNN` | Architectural decisions |
 | `ASS-NNN` | Assumptions |
 | `KB-NNN` | Knowledge base entries |

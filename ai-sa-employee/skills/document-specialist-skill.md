@@ -61,7 +61,11 @@ If missing: ask which client/project and what the document should contain.
    output path before generating.
 
 5. **Invoke the target SKILL.md** with the gathered content as input.
-   Save output to `deliverables/documents/[client]/[project]/[document-name].[ext]`.
+   Save output to the project's own deliverables folder:
+   `memory/clients/[client]/[project]/deliverables/documents/[document-name].[ext]`
+   (this keeps each project's outputs co-located with its working files, gitignored, and
+   captured by `backup.ps1`). **Fallback:** if the document has no client/project context
+   (an ad-hoc or workspace-level doc), use the repo-root `deliverables/documents/` instead.
 
 6. **Log the deliverable.** Add a `KB-` entry to claude-mem:
    `category:deliverable source:[path] client:[name] project:[name]`
@@ -103,7 +107,8 @@ Which do you prefer?
 ```
 
 For Markdown output, follow the same content-gathering steps and produce
-the document as a `.md` file in `deliverables/documents/[client]/[project]/`.
+the document as a `.md` file in `memory/clients/[client]/[project]/deliverables/documents/`
+(or the repo-root `deliverables/documents/` fallback if there is no client/project).
 
 ---
 
@@ -125,7 +130,7 @@ the document as a `.md` file in `deliverables/documents/[client]/[project]/`.
 - [ ] Understanding Check confirmed before generating
 - [ ] Source content gathered from correct memory lane files
 - [ ] Document type and audience confirmed
-- [ ] Deliverable saved to `deliverables/documents/[client]/[project]/`
+- [ ] Deliverable saved to `memory/clients/[client]/[project]/deliverables/documents/` (or repo-root `deliverables/` fallback for non-client docs)
 - [ ] KB- entry logged to claude-mem with path and client/project tags
 - [ ] Triple-lens applied to extracted content (REQ-/RISK-/REC- auto-logged)
 - [ ] Engine dependency handled gracefully if LibreOffice missing (setup.ps1 fixes it)

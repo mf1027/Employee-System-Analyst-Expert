@@ -44,7 +44,10 @@ for t in "${TARGETS[@]}"; do
     echo -e "    ${GRAY}+ $t${NC}"
 done
 
-(cd "$ROOT" && zip -rq "$ZIP_PATH" "${TARGETS[@]}")
+# Exclude stray nested claude-mem stores that can appear inside a client folder
+# (e.g. if a shell ever ran with CWD inside memory/clients). The top-level .claude-mem
+# is still backed up; only nested ones under client folders are skipped.
+(cd "$ROOT" && zip -rq "$ZIP_PATH" "${TARGETS[@]}" -x 'memory/clients/*/.claude-mem/*')
 
 SIZE=$(du -h "$ZIP_PATH" | cut -f1)
 echo -e "    ${GREEN}[OK] $ZIP_PATH ($SIZE)${NC}"

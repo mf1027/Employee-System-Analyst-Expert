@@ -32,6 +32,18 @@ If missing: ask for project name, description, and which client.
    Mark unknowns as `[TBC]`. Every ID-bearing file carries a `Next-ID` header —
    read it before minting any new ID, increment it after every write.
 
+4b. **Conversion/migration profile** — if this is a conversion / re-platforming / rewrite of an
+   existing app into a new language or stack (engagement type C, or a type-B enhancement that is
+   really a rewrite), ALSO scaffold the dual document resource:
+   ```
+   [project]/migration/
+   ├── legacy/   ← OLD system source material (legacy/README.md = inventory + ingestion status)
+   ├── target/   ← NEW system source material (target/README.md = inventory + ingestion status)
+   └── conversion.md  ← parity engine (Next-ID: PAR-001) — template in `conversion-analysis` skill
+   ```
+   Then invoke `conversion-analysis` to populate the stack delta, Parity Matrix, and conversion
+   probes. Skip this block entirely for greenfield (type A) projects.
+
 5. Output a summary of what was created and flag which `[TBC]` items need filling
    before work begins.
 

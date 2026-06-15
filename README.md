@@ -299,9 +299,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 30 SA/PM/DBA skills (flat)
+│   ├── skills/                        ← 32 SA/PM/DBA skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [30 individual skill files]
+│   │   └── [32 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready

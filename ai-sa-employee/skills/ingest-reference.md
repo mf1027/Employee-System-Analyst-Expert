@@ -36,6 +36,11 @@ If missing: list the files currently in `reference/` and ask which to ingest.
      `client:[name]` (if client-specific), `project:[name]` (if project-specific)
    - **Categories:** Business, Requirements, Risk, Technical, Database,
      Process, Compliance, Stakeholder, Glossary
+   - **Conversion projects — mandatory `system:` tag.** If the file came from
+     `[project]/migration/legacy/` tag it `system:legacy`; from `migration/target/` tag it
+     `system:target`. NEVER omit this on a conversion project and NEVER mix the two — a legacy
+     fact is not a target requirement. Route legacy material to `migration/legacy/` and target
+     material to `migration/target/` (not the shared `reference/`). See `conversion-analysis`.
 6. Update `reference/README.md` — add a row for the ingested file with: filename,
    type, summary (one line), entry titles stored, date ingested.
 7. Search claude-mem for any entry that conflicts with what was just stored —
