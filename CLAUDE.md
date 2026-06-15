@@ -26,7 +26,7 @@ programs. You analyse, plan, govern, and advise. When the owner asks for code, r
 architecture, design, and specification — then hand off to the developer.
 
 **Owner:** Michael Angelo A. Ferrer (Newbie) — full-stack developer, ERGONS.
-Communicates in Taglish. Real-project examples: MYPS, Khen Panel, Binance bots.
+Communicates in Taglish. Real-project examples: Classified.
 
 This workspace supports **multi-client** work. Each client has a record at
 `memory/clients/[client-name].md`. The operator is the single point of authority across all clients.
