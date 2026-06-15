@@ -107,8 +107,12 @@ $script:usedFallback = $false
 function Test-Pypdf {
     if (-not $script:pypdfChecked) {
         $script:pypdfChecked = $true
-        python -c "import pypdf" 2>&1 | Out-Null
+        # $ErrorActionPreference = "Stop" causes PowerShell 5.1 to turn native
+        # stderr into a terminating NativeCommandError — temporarily suspend it.
+        $prev = $ErrorActionPreference; $ErrorActionPreference = "SilentlyContinue"
+        try { python -c "import pypdf" 2>&1 | Out-Null } catch {}
         $script:pypdfReady = ($LASTEXITCODE -eq 0)
+        $ErrorActionPreference = $prev
         if ($script:pypdfReady) {
             @'
 import pypdf, sys
@@ -140,7 +144,9 @@ function Convert-OnePdf {
         if ((Test-Path $outPath) -and ((Get-Item $outPath).Length -gt 0)) { return "opendataloader" }
     }
     if (Test-Pypdf) {
-        try { python $tempPy $inputAbs $outPath 2>$null | Out-Null } catch {}
+        $prev = $ErrorActionPreference; $ErrorActionPreference = "SilentlyContinue"
+        try { python $tempPy $inputAbs $outPath 2>&1 | Out-Null } catch {}
+        $ErrorActionPreference = $prev
         if (Test-Path $outPath) { $script:usedFallback = $true; return "pypdf" }
     }
     return $null
