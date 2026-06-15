@@ -35,7 +35,8 @@ It hands off to the developer (you or your team) with complete specifications.
 ```powershell
 # Windows
 scripts\setup.ps1
-
+```
+```
 # Linux / Mac
 bash scripts/setup.sh
 ```
@@ -133,12 +134,13 @@ script is the safety net. Run it weekly (or say **"backup client data"**):
 # Windows
 scripts\backup.ps1
 scripts\backup.ps1 -Destination "D:\Backups" -Keep 20
+```
 
+```
 # Linux / Mac
 bash scripts/backup.sh
 bash scripts/backup.sh /path/to/backups
 ```
-
 It zips `memory/clients/`, `.claude-mem/`, `reference/`, and `deliverables/` into a
 timestamped archive (default: `Documents/EmployeeBackups/`, keeps the newest 10).
 To restore: extract the zip into a fresh clone's root, then say
