@@ -194,7 +194,8 @@ To use a client PDF (contract, brief, RFP, spec):
 # Windows — primary converter: @opendataloader/pdf (bundled in node_modules)
 scripts\pdf2md.ps1 -InputFile "reference\brief.pdf"
 scripts\pdf2md.ps1 -InputFile "reference\brief.pdf" -OutputFile "reference\brief.md"
-
+```
+```
 # Linux / Mac
 bash scripts/pdf2md.sh "reference/brief.pdf"
 bash scripts/pdf2md.sh "reference/brief.pdf" "reference/brief.md"
