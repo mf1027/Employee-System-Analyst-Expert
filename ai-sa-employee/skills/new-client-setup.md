@@ -37,10 +37,26 @@ After answer — **immediately create** without asking for confirmation:
 memory/clients/[client-name]/
 ├── [client-name].md     ← client record (scaffold, filled as we go)
 └── reference/           ← client documents drop here (PDF→MD, specs, contracts)
+    └── README.md        ← ingestion-log home (template below)
+```
+
+Create `reference/README.md` from this template so the ingestion log has a home from day one
+(`ingest-reference` appends a row here for every file ingested into this client's `reference/`):
+
+```markdown
+# reference/ — [client-name]
+
+Client-wide source material (contracts, RFPs, briefs, domain docs) spanning this client's projects.
+Drop files here → ingest via `ingest-reference` (tagged `client:[name]`). System-describing material
+for a conversion project goes in that project's `migration/legacy|target/` instead.
+
+## Ingestion Log
+| File | Type | Summary | claude-mem entries | Date ingested |
+|---|---|---|---|---|
 ```
 
 Confirm to operator:
-> Created: `memory/clients/[client-name]/`
+> Created: `memory/clients/[client-name]/` (+ reference/README.md ingestion log)
 
 ---
 
@@ -208,6 +224,7 @@ memory/clients/                        ← gitignored — never pushed
 └── [client-name]/
     ├── [client-name].md               ← client record
     ├── reference/                     ← client documents (PDF→MD, specs, contracts)
+    │   └── README.md                  ← ingestion log (one row per ingested file)
     └── [project-name]/
         ├── README.md
         ├── requirements.md
@@ -231,6 +248,7 @@ memory/clients/                        ← gitignored — never pushed
 ## Quality checklist
 
 - [ ] Client folder and record created immediately after Step 2
+- [ ] Client `reference/README.md` created with an `## Ingestion Log` table
 - [ ] Project scaffold created immediately after Step 3 (via new-project)
 - [ ] Tech stack written to both client record and decisions.md
 - [ ] Client Index in memory/memory.md updated

@@ -21,7 +21,8 @@ If missing: list the files currently in `reference/` and ask which to ingest.
 
 1. Search claude-mem: `mem search [filename or topic]` — check whether entries
    from this file already exist to avoid duplicates.
-2. Read `reference/README.md` — confirm what's already indexed.
+2. Read the README in the file's folder (repo-root `reference/`, client `reference/`, or
+   `migration/legacy|target/`) — confirm what's already indexed there.
 3. **Read the source file** in `reference/` once, in full.
 4. Extract and categorise the key information:
    - Business domain / context
@@ -41,8 +42,15 @@ If missing: list the files currently in `reference/` and ask which to ingest.
      `system:target`. NEVER omit this on a conversion project and NEVER mix the two — a legacy
      fact is not a target requirement. Route legacy material to `migration/legacy/` and target
      material to `migration/target/` (not the shared `reference/`). See `conversion-analysis`.
-6. Update `reference/README.md` — add a row for the ingested file with: filename,
-   type, summary (one line), entry titles stored, date ingested.
+6. Update the **README co-located with the ingested file** — append a row to its `## Ingestion Log`
+   table with: filename, type, summary (one line), entry titles stored, date ingested. The target
+   README depends on where the file lives:
+   - repo-root `reference/` → `reference/README.md`
+   - client folder `memory/clients/[client]/reference/` → that folder's `reference/README.md`
+   - conversion project `…/migration/legacy/` or `…/migration/target/` → that folder's `README.md` (its Inventory table)
+   If the README or its `## Ingestion Log` table doesn't exist yet, create the table first
+   (columns: `File | Type | Summary | claude-mem entries | Date ingested`). Do **not** log a
+   client/project file's ingestion into the repo-root `reference/README.md`.
 7. Search claude-mem for any entry that conflicts with what was just stored —
    surface conflicts for the operator to resolve.
 8. Flag any requirements, risks, or decisions implied by the file that haven't
@@ -76,7 +84,7 @@ Entries stored in claude-mem:
 - [Category] — [Title]: [one-line summary]
 - [Category] — [Title]: [one-line summary]
 
-reference/README.md updated: ✓
+Ingestion Log updated in: [reference/README.md | clients/[client]/reference/README.md | …/migration/[legacy|target]/README.md] ✓
 
 Conflicts with existing knowledge:
 - "[existing entry]" conflicts with this file on [topic] — needs resolution
@@ -96,7 +104,8 @@ Source file: reference/[filename] — DO NOT re-read; search claude-mem for "[to
 
 - [ ] Has the source file been read exactly once?
 - [ ] Does every entry have a source tag `source:reference/[filename]`?
-- [ ] Is `reference/README.md` updated with the new file row?
+- [ ] Is the **co-located** README's Ingestion Log updated (client `reference/` or `migration/` README — not the repo-root one for client/project files)?
+- [ ] For conversion-project files: is the `system:legacy` / `system:target` tag set?
 - [ ] Were conflicts with existing claude-mem entries checked?
 - [ ] Are implied requirements, risks, and decisions flagged?
 

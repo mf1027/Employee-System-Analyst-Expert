@@ -27,3 +27,14 @@ There are three homes for source material. Pick by *what the file is*, not by ha
 they are specialised shelves that exist **only on conversion projects**, where keeping old and new
 physically separate prevents conflating them. A contract or glossary on a conversion project still
 goes in the client `reference/` (it describes neither system). See the `conversion-analysis` skill.
+
+---
+
+## Ingestion Log
+
+`ingest-reference` appends a row here for each file ingested from this workspace inbox.
+(Files ingested into a client's `reference/` or a project's `migration/` are logged in *that*
+folder's README instead.)
+
+| File | Type | Summary | claude-mem entries | Date ingested |
+|---|---|---|---|---|

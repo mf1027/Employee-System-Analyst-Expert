@@ -33,6 +33,21 @@
 
 ### Last Session
 
+- **Date:** 2026-06-16 (latest) — Docs cleanup + boundary clarification. (1) Rewrote
+  `reference/README.md` as the ingestion **inbox** with a "where does a file belong?" table
+  (workspace `reference/` · client `reference/` · conversion `migration/legacy|target`); removed
+  the misleading "subfolder suggestion" that overlapped the client store. Added the reciprocal
+  boundary note to `conversion-analysis` (client-wide docs stay in `reference/`). (2) **Reconciled
+  the two deliverables locations** → canonical is per-project `memory/clients/[client]/[project]/
+  deliverables/`; repo-root `deliverables/` demoted to fallback for ad-hoc/non-client docs. Updated
+  `document-specialist-skill`, `create-diagram`, `skills.md` index, root CLAUDE.md structure note,
+  `deliverables/README.md`. (3) Deleted superseded `archive/oldcustomemployee.md` (pre-restructure
+  CLAUDE.md pointing at dead paths; git-recoverable). (4) **Per-context ingestion logs (fixed):**
+  `ingest-reference` now updates the `## Ingestion Log` table in the README **co-located with the
+  ingested file** (repo-root `reference/`, client `reference/`, or `migration/legacy|target/`) — no
+  longer always the repo-root one; `new-client-setup` now scaffolds a client `reference/README.md`
+  with an ingestion-log table at onboarding; repo-root `reference/README.md` gained its own log
+  table. Standard log columns: `File | Type | Summary | claude-mem entries | Date ingested`.
 - **Date:** 2026-06-16 (later) — Added the **`conversion-analysis`** skill (32nd skill) — the
   **conversion/migration project profile**. For projects that rewrite/port an existing app to a new
   language or stack (engagement type C, or a stack-rewrite type-B): scaffolds a **dual document
