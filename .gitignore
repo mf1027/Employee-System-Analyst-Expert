@@ -28,6 +28,21 @@ deliverables/*
 engines/*
 !engines/README.md
 
+# Python bytecode — machine/version-specific, auto-regenerated
+__pycache__/
+*.pyc
+
+# Scratch workspace — eval runs, temp tooling, throwaway analysis (never pushed)
+workspace/
+
+# Project backup archives — git history is the backup
+*.zip
+
+# Stray temp / scratch outputs accidentally written to repo root
+tmp-*.txt
+*tmp-*-output.txt
+*tmp-*cols.txt
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

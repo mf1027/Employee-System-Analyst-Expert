@@ -17,14 +17,36 @@ If missing: list the files currently in `reference/` and ask which to ingest.
 
 ---
 
+## Document-type routing (read the file as what it *is*)
+
+A contract, a meeting transcript, and a schema dump carry different value — extracting all of
+them with the same generic pass loses the point of each. Detect the type first (from extension,
+filename, and the first page), then bias extraction toward what that type is *for*:
+
+| Detected type | Signals | Extraction emphasis |
+|---|---|---|
+| Contract / SOW / MSA | "agreement", "party", clauses, signatures | Obligations, deadlines, penalties, scope boundaries → `REQ-`/`RISK-` candidates |
+| Spec / SRS / PRD | numbered requirements, "shall", acceptance criteria | Requirements → `REQ-` candidates with their criteria |
+| Meeting notes / transcript | dates, attendees, "we decided", action items | Hand off to `ingest-meeting-notes` (decisions/actions/risks) — don't duplicate here |
+| Schema / DDL / ERD | `CREATE TABLE`, columns, FKs | Hand off to `dba-schema-ingest`; store a `category:Database` summary |
+| API spec / contract | endpoints, OpenAPI, request/response | Integration points, contracts → `category:Technical` |
+| Brief / RFP / proposal | goals, evaluation criteria, budget | Business context, constraints, success criteria |
+| Data sample / export | CSV/rows, headers | Volume, field meanings, quality issues (nulls, encoding) |
+
+If the type is ambiguous, say which two it could be and extract for both. If it routes to another
+skill (meeting notes, schema), invoke that skill instead of re-implementing its extraction here.
+
+---
+
 ## Steps
 
 1. Search claude-mem: `mem search [filename or topic]` — check whether entries
    from this file already exist to avoid duplicates.
 2. Read the README in the file's folder (repo-root `reference/`, client `reference/`, or
    `migration/legacy|target/`) — confirm what's already indexed there.
-3. **Read the source file** in `reference/` once, in full.
-4. Extract and categorise the key information:
+3. **Detect the document type** (routing table above) and **read the source file** once, in full,
+   reading it as what it is.
+4. Extract and categorise the key information, **biased by the detected type**:
    - Business domain / context
    - Requirements or constraints stated or implied
    - Risks or assumptions mentioned
@@ -53,8 +75,12 @@ If missing: list the files currently in `reference/` and ask which to ingest.
    client/project file's ingestion into the repo-root `reference/README.md`.
 7. Search claude-mem for any entry that conflicts with what was just stored —
    surface conflicts for the operator to resolve.
-8. Flag any requirements, risks, or decisions implied by the file that haven't
-   yet been logged in the project's deliverable files.
+8. **Cross-reference against the project's existing IDs.** Read `requirements.md`/`risks.md`/
+   `decisions.md` and compare what this file implies against what's already logged:
+   - **New** → flag as a `REQ-`/`RISK-`/`ADR-` candidate.
+   - **Already covered** → cite the existing ID (don't create a duplicate).
+   - **Conflicts** with a logged item → surface it explicitly for the operator to resolve.
+   This makes ingestion additive and conflict-aware instead of a blind dump.
 
 ---
 

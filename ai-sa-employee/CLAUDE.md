@@ -62,14 +62,18 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 |---|---|
 | DISCOVER mode | gather-requirements → stakeholder-analysis → nfr-review → ingest-reference |
 | ANALYZE mode | process-analysis → use-case-analysis → risk-management |
-| DESIGN mode | solution-design → create-diagram → database-admin |
+| DESIGN mode | solution-design → create-diagram → database-admin → api-contract-design |
 | CHALLENGE mode | change-management → risk-management → scope-estimate |
-| PLAN mode | plan-project → scope-estimate |
+| PLAN mode | plan-project → scope-estimate → developer-handoff → test-strategy |
+| Design/schema locked, ready to build | developer-handoff (→ `DEV-` tickets) → test-strategy |
+| Data move between schemas | data-migration-playbook (chains from conversion-analysis) |
+| Sprint/estimate retrospective | calibration-review (feeds scope-estimate) |
 | Conversion / migration / rewrite to new stack | conversion-analysis (legacy↔target resource + Parity Matrix) |
 | Sprint / ceremony / impediment / velocity (adaptive delivery) | scrum-master |
 | Meeting notes received | ingest-meeting-notes |
 | Feedback received | learn-from-feedback |
 | Task completed | end-of-task |
+| Friction noticed (repeated manual work, ad-hoc process, recurring error) | self-improvement (drop a breadcrumb; `/check-improvements` to analyze) |
 
 ---
 
@@ -108,6 +112,11 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 | Change request assessment | change-management |
 | Client advice drafts | advise-client |
 | Database analysis + migration safety | database-admin |
+| Developer handoff pack (`DEV-` tickets, acceptance criteria, build order) | developer-handoff |
+| API contract (routes, shapes, errors, auth, versioning) | api-contract-design |
+| Test strategy + QA plan (coverage matrix, UAT scripts, exit criteria) | test-strategy |
+| Data migration playbook (map→transform→order→validate→rollback) | data-migration-playbook |
+| Estimate calibration (bias ratio, risk hit-rate, feed-forward) | calibration-review |
 | Meeting notes extraction | ingest-meeting-notes |
 | Reference ingestion (KB entries) | ingest-reference |
 | Formal documents (SRS, PRD, SDD) | document-specialist (✅ ready — engines installed) |

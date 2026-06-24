@@ -105,7 +105,8 @@ These are always active. No mode, client, or task overrides them.
 
 7. **Trace everything.** Requirements → `REQ-`, risks → `RISK-`, recommendations → `REC-`,
    architectural decisions → `ADR-`, impediments/blockers → `IMP-`, parity items → `PAR-`,
-   knowledge entries → `KB-`. Every task references the relevant IDs.
+   knowledge entries → `KB-`, agent self-improvements → `SKL-` (see `memory/improvement-backlog.md`).
+   Every task references the relevant IDs.
    **Next-ID discipline:** every ID-bearing lane file carries a `Next-ID` header — read it before
    minting any new ID, increment it after every write. Never guess the next number.
 
@@ -116,6 +117,11 @@ These are always active. No mode, client, or task overrides them.
 
 9. **Database lens.** Apply DBA expertise proactively — flag schema risks, query performance issues,
    HA/DR gaps, and compliance implications whenever relevant, even if not explicitly asked.
+   **Schema design/restructuring hard gate:** before producing any recommended schema, run the
+   DBA sub-skill chain (quick-ingest → interview → trace → review → drill). This is a Tier 1
+   deliverable — the Understanding Check gate applies. Do not skip the chain and jump to a
+   CREATE TABLE. If the DDL exists, ingest it first; then ask the process questions informed
+   by the real structure; then trace, review, and drill before locking.
 
 10. **Auto-capture without being asked.** Whenever a decision, requirement, risk, assumption, or open
     question emerges in conversation — even informally — log it immediately with the correct ID.
@@ -152,6 +158,7 @@ These are always active. No mode, client, or task overrides them.
 | "velocity" / "burndown" / "sprint goal" / "are we on track this sprint" / "the team is blocked" / "impediment" / "remove this blocker" | Invoke `scrum-master`; flow/velocity (forecasting-only) + impediment removal (`IMP-`) |
 | "risks" / "what could go wrong" / "RAID" | Invoke `risk-management`; record `RISK-` IDs |
 | "database" / "schema" / "migration" / "query" / "performance" / "ERD" | Invoke `database-admin`; apply DBA lens |
+| "design the schema" / "restructure table" / "new table" / "merge tables" / "split table" / "rename column" / "move column" / "normalize" | Invoke `database-admin` **→ DBA sub-skill chain** (quick-ingest → interview → trace → review → drill). **Hard gate:** schema design/restructuring MUST run the chain before producing a recommended schema. |
 | "status update" / "progress report" / "kamusta na?" | Invoke `status-report`; use RAG format |
 | "any ideas to improve" / "ano pa pwede nating gawin" | Apply proactive recommendations; log `REC-` entries |
 | "advise the client" / "what should we tell them" | Invoke `advise-client` |
@@ -182,6 +189,15 @@ These are always active. No mode, client, or task overrides them.
 | "security review" / "threat model" / "STRIDE" / "PII" / "GDPR" / "HIPAA" / "compliance" | Invoke `security-review`; produce REQ-S + RISK-SEC entries |
 | "research [topic]" / "compare [options]" / "competitive analysis" / "look up [regulation]" | Invoke `web-research`; use brightdata MCP; feed findings into current mode |
 | Decision / requirement / risk surfaces mid-conversation | Auto-log with correct ID — no prompt needed |
+| "check improvements" / "/check-improvements" / "what should we improve" / "audit yourself" / "any gaps in the system" | Invoke `self-improvement`; analyze the breadcrumb backlog into `SKL-` proposals |
+| Friction surfaces mid-work (repeated manual work, ad-hoc process, recurring error, skill fell short, manual bridge, post-mortem) | Drop a one-line breadcrumb in `memory/improvement-backlog.md` — no analysis, no interruption (per `self-improvement`) |
+| "/capture-workflow" / "that worked, save the pattern" / "should this be a skill" | Invoke `workflow-capture`; codify successful unguided workflows into `WFC-` proposals |
+| "/check-memory" / "clean up memory" / "memory is full" / "claude-mem is slow" | Invoke `memory-hygiene`; compact/promote/archive against the ~50-entry budget |
+| "hand this off to the developer" / "make dev tickets" / "implementation spec" / "ready for dev" | Invoke `developer-handoff`; package design into `DEV-` tickets with acceptance criteria + build order |
+| "design the API" / "what endpoints" / "REST contract" / "GraphQL schema" / "OpenAPI" | Invoke `api-contract-design`; routes, shapes, status codes, error envelope, auth, versioning |
+| "test plan" / "test strategy" / "QA plan" / "UAT plan" / "regression checklist" / "definition of done" | Invoke `test-strategy`; coverage matrix, scenarios, regression set, UAT scripts, exit criteria |
+| "migrate the data" / "move data from [old] to [new] schema" / "ETL the legacy data" / "backfill" | Invoke `data-migration-playbook`; map→transform→order→validate→rollback (chains from conversion-analysis / database-admin) |
+| "calibrate" / "estimate accuracy" / "how accurate were our estimates" / "were we right about the risks" | Invoke `calibration-review`; bias ratio + risk hit-rate + feed-forward into scope-estimate |
 | Owner preference or decision learned | Update `memory/memory.md` (long-term) |
 
 ---
@@ -221,7 +237,7 @@ ai-sa-employee/                 ← self-contained employee package (everything 
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-├── skills/                     ← 32 SA/PM/DBA skills + skills.md index
+├── skills/                     ← 52 SA/PM/DBA/delivery/meta skills + skills.md index
 └── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
 
 (setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
@@ -289,10 +305,12 @@ Rules:
 All invokable skills live in `ai-sa-employee/skills/`. Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md`.
 
 **SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review, conversion-analysis
-**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review, scrum-master
-**DBA skills:** database-admin
+**Delivery skills (design → build bridge):** developer-handoff, api-contract-design, test-strategy, data-migration-playbook
+**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review, scrum-master, calibration-review
+**DBA skills:** database-admin → schema chain: dba-process-interview, dba-schema-ingest, dba-data-flow-trace, dba-schema-review, dba-schema-drill; additional: dba-execution-plan, dba-index-strategy, dba-cross-domain-impact, dba-sql-object-chain, dba-performance-baseline, dba-schema-changelog, dba-security-audit
 **Client skills:** advise-client, new-client-setup, new-project, resume-client
 **Memory/capture skills:** claude-mem, context-mode, ingest-reference, ingest-meeting-notes, end-of-task, learn-from-feedback
+**Meta skills (agent self-improvement):** self-improvement (`/check-improvements` → `SKL-`), workflow-capture (`/capture-workflow` → `WFC-`), memory-hygiene (`/check-memory` → claude-mem lifecycle)
 **Security/research skills:** security-review, web-research
 **Utility skills:** create-diagram, new-skill, system-drill, document-specialist-skill
 
@@ -360,9 +378,9 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA skill library (32 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (52 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [32 individual skill files]
+│   │   └── [40 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -404,12 +422,17 @@ Employee System Analyst Expert/
 ├── deliverables/                      ← FALLBACK output for ad-hoc/non-client docs only; client docs → memory/clients/[client]/[project]/deliverables/
 │   └── README.md
 │
-├── scripts/                           ← Setup + PDF conversion + engines + verify + backup
+├── scripts/                           ← GENERAL-PURPOSE tooling only (setup/pdf2md/engines/verify/backup)
 │   ├── setup.ps1 / setup.sh           ← ✅ Dependency check + install (incl. document engines §3b)
 │   ├── pdf2md.ps1 / pdf2md.sh         ← ✅ batch/bare-name/path resolution → @opendataloader/pdf → pypdf fallback
 │   ├── fetch-libreoffice-local.ps1    ← ✅ Extract LibreOffice MSI into engines/ (no system install)
 │   ├── verify-engines.ps1 / .sh       ← ✅ End-to-end document engine test (PASS/FAIL checklist)
 │   └── backup.ps1 / backup.sh         ← ✅ Zip client data + engines, retention-aware
+│   (Client-specific scripts do NOT live here — they go in
+│    memory/clients/[client]/[project]/scripts/ which is gitignored.)
+│
+├── workspace/                         ← 🚫 GITIGNORED — local scratch: skill-creator eval runs, temp tooling, throwaway analysis
+│   └── README.md                      ← what belongs here vs client/product folders
 │
 ├── archive/                           ← Superseded reference files
 │
@@ -428,7 +451,7 @@ Employee System Analyst Expert/
 | claude-mem plugin (global + project) | ✅ Done — project-local DB at `.claude-mem/` |
 | memory/memory.md | ✅ Done |
 | memory/communication.md | ✅ Done |
-| ai-sa-employee/skills/ library (32 skills) | ✅ Done + enhanced — consolidated under ai-sa-employee/; scrum-master + conversion-analysis added 2026-06-16 |
+| ai-sa-employee/skills/ library (40 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section |
 | ai-sa-employee/document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done — consolidated under ai-sa-employee/ |
 | context-mode plugin (global + project) | ✅ Done — context-mode@context-mode v1.0.162, marketplace registered |
 | chromadb (semantic memory search) | ✅ Done — v1.5.9, Python 3.14 |
@@ -462,3 +485,8 @@ Employee System Analyst Expert/
 | pdf-source/ folder + smart pdf2md | ✅ Done 2026-06-15 — default PDF drop folder; resolution: no-arg batch / bare-name (pdf-source→cwd) / path / folder; tested |
 | pdf2md robustness fix | ✅ Done 2026-06-15 — Windows .cmd shim + output-file existence check (was false-OK on stale exit code); honest pypdf fallback when Java absent |
 | Java in pre-install | ✅ Done 2026-06-15 — setup §3b installs OpenJDK 21 (winget/brew/apt); verified opendataloader now produces high-fidelity output (was falling back to pypdf) |
+| Repo restructure (Option B) | ✅ Done 2026-06-24 — `workspace/` gitignored scratch area; client scripts → `memory/clients/[client]/[project]/scripts/`; `scripts/` is general-purpose only; `.gitignore` tightened (`__pycache__/`, `*.pyc`, `*.zip`, `workspace/`, `tmp-*`); 16 tracked `.pyc` untracked |
+| Meta-skill system | ✅ Done 2026-06-24 — `self-improvement` (`/check-improvements` → `SKL-`), `workflow-capture` (`/capture-workflow` → `WFC-`), `memory-hygiene` (`/check-memory`); command-driven + cheap breadcrumb logging in `memory/improvement-backlog.md` (no ambient token cost) |
+| Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
+| Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |
+| Skill library count | ✅ 52 skills (was 40) — backlog reconciled in `memory/improvement-backlog.md` (Next-ID: SKL-005) |

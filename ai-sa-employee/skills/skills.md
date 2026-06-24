@@ -154,7 +154,7 @@ Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion p
 | B6 | Communication management | Comms plan, RAG reports, escalation | Cadence + reporting |
 | B7 | Resource & capacity planning | RACI, utilization forecast | Resource plan |
 | B8 | Issue tracking & resolution | RAID log, root cause analysis | Issue log |
-| B9 | Continuous improvement | Retrospectives, lessons learned | Improvement backlog |
+| B9 | Continuous improvement | Retrospectives, lessons learned | Improvement backlog (for **client projects** — the agent's *own* self-improvement is the separate `self-improvement` skill) |
 | B10 | Agile delivery & Scrum Mastery | Scrum Guide 2020 facilitation, servant-leadership coaching, backlog refinement, sprint ceremonies, flow/velocity metrics, impediment removal, scaling (LeSS/Nexus/Scrum@Scale/SAFe) | Facilitated ceremonies, Sprint Goals, groomed backlog, impediment log (`IMP-`), retro actions — via `scrum-master` skill |
 | B11 | Change & adoption management | ADKAR, training, comms planning | Adoption plan |
 | B12 | Procurement & vendor management | RFP/SOW, vendor scoring, SLA tracking | Vendor selection + SLA register |
@@ -350,7 +350,19 @@ All invokable skills live in `ai-sa-employee/skills/`:
 | `ingest-reference.md` | "ingest this", file dropped in `reference/` |
 | `end-of-task.md` | "done", "task complete" |
 | `learn-from-feedback.md` | "the client said X", "got feedback" |
-| `database-admin.md` | "database", "schema", "migration", "query", "performance", "HA/DR" |
+| `database-admin.md` | "database", "schema", "migration", "query", "performance", "HA/DR" — **orchestrates the DBA sub-skill chain below for schema work** |
+| `dba-process-interview.md` | Chained from `database-admin` — 7 mandatory questions about the business process BEFORE schema design |
+| `dba-schema-ingest.md` | Chained from `database-admin` — parse real DDL mechanically, catalog tables/columns/types/PKs/FKs |
+| `dba-data-flow-trace.md` | Chained from `database-admin` — trace INSERT/UPDATE/DELETE per lifecycle step, validate temporal needs |
+| `dba-schema-review.md` | Chained from `database-admin` — check normalization/integrity/types/naming, FLAG don't FIX |
+| `dba-schema-drill.md` | Chained from `database-admin` — lifecycle simulation with runnable SQL, probe failure modes, execution plans |
+| `dba-execution-plan.md` | Chained from `database-admin` — analyze estimated/actual execution plans, identify missing indexes, read operators |
+| `dba-index-strategy.md` | Chained from `database-admin` — design and audit indexes: covering, filtered, composite ordering, unused detection |
+| `dba-cross-domain-impact.md` | Chained from `database-admin` — map ripple effects when schema changes cross domain boundaries |
+| `dba-sql-object-chain.md` | Chained from `database-admin` — design chain for views, SPs, functions: purpose → deps → draft → plan → drill |
+| `dba-performance-baseline.md` | Chained from `database-admin` — capture before/after metrics (plan cost, I/O, timing) across schema changes |
+| `dba-schema-changelog.md` | Chained from `database-admin` — structured version tracking for schema files (what, when, which ADR) |
+| `dba-security-audit.md` | Chained from `database-admin` — 8-dimension security audit: PII, encryption, permissions, audit trail, compliance |
 | `context-mode.md` | "switch to X mode", "focus on X today" |
 | `claude-mem.md` | "update memory", "what do we know about X", "clean up memory" |
 | `create-diagram.md` | "create a diagram", "flowchart", "draw the process", "ERD", "Gantt", "architecture diagram" |
@@ -363,3 +375,11 @@ All invokable skills live in `ai-sa-employee/skills/`:
 | `resume-client.md` | "resume client", "I have an ongoing client", "I copied the client folder", "I moved machines", "may existing client ako", "bagong machine may client na ako" |
 | `weekly-review.md` | "weekly review", "portfolio check", "sweep all projects", "Monday review" |
 | `system-drill.md` | "run a drill", "test the system", "system check", "smoke test the employee" |
+| `self-improvement.md` | "/check-improvements", "check improvements", "what should we improve", "audit yourself", "any gaps in the system" — **agent self-improvement** (distinct from B9 PM continuous-improvement); analyzes the breadcrumb backlog into `SKL-` proposals |
+| `workflow-capture.md` | "/capture-workflow", "capture this workflow", "that worked well, save the pattern", "should this be a skill" — codifies successful unguided workflows into `WFC-` proposals (mirror of self-improvement) |
+| `memory-hygiene.md` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" — compacts/promotes/archives claude-mem against the ~50-entry budget so it never bloats or crashes |
+| `developer-handoff.md` | "hand this off to the developer", "make dev tickets", "implementation spec", "ready for dev" — packages design into `DEV-` tickets with acceptance criteria, build order, out-of-scope |
+| `api-contract-design.md` | "design the API", "what endpoints", "REST contract", "GraphQL schema", "OpenAPI" — routes, request/response shapes, status codes, error envelope, auth, versioning |
+| `test-strategy.md` | "test plan", "test strategy", "QA plan", "UAT plan", "definition of done", "regression checklist" — coverage matrix, scenarios, regression set, UAT scripts, exit criteria |
+| `data-migration-playbook.md` | "migrate the data", "move data from [old] to [new] schema", "ETL the legacy data", "backfill" — map→transform→order→validate→rollback (data level; below conversion-analysis) |
+| `calibration-review.md` | "calibrate", "estimate accuracy", "how accurate were our estimates", "were we right about the risks" — drives `calibration.md`: bias ratio, risk hit-rate, feed-forward correction into scope-estimate |

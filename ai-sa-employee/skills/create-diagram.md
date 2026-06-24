@@ -34,6 +34,7 @@ If missing: ask what to visualise and which project it relates to.
 | Status transitions, lifecycle states | State diagram | `stateDiagram-v2` |
 | Decision logic, conditional paths | Decision tree | `flowchart TD` with diamond nodes |
 | Hierarchical relationships, org chart | Hierarchy / tree | `graph TD` |
+| Data movement between processes/stores | Data flow diagram (DFD) | `flowchart LR` — processes (round), stores (`[(…)]`), external entities (`[/…/]`) |
 
 ---
 
@@ -148,6 +149,44 @@ stateDiagram-v2
     UnderReview --> Approved : Approve
     UnderReview --> Draft : Reject
     Approved --> [*]
+```
+
+### C4 Context (Level 1 — system + who/what it talks to)
+```mermaid
+flowchart LR
+    user([User / Role]):::person
+    ext[External System]:::ext
+    sys[["The System<br/>(what we're building)"]]:::sys
+    user -->|uses| sys
+    sys -->|integrates with| ext
+    classDef person fill:#08427b,color:#fff
+    classDef sys fill:#1168bd,color:#fff
+    classDef ext fill:#999,color:#fff
+```
+
+### C4 Container (Level 2 — major parts + tech)
+```mermaid
+flowchart LR
+    user([User]):::person
+    subgraph sys["The System"]
+        web["Web App<br/>(React)"]
+        api["API<br/>(.NET / EF Core)"]
+        db[("Database<br/>(SQL Server)")]
+    end
+    user --> web --> api --> db
+    classDef person fill:#08427b,color:#fff
+```
+
+### Data flow diagram (DFD — data movement, not control flow)
+```mermaid
+flowchart LR
+    ent[/External Entity/]
+    proc((Process))
+    store[(Data Store)]
+    ent -->|input data| proc
+    proc -->|writes| store
+    store -->|reads| proc
+    proc -->|output data| ent
 ```
 
 ---

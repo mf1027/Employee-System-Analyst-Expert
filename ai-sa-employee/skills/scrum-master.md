@@ -144,6 +144,36 @@ to inflate. The moment a stakeholder asks to "increase velocity" or "compare tea
 flag it and redirect to outcome/flow metrics. Goodhart's Law: a metric used as a target stops
 being a good metric. Log velocity-vs-actuals in `calibration.md`.
 
+### Velocity trend (read the slope, not the point)
+A single sprint's velocity is noise; the **trend across the last 3–6 sprints** is signal. Read the
+shape, never rank it:
+- **Stable** (within ±15% band) → use the rolling average for forecasting; healthy.
+- **Rising** → maturing team *or* inflating estimates — check which (story size drift in refinement).
+- **Falling** → impediments accumulating, tech debt, attrition, or scope churn — investigate the *cause*,
+  don't demand "more points."
+- **Erratic** → unstable backlog readiness or mid-sprint scope changes → coach refinement & Sprint Goal.
+
+Forecast with a **range** from the rolling average (e.g. "3-sprint avg 28 ±5 pts"), not a single
+number presented as a promise. Source the per-sprint numbers from `calibration.md`.
+
+### Sprint health score (a coaching diagnostic, never a grade)
+A quick composite read of *whether the team is set up to succeed this sprint* — diagnostic only,
+used to start a conversation, never to evaluate people. Score each 🟢/🟡/🔴:
+
+| Signal | 🟢 Healthy | 🔴 Needs attention |
+|---|---|---|
+| Sprint Goal | one coherent objective | bucket of unrelated tickets |
+| Backlog readiness | top items meet DoR | committing to unrefined work |
+| Burndown shape | steady toward done | flat then cliff (late integration) |
+| WIP | within limits / focused | everything in-progress, nothing done |
+| Impediments | few, being removed | aging open `IMP-` |
+| Scope stability | Goal intact | changed mid-sprint without renegotiation |
+| DoD adherence | met, no carry-debt | quality traded for scope |
+
+Roll up to an overall 🟢/🟡/🔴 with the *one* signal most worth addressing. This is for the team's
+own inspection (transparency) — if anyone tries to use it to rate the team, that's the velocity
+anti-pattern again; flag it.
+
 ---
 
 ## Scaling & flow variants (so the skill never breaks on non-pure-Scrum)
