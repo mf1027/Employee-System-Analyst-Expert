@@ -219,7 +219,8 @@ to include subfolders.
 
 ## Skills Reference
 
-The employee has 30 invokable skills. Trigger them by saying the phrases in the right column.
+The employee has **50+ invokable skills** (full index in `ai-sa-employee/skills/skills.md`).
+Trigger them by saying the phrases in the right column. The most-used are below.
 
 | Skill | Trigger phrases |
 |---|---|
@@ -252,6 +253,27 @@ The employee has 30 invokable skills. Trigger them by saying the phrases in the 
 | `learn-from-feedback` | "the client said X", "got feedback" |
 | `new-skill` | "create a new skill", "add a skill for X" |
 
+**Delivery skills (design → build bridge):**
+
+| Skill | Trigger phrases |
+|---|---|
+| `developer-handoff` | "hand this off to the developer", "make dev tickets", "ready for dev" |
+| `api-contract-design` | "design the API", "what endpoints", "REST contract", "GraphQL schema" |
+| `test-strategy` | "test plan", "QA plan", "UAT plan", "regression checklist" |
+| `data-migration-playbook` | "migrate the data", "move data from [old] to [new] schema", "backfill" |
+| `calibration-review` | "calibrate", "estimate accuracy", "were we right about the risks" |
+
+**Meta skills (the agent improves itself):**
+
+| Skill | Trigger phrases |
+|---|---|
+| `self-improvement` | "/check-improvements", "what should we improve", "audit yourself" |
+| `workflow-capture` | "/capture-workflow", "that worked, save the pattern", "should this be a skill" |
+| `memory-hygiene` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" |
+
+> The agent passively logs friction as one-line breadcrumbs in `memory/improvement-backlog.md`
+> at near-zero cost; `/check-improvements` turns them into structured `SKL-` proposals on demand.
+
 ---
 
 ## Memory System
@@ -260,6 +282,7 @@ The employee has 30 invokable skills. Trigger them by saying the phrases in the 
 |---|---|---|
 | Operator profile + client index | `memory/memory.md` | Yes |
 | Communication standards | `memory/communication.md` | Yes |
+| Agent self-improvement backlog (`SKL-`/`WFC-` breadcrumbs) | `memory/improvement-backlog.md` | Yes |
 | All client data (records + project files) | `memory/clients/` | **No — gitignored** |
 | Episodic memory (decisions, risks, KB entries) | `.claude-mem/` (local) | **No — gitignored** |
 | Client source documents (drop zone) | `reference/` | **No — gitignored** |
@@ -278,6 +301,7 @@ The employee has 30 invokable skills. Trigger them by saying the phrases in the 
 | `ADR-NNN` | Architectural Decision Records |
 | `KB-NNN` | Knowledge Base entries (from reference ingestion) |
 | `ASS-NNN` | Assumptions |
+| `SKL-NNN` | Agent self-improvement proposals (`memory/improvement-backlog.md`) |
 
 ---
 
@@ -299,9 +323,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 32 SA/PM/DBA skills (flat)
+│   ├── skills/                        ← 52 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [32 individual skill files]
+│   │   └── [52 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -316,6 +340,7 @@ Employee System Analyst Expert/
 ├── memory/                            ← Runtime memory
 │   ├── memory.md                      ← Operator profile + working memory + client index
 │   ├── communication.md               ← RAG criteria + report format + ID reference
+│   ├── improvement-backlog.md         ← Agent self-improvement breadcrumbs + SKL-/WFC- proposals
 │   └── clients/                       ← 🚫 GITIGNORED — all client data stays local
 │       └── [client-name]/
 │           ├── [client-name].md       ← client record
@@ -334,12 +359,14 @@ Employee System Analyst Expert/
 │
 ├── reference/                         ← 🚫 GITIGNORED — PDF drop zone (convert then ingest)
 ├── deliverables/                      ← 🚫 GITIGNORED — generated client output
-├── scripts/
+├── scripts/                           ← GENERAL-PURPOSE only (client-specific scripts → memory/clients/[client]/[project]/scripts/)
 │   ├── setup.ps1 / setup.sh           ← First-time setup (deps + document engines)
 │   ├── pdf2md.ps1 / pdf2md.sh         ← PDF → Markdown
 │   ├── fetch-libreoffice-local.ps1    ← Install LibreOffice into engines/ (in-project)
 │   ├── verify-engines.ps1 / .sh       ← Test document engines end-to-end
 │   └── backup.ps1 / backup.sh         ← Client data + engines backup
+│
+├── workspace/                         ← 🚫 GITIGNORED — local scratch: skill eval runs, temp tooling, throwaway analysis
 │
 └── node_modules/                      ← gitignored
 ```
