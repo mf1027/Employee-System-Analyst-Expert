@@ -15,23 +15,33 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-005
+Next-ID: SKL-008
 
 ---
 
 ## Breadcrumbs (awaiting `/check-improvements`)
 
-_None — all seeded breadcrumbs resolved in the 2026-06-24 system enhancement. New friction
-gets logged here as it surfaces._
+- 2026-06-25 · ad-hoc-process · drill didn't mandate state-coverage check (all revisions terminal, queues untested until manual intervention) · [myps]
+- 2026-06-25 · ad-hoc-process · EF [Key] uniqueness check (COUNT vs COUNT DISTINCT) done ad-hoc — should be a standard drill step for EF-mapped objects · [system]
 
 ## Workflow candidates (awaiting `/capture-workflow`)
 
 - 2026-06-23 · DBA schema chain (ingest→interview→trace→review→drill) ran clean (69/69 drill pass)
   across MYPS modules · already codified as the `database-admin` chain · [myps] → captured, no action
+- 2026-06-25 · Transactional routing drill: BEGIN TRAN → force rows into distinct states → verify routing → ROLLBACK. Worked clean for revision queue views. Cross-project pattern for any status-filtered view. · [system]
 
 ## Proposals (`SKL-`)
 
-_None open — see Resolved._
+| ID | Title | Priority | Recommendation | Status |
+|---|---|---|---|---|
+| SKL-005 | Standardize sqlcmd invocation across shells | 🟡 | Standing instruction: always use PowerShell for sqlcmd (3x recurrence) | Open — tackle later |
+| SKL-006 | Ground in the as-built source before building | 🔴 | Applied: enhanced `dba-schema-ingest` §5 (as-built semantics verification) + standing rule in `CLAUDE.md` §9 + cross-session memory | **Resolved** 2026-06-25 |
+| SKL-007 | Drills must use full-content fixtures, not hollow | 🔴 | Applied: enhanced `dba-schema-drill` §7 (referential-completeness asserts) + §1 (full-content fixture rule) + fail criteria + quality checklist | **Resolved** 2026-06-25 |
+
+**Root cause linking SKL-006/007: circular validation** — generating data from assumption X,
+building code assuming X, drilling against that data. All share X, so the drill can't catch a
+wrong X. Only an external source (as-built system, operator) breaks the circle. This session the
+operator was the external check 4 times (invented enum, hollow data ×2, unread process flow).
 
 ## Resolved
 

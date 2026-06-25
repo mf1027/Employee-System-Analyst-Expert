@@ -69,13 +69,45 @@ If the DDL declares **zero foreign keys** (common in legacy/app-enforced schemas
 parse the View DDL for JOIN/ON conditions — these are ground-truth relationship
 evidence. Map alias → table and extract `a.col = b.col` edges.
 
-### 5. Domain classification
+### 5. As-built semantics verification (when deriving from a source system)
+
+**Hard gate when the target schema derives from an as-built system** (e.g. myps_db from LOCAL-MYPS):
+the DDL gives only *structure*. The source system + operator are the ground truth for *semantics*.
+Before designing any object that depends on a status, enum, or lookup value:
+
+1. **Query the source system** for the real values, not just the column types:
+   ```sql
+   SELECT * FROM [SOURCE-DB].dbo.tOptionRevisionStatus;
+   ```
+2. **Record the meaning** of each value — not just the row, but what the process uses it for.
+   A column named `Status INT` with values 0-5 means nothing until you know 0=Pending, 1=Submitted, etc.
+3. **Cross-check your assumptions.** If you planned to use `Status=4` for "Approved" but the source
+   uses `Status=1`, your downstream objects (views, drills, routing logic) will all be wrong —
+   and drills will pass because they test your assumption against itself.
+4. **Interview the operator** on the process flow that *produces* the data, not just its shape.
+   The schema tells you `tRevisionProjectSnapshot` has a `RevisionDetailFK`; only the operator
+   tells you that every submitted revision MUST have a snapshot (no hollow parents).
+
+**Why this exists:** in the MYPS revision session, 4 errors were caught by the operator — not the
+drill — because the fixture encoded the same wrong assumptions as the code. An enum was invented
+instead of queried, and 7/8 revisions were seeded without snapshots that the real process guarantees.
+A green drill on wrong assumptions is worse than no drill. See memory: [[verify-against-as-built-before-building]].
+
+**Output:** append an "As-Built Semantics" section to the ingest output:
+```
+AS-BUILT SEMANTICS (queried from [SOURCE-DB]):
+  [table]: [value] = [meaning in the process]
+  ...
+  Process guarantees: [e.g. every tRevisionDetails has exactly 1 tRevisionProjectSnapshot]
+```
+
+### 6. Domain classification
 
 Assign every table to a domain (e.g., Core, Detail, Revision, Lookups, Admin,
 User/RBAC, Infra, Logs, Counters, Legacy/Dead). Flag any unclassified tables for
 review.
 
-### 6. Reconcile against existing ERDs
+### 7. Reconcile against existing ERDs
 
 If hand-drawn ERDs exist, compare:
 - Tables in DDL but NOT in ERD = **missing from the diagram**
@@ -137,6 +169,8 @@ Parser script: [path to reusable script]
 - [ ] View JOINs parsed if FKs are absent
 - [ ] Domain classification covers all tables
 - [ ] Discrepancies with existing ERDs logged
+- [ ] As-built semantics queried from source system (if deriving) — no invented enums
+- [ ] Process guarantees documented (e.g. parent→child cardinality the process enforces)
 - [ ] Parser script saved and reusable
 
 ## Failure exit

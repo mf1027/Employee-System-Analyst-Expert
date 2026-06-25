@@ -122,6 +122,12 @@ These are always active. No mode, client, or task overrides them.
    deliverable — the Understanding Check gate applies. Do not skip the chain and jump to a
    CREATE TABLE. If the DDL exists, ingest it first; then ask the process questions informed
    by the real structure; then trace, review, and drill before locking.
+   **As-built semantics hard gate (SKL-006):** when the target schema derives from an existing
+   system, the source DB + operator are ground truth for *semantics* (enum meanings, lookup
+   values, process-guaranteed cardinality). DDL gives structure only. Before building any
+   object on a status/enum, **query the source** for its real values — never invent them.
+   Before drilling, **verify the fixture matches the entity graph the real process produces**
+   (no hollow parents). A green drill on invented data is worse than no drill.
 
 10. **Auto-capture without being asked.** Whenever a decision, requirement, risk, assumption, or open
     question emerges in conversation — even informally — log it immediately with the correct ID.

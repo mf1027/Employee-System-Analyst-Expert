@@ -38,13 +38,22 @@ Invoke when:
 
 ## Steps
 
-### 1. Generate the lifecycle script
+### 1. Generate the lifecycle script (full-content fixtures — SKL-007)
 
 For every step from the data-flow-trace, write actual T-SQL:
 - Declare realistic test data (business keys, GUIDs, lookup codes)
 - INSERT/UPDATE/DELETE with real column lists and values
 - Capture SCOPE_IDENTITY() where needed
 - Wrap multi-table operations in transactions
+
+**Full-content fixture rule:** the seed must populate the **complete entity graph** that the
+real process produces — not just the parent rows. If the process guarantees that every
+`tRevisionDetails` has a `tRevisionProjectSnapshot` + funding + cost rows, the drill must
+seed those too. A parent row without its process-guaranteed children is a **hollow fixture**
+that makes the drill pass on data the process could never produce.
+
+Ask (or verify from the as-built semantics ingest — step 5 of `dba-schema-ingest`):
+*"What entity graph does each process step produce?"* Seed exactly that.
 
 ### 2. Show row state after each step
 
@@ -117,7 +126,37 @@ IF NOT EXISTS (SELECT 1 FROM dbo.tOptionProgramStage WHERE Name=N'BP')
    tOptionFundingSource and drill-B also needs it, both files carry the same seed block.
 5. **Never depend on seeds from another drill.** Each drill runs independently.
 
-### 7. Execution plan analysis section
+### 7. Referential-completeness assertions (SKL-007 — anti-hollow-fixture gate)
+
+After seeding and before any state-change tests, assert that the fixture is **complete** —
+every parent has its process-guaranteed children. These are not FK checks (the DB does that);
+they check the **cardinality the process enforces** that the schema can't express.
+
+```sql
+/* COMPLETENESS: every tRevisionDetails (submitted) must have exactly 1 snapshot */
+IF EXISTS (
+    SELECT rd.Id FROM dbo.tRevisionDetails rd
+    LEFT JOIN dbo.tRevisionProjectSnapshot s ON s.RevisionDetailFK = rd.Id
+    WHERE s.Id IS NULL
+    -- exclude drafts (RO=0) if the process only creates snapshots on submit
+)
+BEGIN PRINT 'FAIL — hollow revision: detail without snapshot'; END
+```
+
+**Standard completeness patterns to assert** (adapt per domain):
+- Parent → child: every parent has ≥1 child if the process guarantees it
+- Paired rows: every `tRevisionDetails` has exactly 2 `tRevisionApprovals` (RO + CO)
+- Snapshot presence: every submitted revision has a `tRevisionProjectSnapshot`
+- Lookup coverage: every FK value used in the fixture exists in the lookup table
+
+**Why this step exists:** in the MYPS revision session, 7 of 8 revisions were seeded without
+snapshots. The drill reported 15/15 PASS because no check asserted snapshot presence — the views
+happened to return correct *routing* on hollow data. The fixture was unrealistic, and the drill
+certified it. This step prevents that class of false-green.
+
+A drill that passes on data the process could never produce is worse than no drill.
+
+### 8. Execution plan analysis section
 
 After all functional checks pass, include an execution plan section that validates
 query performance against the schema. Invoke `dba-execution-plan` for the methodology.
@@ -156,7 +195,7 @@ GO
 - Reverse lookup (child → parent)
 - Aggregation query (SUM, COUNT across tables)
 
-### 8. Pagination performance check
+### 9. Pagination performance check
 
 If the schema serves list views (programs, projects, revisions), verify that the primary
 list queries support **keyset pagination** (not just OFFSET/FETCH):
@@ -181,7 +220,7 @@ SELECT TOP 20 * FROM tProjects WHERE Id > @lastSeenId ORDER BY Id;
 friendly index path. If the only option is OFFSET, flag it — OFFSET degrades linearly with
 page depth and will become a performance problem at scale.
 
-### 9. Scale test (when a DB is available)
+### 10. Scale test (when a DB is available)
 
 If a live database is available, extend the drill beyond the 1-entity scenario:
 
@@ -304,6 +343,7 @@ The drill FAILS if:
 - A money column uses `float` instead of `decimal`
 - A list-query table has no keyset-pagination-friendly index
 - No rollback script exists for the schema DDL
+- Referential-completeness assertions fail (hollow fixtures — parent without process-guaranteed children)
 - (Level 2 only) Runtime errors occur during execution
 
 ---
@@ -330,6 +370,7 @@ The drill FAILS if:
 - [ ] Transactions wrap all multi-table operations
 - [ ] GUID consistency checked across tables
 - [ ] Historical snapshots verified as read-only after advance
+- [ ] Referential-completeness asserts pass (no hollow fixtures — every parent has its process-guaranteed children)
 - [ ] At least 5 failure modes documented with mitigations
 - [ ] Cleanup block provided (commented out, children-first)
 - [ ] Script is syntactically valid T-SQL
