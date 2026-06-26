@@ -73,7 +73,8 @@ Fallback (no memory skill): writes to `docs/` folder in the project repo.
 | Meeting notes received | ingest-meeting-notes |
 | Feedback received | learn-from-feedback |
 | Task completed | end-of-task |
-| Friction noticed (repeated manual work, ad-hoc process, recurring error) | self-improvement (drop a breadcrumb; `/check-improvements` to analyze) |
+| Friction noticed (repeated manual work, ad-hoc process, recurring error) | self-improvement Lane A (drop a breadcrumb; `/check-improvements` to analyze → `SKL-`) |
+| Clean repeatable unguided workflow completes | self-improvement Lane B (drop a workflow candidate; `/check-improvements` to analyze → `WFC-`) |
 
 ---
 

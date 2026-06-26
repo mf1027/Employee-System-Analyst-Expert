@@ -267,8 +267,7 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 
 | Skill | Trigger phrases |
 |---|---|
-| `self-improvement` | "/check-improvements", "what should we improve", "audit yourself" |
-| `workflow-capture` | "/capture-workflow", "that worked, save the pattern", "should this be a skill" |
+| `self-improvement` | "/check-improvements", "what should we improve", "audit yourself" · alias "/capture-workflow", "that worked, save the pattern" — dual-lens: friction → `SKL-`, successful workflows → `WFC-` |
 | `memory-hygiene` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" |
 
 > The agent passively logs friction as one-line breadcrumbs in `memory/improvement-backlog.md`
@@ -323,9 +322,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 52 SA/PM/DBA/delivery/meta skills (flat)
+│   ├── skills/                        ← 51 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [52 individual skill files]
+│   │   └── [51 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready

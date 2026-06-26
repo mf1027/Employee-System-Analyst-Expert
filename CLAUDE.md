@@ -122,12 +122,15 @@ These are always active. No mode, client, or task overrides them.
    deliverable — the Understanding Check gate applies. Do not skip the chain and jump to a
    CREATE TABLE. If the DDL exists, ingest it first; then ask the process questions informed
    by the real structure; then trace, review, and drill before locking.
-   **As-built semantics hard gate (SKL-006):** when the target schema derives from an existing
+   **As-built semantics hard gate (SKL-006/008):** when the target schema derives from an existing
    system, the source DB + operator are ground truth for *semantics* (enum meanings, lookup
-   values, process-guaranteed cardinality). DDL gives structure only. Before building any
-   object on a status/enum, **query the source** for its real values — never invent them.
-   Before drilling, **verify the fixture matches the entity graph the real process produces**
-   (no hollow parents). A green drill on invented data is worse than no drill.
+   values, process-guaranteed cardinality, **generated-ID formats, and derivation rules**). DDL
+   gives structure only. Before building any object on a status/enum, **query the source** for its
+   real values — never invent them. Before seeding or designing around a **generated identifier**
+   (e.g. `BP01000001LZ`) or a **derived value** (e.g. a status rollup), get its exact format/algorithm
+   from the operator or real source rows — generated formats are not lookup values, so the enum check
+   won't catch them. Before drilling, **verify the fixture matches the full entity graph the real
+   process produces** (no hollow parents). A green drill on invented data is worse than no drill.
 
 10. **Auto-capture without being asked.** Whenever a decision, requirement, risk, assumption, or open
     question emerges in conversation — even informally — log it immediately with the correct ID.
@@ -195,9 +198,9 @@ These are always active. No mode, client, or task overrides them.
 | "security review" / "threat model" / "STRIDE" / "PII" / "GDPR" / "HIPAA" / "compliance" | Invoke `security-review`; produce REQ-S + RISK-SEC entries |
 | "research [topic]" / "compare [options]" / "competitive analysis" / "look up [regulation]" | Invoke `web-research`; use brightdata MCP; feed findings into current mode |
 | Decision / requirement / risk surfaces mid-conversation | Auto-log with correct ID — no prompt needed |
-| "check improvements" / "/check-improvements" / "what should we improve" / "audit yourself" / "any gaps in the system" | Invoke `self-improvement`; analyze the breadcrumb backlog into `SKL-` proposals |
-| Friction surfaces mid-work (repeated manual work, ad-hoc process, recurring error, skill fell short, manual bridge, post-mortem) | Drop a one-line breadcrumb in `memory/improvement-backlog.md` — no analysis, no interruption (per `self-improvement`) |
-| "/capture-workflow" / "that worked, save the pattern" / "should this be a skill" | Invoke `workflow-capture`; codify successful unguided workflows into `WFC-` proposals |
+| "check improvements" / "/check-improvements" / "what should we improve" / "audit yourself" / "any gaps in the system" / "/capture-workflow" / "that worked, save the pattern" / "should this be a skill" | Invoke `self-improvement` (dual-lens): Lane A clusters friction breadcrumbs → `SKL-` proposals; Lane B reviews workflow candidates → `WFC-` proposals |
+| Friction surfaces mid-work (repeated manual work, ad-hoc process, recurring error, skill fell short, manual bridge, post-mortem) | Drop a one-line **breadcrumb** in `memory/improvement-backlog.md` — no analysis, no interruption (per `self-improvement` Lane A) |
+| A clean, repeatable, unguided workflow completes (operator-confirmed / drill-passed / no rework) | Drop a one-line **workflow candidate** in `memory/improvement-backlog.md` — no analysis (per `self-improvement` Lane B) |
 | "/check-memory" / "clean up memory" / "memory is full" / "claude-mem is slow" | Invoke `memory-hygiene`; compact/promote/archive against the ~50-entry budget |
 | "hand this off to the developer" / "make dev tickets" / "implementation spec" / "ready for dev" | Invoke `developer-handoff`; package design into `DEV-` tickets with acceptance criteria + build order |
 | "design the API" / "what endpoints" / "REST contract" / "GraphQL schema" / "OpenAPI" | Invoke `api-contract-design`; routes, shapes, status codes, error envelope, auth, versioning |
@@ -243,7 +246,7 @@ ai-sa-employee/                 ← self-contained employee package (everything 
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-├── skills/                     ← 52 SA/PM/DBA/delivery/meta skills + skills.md index
+├── skills/                     ← 51 SA/PM/DBA/delivery/meta skills + skills.md index
 └── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
 
 (setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
@@ -316,7 +319,7 @@ All invokable skills live in `ai-sa-employee/skills/`. Full inventory and intera
 **DBA skills:** database-admin → schema chain: dba-process-interview, dba-schema-ingest, dba-data-flow-trace, dba-schema-review, dba-schema-drill; additional: dba-execution-plan, dba-index-strategy, dba-cross-domain-impact, dba-sql-object-chain, dba-performance-baseline, dba-schema-changelog, dba-security-audit
 **Client skills:** advise-client, new-client-setup, new-project, resume-client
 **Memory/capture skills:** claude-mem, context-mode, ingest-reference, ingest-meeting-notes, end-of-task, learn-from-feedback
-**Meta skills (agent self-improvement):** self-improvement (`/check-improvements` → `SKL-`), workflow-capture (`/capture-workflow` → `WFC-`), memory-hygiene (`/check-memory` → claude-mem lifecycle)
+**Meta skills (agent self-improvement):** self-improvement (`/check-improvements`, alias `/capture-workflow`) — dual-lens: Lane A friction → `SKL-`, Lane B successful workflows → `WFC-`; memory-hygiene (`/check-memory` → claude-mem lifecycle)
 **Security/research skills:** security-review, web-research
 **Utility skills:** create-diagram, new-skill, system-drill, document-specialist-skill
 
@@ -384,7 +387,7 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (52 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (51 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
 │   │   └── [40 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
@@ -495,4 +498,4 @@ Employee System Analyst Expert/
 | Meta-skill system | ✅ Done 2026-06-24 — `self-improvement` (`/check-improvements` → `SKL-`), `workflow-capture` (`/capture-workflow` → `WFC-`), `memory-hygiene` (`/check-memory`); command-driven + cheap breadcrumb logging in `memory/improvement-backlog.md` (no ambient token cost) |
 | Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
 | Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |
-| Skill library count | ✅ 52 skills (was 40) — backlog reconciled in `memory/improvement-backlog.md` (Next-ID: SKL-005) |
+| Skill library count | ✅ 51 skills — `workflow-capture` merged into `self-improvement` (dual-lens: `SKL-`+`WFC-`) 2026-06-26 |

@@ -143,16 +143,31 @@ IF EXISTS (
 BEGIN PRINT 'FAIL — hollow revision: detail without snapshot'; END
 ```
 
+**Enumerate the full graph — don't hand-pick a subset (SKL-009).** Do not eyeball "a snapshot and
+approvals." **List every FK-child the parent has** (from the schema's FK edges / the as-built
+semantics ingest), then assert presence for each one the process guarantees. A hand-picked subset
+under-specifies and lets a partially-hollow fixture pass.
+
+For a revision aggregate, that means asserting **all** of:
+- `tRevisionProjectSnapshot` (1 per revision)
+- `tRevisionApprovals` (exactly 2: RO + CO)
+- `tRevisionProjectFundingProfile` (≥1)
+- `tRevisionProjectComponentCost` (≥1) → each with `tRevisionProjectComponentCostPerYear` (≥1)
+- `tRevisionProjectMajorWorkItem` (≥1 where the component has work) → each with `…MajorWorkLocations`
+- `tRevisionDetailsComponentsStatus` (≥1)
+
 **Standard completeness patterns to assert** (adapt per domain):
-- Parent → child: every parent has ≥1 child if the process guarantees it
+- **Full child enumeration:** for each FK-child table of the aggregate root, assert the
+  process-guaranteed cardinality — not just the one or two you remember
 - Paired rows: every `tRevisionDetails` has exactly 2 `tRevisionApprovals` (RO + CO)
-- Snapshot presence: every submitted revision has a `tRevisionProjectSnapshot`
+- Grandchildren too: every cost row has a cost-per-year; every work item has a location
 - Lookup coverage: every FK value used in the fixture exists in the lookup table
 
-**Why this step exists:** in the MYPS revision session, 7 of 8 revisions were seeded without
-snapshots. The drill reported 15/15 PASS because no check asserted snapshot presence — the views
-happened to return correct *routing* on hollow data. The fixture was unrealistic, and the drill
-certified it. This step prevents that class of false-green.
+**Why this step exists:** in the MYPS revision session this fired **twice**. First, 7 of 8
+revisions were seeded without snapshots and the drill reported 15/15 PASS (no snapshot check).
+After adding a snapshot check, the fixture *still* shipped without funding/costs/work-items —
+because the completeness check was a hand-picked subset, and the operator caught the gap again.
+The fix: enumerate the *whole* child graph, not the parts you happen to remember.
 
 A drill that passes on data the process could never produce is worse than no drill.
 
@@ -248,6 +263,40 @@ If a live database is available, extend the drill beyond the 1-entity scenario:
 
 This is optional (only when a DB is available), but converts the drill from "logic correct"
 to "logic correct at production scale."
+
+---
+
+## Reusable techniques (captured workflows)
+
+### WFC-001 — Transactional routing drill (force → verify → ROLLBACK)
+When the schema routes rows by status/state (approval queues, workflow stages, filtered views),
+natural seed data rarely covers *every* branch — so branches go untested and a green drill is
+misleading. Force each branch explicitly inside a transaction, verify routing, then roll back so
+nothing persists:
+
+```sql
+BEGIN TRAN;
+  -- force the existing rows into each distinct state the router cares about
+  UPDATE a SET Status = 0 FROM dbo.tRevisionApprovals a WHERE a.RevisionDetailFK=@r1 AND a.Level='RO'; -- → IO queue
+  UPDATE a SET Status = 2 FROM dbo.tRevisionApprovals a WHERE a.RevisionDetailFK=@r2 AND a.Level='RO'; -- → RO queue
+  UPDATE a SET Status = 4 FROM dbo.tRevisionApprovals a WHERE a.RevisionDetailFK=@r3 AND a.Level='RO'; -- → CO queue
+  -- assert each row lands in the expected bucket
+  SELECT 'IO' q, Id FROM dbo.fRevisionQueue('IO') UNION ALL SELECT 'RO', Id FROM dbo.fRevisionQueue('RO') ...;
+  -- assert coverage: every row in exactly one bucket, no dupes
+ROLLBACK;  -- data restored; verify it's back to baseline
+```
+Proven across the MYPS revision views (queue routing, effective overlay, one-open guard, stage advance).
+Use for any status-routed schema. ROLLBACK keeps the baseline fixture intact for the next assertion.
+
+### WFC-002 — Seed / drill split (reusable fixture + validation gate)
+Keep **two** files, not one:
+- `*-mock-data.sql` — **persistent** truncate + full-content seed. Run anytime to reset to a known
+  good state. No assertions; just realistic data (the full entity graph per SKL-009).
+- `drill-*.sql` — **validation**: truncate + seed + assert (completeness gate + functional checks).
+
+Why split: the seed is reusable for manual exploration, demos, and app dev against known data; the
+drill is the automated gate. Both share the same seed logic (copy it, don't cross-depend — see
+auto-seed rule 5). This separation is what makes the fixture a *reusable asset* instead of drill-only scaffolding.
 
 ---
 

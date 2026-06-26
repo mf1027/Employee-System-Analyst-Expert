@@ -375,8 +375,7 @@ All invokable skills live in `ai-sa-employee/skills/`:
 | `resume-client.md` | "resume client", "I have an ongoing client", "I copied the client folder", "I moved machines", "may existing client ako", "bagong machine may client na ako" |
 | `weekly-review.md` | "weekly review", "portfolio check", "sweep all projects", "Monday review" |
 | `system-drill.md` | "run a drill", "test the system", "system check", "smoke test the employee" |
-| `self-improvement.md` | "/check-improvements", "check improvements", "what should we improve", "audit yourself", "any gaps in the system" — **agent self-improvement** (distinct from B9 PM continuous-improvement); analyzes the breadcrumb backlog into `SKL-` proposals |
-| `workflow-capture.md` | "/capture-workflow", "capture this workflow", "that worked well, save the pattern", "should this be a skill" — codifies successful unguided workflows into `WFC-` proposals (mirror of self-improvement) |
+| `self-improvement.md` | "/check-improvements", "check improvements", "what should we improve", "audit yourself", "any gaps in the system" · alias "/capture-workflow", "that worked, save the pattern", "should this be a skill" — **agent self-improvement**, dual-lens (distinct from B9 PM continuous-improvement): Lane A friction → `SKL-` proposals, Lane B successful workflows → `WFC-` proposals |
 | `memory-hygiene.md` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" — compacts/promotes/archives claude-mem against the ~50-entry budget so it never bloats or crashes |
 | `developer-handoff.md` | "hand this off to the developer", "make dev tickets", "implementation spec", "ready for dev" — packages design into `DEV-` tickets with acceptance criteria, build order, out-of-scope |
 | `api-contract-design.md` | "design the API", "what endpoints", "REST contract", "GraphQL schema", "OpenAPI" — routes, request/response shapes, status codes, error envelope, auth, versioning |

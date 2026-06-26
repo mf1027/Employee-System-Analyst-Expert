@@ -87,11 +87,22 @@ Before designing any object that depends on a status, enum, or lookup value:
 4. **Interview the operator** on the process flow that *produces* the data, not just its shape.
    The schema tells you `tRevisionProjectSnapshot` has a `RevisionDetailFK`; only the operator
    tells you that every submitted revision MUST have a snapshot (no hollow parents).
+5. **Verify generated FORMATS and derivation rules, not just lookup values (SKL-008).** Enum
+   values live in lookup tables; *generated identifiers* and *derived values* do not — they live
+   in business logic, so they're the easiest thing to invent. Before seeding or designing around any:
+   - **Generated identifier** (e.g. a project/document code like `BP01000001LZ`) — get the exact
+     format, segment widths, and generation algorithm from the operator or by inspecting real rows
+     in the source system. Never infer the format from one example.
+   - **Derived/rolled-up value** (e.g. a project status computed from component statuses) — get the
+     precedence/derivation rule, not just the output column.
+   Inspect real source rows to confirm: `SELECT TOP 20 [GeneratedIdCol] FROM [SOURCE-DB].dbo.[t];`
 
-**Why this exists:** in the MYPS revision session, 4 errors were caught by the operator — not the
+**Why this exists:** in the MYPS revision session, 6 errors were caught by the operator — not the
 drill — because the fixture encoded the same wrong assumptions as the code. An enum was invented
-instead of queried, and 7/8 revisions were seeded without snapshots that the real process guarantees.
-A green drill on wrong assumptions is worse than no drill. See memory: [[verify-against-as-built-before-building]].
+instead of queried; 7/8 revisions were seeded without the snapshots the process guarantees; and the
+ProjectId format (`BP01000001LZ`) was invented as `01-2026-F0001-C` because it's a *generated format*,
+not a lookup value, so the enum-checking step missed it. A green drill on wrong assumptions is worse
+than no drill. See memory: [[verify-against-as-built-before-building]].
 
 **Output:** append an "As-Built Semantics" section to the ingest output:
 ```

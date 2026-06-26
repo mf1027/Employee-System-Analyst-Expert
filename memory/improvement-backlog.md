@@ -15,33 +15,46 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-008
+Next-ID: SKL-010
+Next-WFC: WFC-003
+
+> **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
+> dual-lens skill: Lane A (friction → `SKL-`), Lane B (successful workflows → `WFC-`).
+> `/check-improvements` runs both; `/capture-workflow` is an alias. Backlog keeps both
+> *Breadcrumbs* (Lane A) and *Workflow candidates* (Lane B) sections.
 
 ---
 
-## Breadcrumbs (awaiting `/check-improvements`)
+## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
-- 2026-06-25 · ad-hoc-process · drill didn't mandate state-coverage check (all revisions terminal, queues untested until manual intervention) · [myps]
-- 2026-06-25 · ad-hoc-process · EF [Key] uniqueness check (COUNT vs COUNT DISTINCT) done ad-hoc — should be a standard drill step for EF-mapped objects · [system]
+_None open — all resolved into SKL-008/009 below._
 
-## Workflow candidates (awaiting `/capture-workflow`)
+## Workflow candidates (awaiting `/check-improvements` — Lane B)
 
 - 2026-06-23 · DBA schema chain (ingest→interview→trace→review→drill) ran clean (69/69 drill pass)
   across MYPS modules · already codified as the `database-admin` chain · [myps] → captured, no action
-- 2026-06-25 · Transactional routing drill: BEGIN TRAN → force rows into distinct states → verify routing → ROLLBACK. Worked clean for revision queue views. Cross-project pattern for any status-filtered view. · [system]
+- 2026-06-25 · 4-diagram module documentation set (workflow state + data-flow + ERD + module-map) · [myps]
+  → candidate, observed once — keep observing before codifying
 
-## Proposals (`SKL-`)
+## Proposals (`SKL-` / `WFC-`)
 
 | ID | Title | Priority | Recommendation | Status |
 |---|---|---|---|---|
 | SKL-005 | Standardize sqlcmd invocation across shells | 🟡 | Standing instruction: always use PowerShell for sqlcmd (3x recurrence) | Open — tackle later |
-| SKL-006 | Ground in the as-built source before building | 🔴 | Applied: enhanced `dba-schema-ingest` §5 (as-built semantics verification) + standing rule in `CLAUDE.md` §9 + cross-session memory | **Resolved** 2026-06-25 |
-| SKL-007 | Drills must use full-content fixtures, not hollow | 🔴 | Applied: enhanced `dba-schema-drill` §7 (referential-completeness asserts) + §1 (full-content fixture rule) + fail criteria + quality checklist | **Resolved** 2026-06-25 |
+| SKL-006 | Ground in the as-built source before building | 🔴 | Applied: `dba-schema-ingest` §5 + `CLAUDE.md` §9 + cross-session memory | **Resolved** 2026-06-25 |
+| SKL-007 | Drills must use full-content fixtures, not hollow | 🔴 | Applied: `dba-schema-drill` §7 + §1 + fail criteria + checklist | **Resolved** 2026-06-25 |
+| SKL-008 | Extend grounding to generated FORMATS + derivation rules | 🔴 | Applied: `dba-schema-ingest` §5.5 + `CLAUDE.md` §9 — verify generated IDs (e.g. `BP01000001LZ`) + rollups, not just enum values. Caught after SKL-006 "resolved" (invented ProjectId). | **Resolved** 2026-06-26 |
+| SKL-009 | Completeness must enumerate the FULL child graph | 🔴 | Applied: `dba-schema-drill` §7 — assert every FK-child (funding/costs/cost-yr/work/locations/statuses), not a hand-picked subset. Caught after SKL-007 "resolved" (component-depth gap). | **Resolved** 2026-06-26 |
+| WFC-001 | Transactional routing drill (force→verify→ROLLBACK) | 🟢 | Applied: codified as a technique in `dba-schema-drill` (Reusable techniques). Proven 4+ times across revision views. | **Resolved** 2026-06-26 |
+| WFC-002 | Seed / drill split (reusable fixture + validation gate) | 🟢 | Applied: convention in `dba-schema-drill` (Reusable techniques). `*-mock-data.sql` (persistent seed) + `drill-*.sql` (validate). | **Resolved** 2026-06-26 |
 
-**Root cause linking SKL-006/007: circular validation** — generating data from assumption X,
+**Root cause (SKL-006/007/008/009): circular validation** — generating data from assumption X,
 building code assuming X, drilling against that data. All share X, so the drill can't catch a
-wrong X. Only an external source (as-built system, operator) breaks the circle. This session the
-operator was the external check 4 times (invented enum, hollow data ×2, unread process flow).
+wrong X. Only an external source (as-built system, operator) breaks the circle. SKL-006/007
+fixed the *enum* and *snapshot* cases; SKL-008/009 extended the same principle to *generated
+formats* and the *full child graph* after the operator caught both recurrences in the same session.
+The deeper fix is behavioral: confirm formats + graph shape with the operator **up front**, before
+building — cheaper than any post-hoc drill assertion. See [[verify-against-as-built-before-building]].
 
 ## Resolved
 
