@@ -113,13 +113,19 @@ tProjects (column added)
 
 When adding an FK from Domain A to Domain B:
 - Does Domain B's table exist in the database? (or is it deferred?)
-- Does the FK column's type match the referenced PK's type exactly?
+- Does the FK column's type match the referenced PK's type **exactly — including length/scale**?
+  SQL Server rejects `FK NVARCHAR(100) → PK NVARCHAR(10)` with a length-mismatch error.
+  Check width, not just type. (Caught live: `ComponentType NVARCHAR(100)` → lookup `NVARCHAR(10)`.)
 - If the referenced table uses a business key (NVARCHAR) as PK, does the FK use
   the same type and length?
 - Will existing data in Domain A satisfy the new FK? (NULL values OK if nullable)
 
 When adding a UNIQUE constraint:
 - Does existing data have duplicates that would violate it?
+
+**SQL batch rules when deploying multi-statement DDL:** `CREATE VIEW/PROCEDURE/FUNCTION/TRIGGER`
+must be the **first statement in its batch** — separate each with `GO`. A combined deploy script
+that omits `GO` before a `CREATE VIEW` fails with "must be the first statement in a query batch."
 
 ### 6b. Cascade rename — the paired-list trap
 
@@ -207,6 +213,11 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
    can be a follow-up. Cosmetic can wait.
 5. **Run the drills.** The final step is always: execute all affected drills and verify
    they still pass. Paper analysis is not enough.
+6. **Definition of Done — docs are consumers, not follow-ups (SKL-010).** A schema change is
+   NOT complete until **every** consumer is updated **in the same pass** — including the
+   documentation consumers: `database.md`, ERDs, data-flow diagrams, design specs, developer
+   handoffs, and the consolidated process-flow doc. Do not report a change "done" with stale
+   docs. (Caught live: a component rework left 6 docs stale until the operator asked — twice.)
 
 ---
 
@@ -219,6 +230,8 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
 - [ ] Execution order specified
 - [ ] Breaking impacts have concrete fix actions
 - [ ] Drills re-run after all changes applied
+- [ ] FK width/length checked (not just type); CREATE VIEW/SP/FN GO-separated
+- [ ] **Definition of Done:** docs/diagrams/specs/process-flow updated in the same pass (SKL-010)
 
 ## Failure exit
 

@@ -131,6 +131,10 @@ These are always active. No mode, client, or task overrides them.
    from the operator or real source rows — generated formats are not lookup values, so the enum check
    won't catch them. Before drilling, **verify the fixture matches the full entity graph the real
    process produces** (no hollow parents). A green drill on invented data is worse than no drill.
+   **Definition-of-done — docs are consumers (SKL-010):** a schema change is NOT done until every
+   consumer is updated **in the same pass** — schema files, mock/seed, drills, *and* the docs
+   (`database.md`, ERDs, data-flow diagrams, design specs, dev handoffs, consolidated process-flow).
+   Run `dba-cross-domain-impact` to enumerate them. Never report a change done with stale docs.
 
 10. **Auto-capture without being asked.** Whenever a decision, requirement, risk, assumption, or open
     question emerges in conversation — even informally — log it immediately with the correct ID.

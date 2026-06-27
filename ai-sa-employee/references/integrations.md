@@ -245,3 +245,41 @@ Source: [Stakeholder name or session reference]
 | Tier 0 | Skill only | Full hot layer; writes to `memory/` files; save-session required |
 | Tier 1 | + claude-mem | Episodic memory via hooks; claude-mem searches at session start |
 | Tier 2 | + context-mode | ~98% token reduction on heavy tool outputs |
+
+---
+
+## External-system integration patterns (WFC-003/004)
+
+Patterns for integrating an external/owned-elsewhere database (e.g. PCMA) into a DB design.
+
+### WFC-003 — Synonym-based environment switch
+When a view/function depends on an external object that differs by environment (dev mock vs
+prod linked server), **abstract it with a `SYNONYM`** so consuming objects never hardcode the path.
+
+```sql
+-- DEV (local mock):
+CREATE SYNONYM dbo.synPCMAStatusRev FOR [Mock_PCMA].dbo.PCMA_vw_..._Revision;
+-- PROD (linked server) — swap this ONE line at deploy:
+-- CREATE SYNONYM dbo.synPCMAStatusRev FOR [PCMA_DB].[pcma_db_myps].[dbo].[PCMA_vw_..._Revision];
+```
+Every view references `dbo.synPCMAStatusRev` — zero code change between environments; only the
+synonym definition swaps. Keeps dev runnable without the production linked server.
+
+### WFC-004 — Live-overlay view for externally-owned data (don't store it)
+If a field's source of truth is **another system**, do **not** store it as a column (it goes stale
+and needs sync). Expose it via a **view that joins the external source live**:
+
+```sql
+CREATE VIEW dbo.vProjectComponentCost AS
+SELECT pcc.*, pcma.proj_comp_construction_status_code, pcma.is_packaged
+FROM dbo.tProjectComponentCost pcc
+LEFT JOIN dbo.synPCMAStatusRev pcma
+    ON pcma.myps_project_id_FK = ... AND pcma.project_component_id = ...;
+```
+- Drop the stored column + its lookup table; the external system owns the value.
+- LEFT JOIN so rows pre-integration (e.g. pre-publish) return NULL gracefully.
+- Read-only across the linked server — never write to the external system from here.
+- Pairs with WFC-003 (the join target is a synonym).
+
+**When NOT to use:** if you need point-in-time history of the external value, snapshot it
+deliberately (a revision-style copy) rather than a live overlay.

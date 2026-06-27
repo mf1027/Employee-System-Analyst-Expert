@@ -15,8 +15,8 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-010
-Next-WFC: WFC-003
+Next-ID: SKL-011
+Next-WFC: WFC-005
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
 > dual-lens skill: Lane A (friction → `SKL-`), Lane B (successful workflows → `WFC-`).
@@ -27,7 +27,7 @@ Next-WFC: WFC-003
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
-_None open — all resolved into SKL-008/009 below._
+_None open — all resolved into SKL-008/009/010 below._
 
 ## Workflow candidates (awaiting `/check-improvements` — Lane B)
 
@@ -47,6 +47,15 @@ _None open — all resolved into SKL-008/009 below._
 | SKL-009 | Completeness must enumerate the FULL child graph | 🔴 | Applied: `dba-schema-drill` §7 — assert every FK-child (funding/costs/cost-yr/work/locations/statuses), not a hand-picked subset. Caught after SKL-007 "resolved" (component-depth gap). | **Resolved** 2026-06-26 |
 | WFC-001 | Transactional routing drill (force→verify→ROLLBACK) | 🟢 | Applied: codified as a technique in `dba-schema-drill` (Reusable techniques). Proven 4+ times across revision views. | **Resolved** 2026-06-26 |
 | WFC-002 | Seed / drill split (reusable fixture + validation gate) | 🟢 | Applied: convention in `dba-schema-drill` (Reusable techniques). `*-mock-data.sql` (persistent seed) + `drill-*.sql` (validate). | **Resolved** 2026-06-26 |
+| SKL-010 | Schema change isn't "done" until consumer docs updated (same pass) | 🔴 | Applied: definition-of-done gate in `dba-cross-domain-impact` + `dba-schema-changelog` + `CLAUDE.md` §9; step-6 widened to FK width + GO-batch checks. Operator prompted 2× re docs this session — docs are consumers, not follow-ups. | **Resolved** 2026-06-27 |
+| WFC-003 | Synonym-based env-switch for external dependencies | 🟢 | Applied: pattern note in `references/integrations.md`. dev (Mock_PCMA) vs prod (linked server) via one synonym; views never hardcode environment. | **Resolved** 2026-06-27 |
+| WFC-004 | Live-overlay view for externally-owned data (don't store) | 🟢 | Applied: pattern note in `references/integrations.md`. External-system-owned fields (PCMA construction status) → read-time view overlay, not stored columns. | **Resolved** 2026-06-27 |
+
+**SKL-010 root cause (definition-of-done gap):** the *grounding* lessons (SKL-006/008) landed —
+this session I verified ComponentId/casing/FK against the real source before designing. But the
+*"done means consumers updated"* lesson hadn't: I changed the schema, declared done, left 6 docs
+stale until the operator asked twice. The skill (`dba-cross-domain-impact`) already lists docs as
+consumers — the gap was not firing it. Fix makes consumer-update part of definition-of-done.
 
 **Root cause (SKL-006/007/008/009): circular validation** — generating data from assumption X,
 building code assuming X, drilling against that data. All share X, so the drill can't catch a

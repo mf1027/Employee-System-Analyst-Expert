@@ -149,6 +149,21 @@ Updated files:
 
 ---
 
+## Definition of Done — a schema change isn't complete until its consumers are updated (SKL-010)
+
+A changelog entry records WHAT changed — but the change is **not done** until every *consumer*
+of the changed object is updated **in the same pass**. Run `dba-cross-domain-impact` to enumerate
+them, then update them before reporting the change complete. Consumers always include:
+
+- **Schema file(s)** + this changelog
+- **Mock/seed data** + **drills** (they INSERT into / assert the changed shape)
+- **Views / functions / SPs** that reference the object
+- **Documentation:** `database.md`, ERDs, data-flow diagrams, design specs, developer handoffs
+- **ADR** in `decisions.md`
+
+> Lesson (SKL-010): docs/diagrams/specs are **consumers, not optional follow-ups**. Leaving them
+> stale until the operator asks is the failure this gate prevents. "Done" = consumers updated too.
+
 ## Rules
 
 1. **Every schema file change gets a changelog entry.** No exceptions.
@@ -159,6 +174,8 @@ Updated files:
 4. **Version in the file, not just in decisions.md.** The schema file itself carries its
    version history so you don't need to cross-reference another file to understand it.
 5. **Consolidated changelog is optional but recommended** for projects with 3+ schema files.
+6. **Not done until consumers are updated** (see Definition of Done above) — run
+   `dba-cross-domain-impact` and update docs/diagrams/specs/mock/drills in the same pass.
 
 ---
 
