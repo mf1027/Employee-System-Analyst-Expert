@@ -156,13 +156,17 @@ of the changed object is updated **in the same pass**. Run `dba-cross-domain-imp
 them, then update them before reporting the change complete. Consumers always include:
 
 - **Schema file(s)** + this changelog
-- **Mock/seed data** + **drills** (they INSERT into / assert the changed shape)
+- **Mock/seed data** + **drills** (they INSERT into / assert the changed shape) — and every drill
+  must be **re-executed to green** in the same pass, not merely edited (SKL-013)
 - **Views / functions / SPs** that reference the object
 - **Documentation:** `database.md`, ERDs, data-flow diagrams, design specs, developer handoffs
 - **ADR** in `decisions.md`
 
 > Lesson (SKL-010): docs/diagrams/specs are **consumers, not optional follow-ups**. Leaving them
 > stale until the operator asks is the failure this gate prevents. "Done" = consumers updated too.
+> Lesson (SKL-013): drills are **executable** consumers — editing them is not enough, re-run the
+> whole suite to green (clean-slate per drill). Caught live: 5 of 6 drills silently broken while
+> docs listed them valid with check counts.
 
 ## Rules
 
@@ -175,7 +179,8 @@ them, then update them before reporting the change complete. Consumers always in
    version history so you don't need to cross-reference another file to understand it.
 5. **Consolidated changelog is optional but recommended** for projects with 3+ schema files.
 6. **Not done until consumers are updated** (see Definition of Done above) — run
-   `dba-cross-domain-impact` and update docs/diagrams/specs/mock/drills in the same pass.
+   `dba-cross-domain-impact` and update docs/diagrams/specs/mock/drills in the same pass, and
+   **re-execute every drill to green** (SKL-013) — an edited-but-unrun drill is not done.
 
 ---
 

@@ -122,6 +122,15 @@ These are always active. No mode, client, or task overrides them.
    deliverable — the Understanding Check gate applies. Do not skip the chain and jump to a
    CREATE TABLE. If the DDL exists, ingest it first; then ask the process questions informed
    by the real structure; then trace, review, and drill before locking.
+   **Design preflight — read your OWN prior deliverables first (SKL-011):** before interviewing to
+   design any module, scan the project's own `deliverables/diagrams/`, `deliverables/documents/`,
+   and `decisions.md` for confirmed prior design of that module. If it exists, start from it and
+   reconcile deltas (operator wins on conflict) — never re-derive from scratch. A status label like
+   "interview pending" is not proof no design exists; open the artifacts, don't trust the label.
+   **sqlcmd runs via PowerShell, never Git Bash (SKL-005):** always execute `sqlcmd` through the
+   PowerShell tool — `& sqlcmd -S "SERVER\INSTANCE" -E -d db -Q "…"` (or `-i file.sql`). In Git Bash
+   the `-i`/interactive path fails with a misleading "-E and -U/-P mutually exclusive" error. This
+   is the standing rule for all DB execution against `myps_db` / `LOCAL-MYPS` / `Mock_PCMA`.
    **As-built semantics hard gate (SKL-006/008):** when the target schema derives from an existing
    system, the source DB + operator are ground truth for *semantics* (enum meanings, lookup
    values, process-guaranteed cardinality, **generated-ID formats, and derivation rules**). DDL
@@ -131,10 +140,15 @@ These are always active. No mode, client, or task overrides them.
    from the operator or real source rows — generated formats are not lookup values, so the enum check
    won't catch them. Before drilling, **verify the fixture matches the full entity graph the real
    process produces** (no hollow parents). A green drill on invented data is worse than no drill.
-   **Definition-of-done — docs are consumers (SKL-010):** a schema change is NOT done until every
-   consumer is updated **in the same pass** — schema files, mock/seed, drills, *and* the docs
-   (`database.md`, ERDs, data-flow diagrams, design specs, dev handoffs, consolidated process-flow).
-   Run `dba-cross-domain-impact` to enumerate them. Never report a change done with stale docs.
+   **Definition-of-done — docs are consumers (SKL-010); drills are EXECUTABLE consumers (SKL-013):**
+   a schema change is NOT done until every consumer is updated **in the same pass** — schema files,
+   mock/seed, drills, *and* the docs (`database.md`, ERDs, data-flow diagrams, design specs, dev
+   handoffs, consolidated process-flow). Run `dba-cross-domain-impact` to enumerate them. And then
+   **re-execute EVERY drill to green**, not just the one you touched — clean-slate per drill (targeted-
+   cleanup drills share business keys and can't coexist; every drill header needs `SET QUOTED_IDENTIFIER ON`
+   or it hits Msg 1934). Editing a drill without running it — or trusting a doc that lists a drill as
+   valid without an execution behind it — is the SKL-013 trap (5 of 6 drills silently broken after a
+   PCMA refactor + rename). Never report a change done with stale docs or an un-run drill.
 
 10. **Auto-capture without being asked.** Whenever a decision, requirement, risk, assumption, or open
     question emerges in conversation — even informally — log it immediately with the correct ID.

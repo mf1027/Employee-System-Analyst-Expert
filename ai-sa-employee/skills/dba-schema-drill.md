@@ -36,6 +36,30 @@ Invoke when:
 
 ---
 
+## Drill-authoring conventions (SKL-014) — write drills that can actually be re-run
+
+A drill suite is only useful if every drill can be executed on demand. Caught live: a whole suite
+couldn't be run *as a suite* — two drills shared a program key, targeted-cleanup drills left orphans
+that blocked re-runs, one wasn't self-seeding, and two scripts hit **Msg 1934** for a missing SET
+option. Every drill MUST follow these to stay runnable:
+
+1. **Header SET options — always.** Start every drill with
+   `SET NOCOUNT ON; SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON; SET XACT_ABORT ON;`.
+   Project/program tables carry filtered indexes / computed columns — without `QUOTED_IDENTIFIER ON`
+   any INSERT/UPDATE/DELETE on them fails with *Msg 1934 (incorrect SET options)*.
+2. **Unique business-ID namespace per drill.** No two drills may share a program/project key
+   (`FP-2026-0001` was claimed by two drills → their targeted cleanups collided). Give each drill its own prefix.
+3. **Self-seed every FK parent.** A drill creates the programs/projects/lookups its rows reference —
+   never depend on data another drill (or a prior era's mock) left behind. A hardcoded surrogate key
+   (`ProjectRevisionFK = 18`) is the classic trap; capture real IDs with `SCOPE_IDENTITY()`.
+4. **Full-truncate OR clean-slate reset.** Prefer a children-first full truncate (see
+   `scripts/reset-transactional.sql`). If a drill uses targeted cleanup instead, run it against a fresh
+   reset — targeted-cleanup drills can't safely coexist with foreign residue.
+5. **Idempotent + self-cleaning.** Re-runnable from any state: clean the prior run at the top, remove
+   what you seeded at the end.
+
+---
+
 ## Steps
 
 ### 1. Generate the lifecycle script (full-content fixtures — SKL-007)
@@ -408,6 +432,13 @@ The drill FAILS if:
 4. **Every failure mode gets a mitigation.** "What could go wrong" is not useful
    without "how to prevent it" or "how to detect it after the fact."
 5. **Cleanup is mandatory.** The drill must be re-runnable. Provide the DELETE block.
+6. **After ANY schema change, re-run the WHOLE suite to green (SKL-013).** Editing the one drill you
+   touched is not enough — a schema change (dropped column, rename, moved status) can rot *any* drill.
+   Execute every drill (clean-slate per drill) and confirm each is green before calling the change done.
+   A drill is not "valid" in the docs until an execution proves it — 5 of 6 were silently broken while
+   `database.md` listed all 6 as valid with check counts.
+7. **SET options in every header (SKL-014).** `QUOTED_IDENTIFIER ON` + `ANSI_NULLS ON` — omitting them
+   fails with Msg 1934 on tables with filtered indexes / computed columns.
 
 ---
 
@@ -422,6 +453,9 @@ The drill FAILS if:
 - [ ] Referential-completeness asserts pass (no hollow fixtures — every parent has its process-guaranteed children)
 - [ ] At least 5 failure modes documented with mitigations
 - [ ] Cleanup block provided (commented out, children-first)
+- [ ] Header sets QUOTED_IDENTIFIER ON + ANSI_NULLS ON (SKL-014 — avoids Msg 1934)
+- [ ] Drill self-seeds its FK parents + uses a unique business-ID namespace (SKL-014 — no cross-drill collision)
+- [ ] Whole suite re-executed to green after any schema change, clean-slate per drill (SKL-013)
 - [ ] Script is syntactically valid T-SQL
 
 ## Failure exit

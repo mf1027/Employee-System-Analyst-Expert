@@ -15,7 +15,7 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-011
+Next-ID: SKL-015
 Next-WFC: WFC-005
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
@@ -27,7 +27,7 @@ Next-WFC: WFC-005
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
-_None open — all resolved into SKL-008/009/010 below._
+_None open — the 2026-07-01 drill-audit breadcrumb was analyzed and promoted to SKL-013 + SKL-014 below._
 
 ## Workflow candidates (awaiting `/check-improvements` — Lane B)
 
@@ -35,12 +35,25 @@ _None open — all resolved into SKL-008/009/010 below._
   across MYPS modules · already codified as the `database-admin` chain · [myps] → captured, no action
 - 2026-06-25 · 4-diagram module documentation set (workflow state + data-flow + ERD + module-map) · [myps]
   → candidate, observed once — keep observing before codifying
+- 2026-07-01 · User-level process walkthrough (plain-language ①–⑧ flow, confirm each step) before schema
+  design on a business-rule-heavy module · [myps] → **log only** — observed once, was operator-driven
+  (they said "discuss the process first"). Promote to WFC- if I self-initiate it next complex module.
+- 2026-07-01 · Consumer-suite audit-and-repair: connectivity → count-reconcile vs docs → grep consumers for
+  dropped-object refs → EXECUTE each → ground every failure in live `sys.columns`/FK before editing → fix
+  against the passing/gold-standard drill as reference → clean-slate re-run to green → update docs · [myps]
+  → **log only** — observed once, clean result (6/6 green). This is the operational side of SKL-013; promote
+  to WFC- if it recurs on another schema change.
 
 ## Proposals (`SKL-` / `WFC-`)
 
 | ID | Title | Priority | Recommendation | Status |
 |---|---|---|---|---|
-| SKL-005 | Standardize sqlcmd invocation across shells | 🟡 | Standing instruction: always use PowerShell for sqlcmd (3x recurrence) | Open — tackle later |
+| SKL-013 | Re-run EVERY drill + verify green after any schema change (extends SKL-010) | 🔴 | Applied: DoD gate extended in `dba-cross-domain-impact` (rules 5–6 + checklist), `dba-schema-changelog` (DoD + rule 6), `dba-schema-drill` (rule 6 + checklist), `CLAUDE.md` §9. Drills are executable consumers — execute EVERY drill to green after a schema change; no doc labels a drill valid without an execution. Caught live: 5/6 broken while docs vouched for all 6. | **Resolved** 2026-07-01 |
+| SKL-014 | Drill-authoring hygiene: isolated keys + self-seed/clean-slate + `QUOTED_IDENTIFIER` | 🟡 | Applied: `dba-schema-drill` new "Drill-authoring conventions (SKL-014)" section + rule 7 + checklist (header SET options, unique business-ID namespace, self-seed FK parents, full-truncate/clean-slate, idempotent). Shipped reusable `memory/clients/myps/myps-system/scripts/reset-transactional.sql` (children-first, `QUOTED_IDENTIFIER ON`). Enables SKL-013 to run cleanly. | **Resolved** 2026-07-01 |
+| SKL-012 | Trigger table says "Invoke X" but employee skills aren't registered Skill-tools | 🟢 | Applied: one-line note in `skills.md` §6 (Skill file index) — employee skills are read-not-invoked; `Skill()` returns *Unknown skill*, read the `.md` file instead. Recurred 2+ times; trivial fix taken during the same skill-file pass. | **Resolved** 2026-07-01 |
+| SKL-005 | Standardize sqlcmd invocation across shells | 🟡 | Applied: standing instruction in `CLAUDE.md` §9 — always run sqlcmd via PowerShell (`& sqlcmd … -Q`/`-i`), never Git Bash (the `-i` path throws a misleading "-E and -U/-P mutually exclusive" error). 4th+ recurrence, 0 failures once switched. | **Resolved** 2026-07-01 |
+| SKL-011 | Design preflight: read the project's OWN prior deliverables before re-interviewing a module | 🔴 | Applied: `dba-schema-ingest` §0 (design preflight) + `CLAUDE.md` §9 standing rule. A NEW circle beyond SKL-006/008 — ground in your own confirmed deliverables, not just the source system. Caught live: ~10-turn `tLumpSumDetails` interview when confirmed `tLSWallets` C4 model + 8 flows already existed. | **Resolved** 2026-07-01 |
+| SKL-012 | Trigger table says "Invoke X" but employee skills aren't registered Skill-tools | 🟢 | `Skill(self-improvement)` → *Unknown skill* → fell back to Read. Options: C (one-line doc note that employee skills are read-not-invoked) / D (do nothing — 2-sec recovery). Operator did not select for this pass. | Open — logged, not applied |
 | SKL-006 | Ground in the as-built source before building | 🔴 | Applied: `dba-schema-ingest` §5 + `CLAUDE.md` §9 + cross-session memory | **Resolved** 2026-06-25 |
 | SKL-007 | Drills must use full-content fixtures, not hollow | 🔴 | Applied: `dba-schema-drill` §7 + §1 + fail criteria + checklist | **Resolved** 2026-06-25 |
 | SKL-008 | Extend grounding to generated FORMATS + derivation rules | 🔴 | Applied: `dba-schema-ingest` §5.5 + `CLAUDE.md` §9 — verify generated IDs (e.g. `BP01000001LZ`) + rollups, not just enum values. Caught after SKL-006 "resolved" (invented ProjectId). | **Resolved** 2026-06-26 |

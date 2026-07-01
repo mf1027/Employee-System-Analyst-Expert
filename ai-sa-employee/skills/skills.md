@@ -327,7 +327,11 @@ all risks logged; zero-downtime alternatives evaluated.
 
 ## 6. Skill file index
 
-All invokable skills live in `ai-sa-employee/skills/`:
+All invokable skills live in `ai-sa-employee/skills/`.
+
+> **How to invoke (SKL-012):** these are **employee skills, not registered `Skill()` tools** — calling
+> `Skill(name)` returns *Unknown skill*. To invoke one, **read its `.md` file with the Read tool** and
+> follow it. "Invoke X" / "Invoke by saying…" below means *read that skill file and apply it*, not call a tool.
 
 | File | Invoked by saying... |
 |---|---|

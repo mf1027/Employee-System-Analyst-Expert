@@ -30,6 +30,35 @@ Invoke when:
 
 ## Steps
 
+### 0. Design preflight — read the project's OWN prior deliverables first (SKL-011)
+
+**Before any design interview, check whether the module is already (partly) designed.** The
+as-built source (SKL-006/008) is one ground truth; the **project's own confirmed deliverables are
+another** — and re-deriving a design that already exists wastes the operator's time and risks
+building something *different* from what was agreed.
+
+For the module in scope, scan the client/project folder before asking design questions:
+
+| Where | Look for |
+|---|---|
+| `deliverables/diagrams/*.md` | C4 models, process-flow diagrams, ERDs for THIS module |
+| `deliverables/documents/*.md` | design specs, developer handoffs, functional specs |
+| `decisions.md` | an ADR that already locked this module's design |
+| `database.md` module table | status lines like "C4 model done", "flows done" — **open and read those files, don't just note the label** |
+
+Grep the module name (and its synonyms) across the project folder. If confirmed design exists:
+- **Start from it**, reconcile deltas against the operator's latest answers (operator wins on
+  conflict), and note what changed — do **not** re-interview from scratch.
+- A status label such as *"interview pending"* is **not** proof no design exists — a prior client
+  meeting may have produced confirmed rules. Verify by opening the artifacts, not by trusting the label.
+
+Only when no prior confirmed design is found (or the operator says start fresh) proceed to interview.
+
+> Caught live (SKL-011): a full `tLumpSumDetails` schema interview ran ~10 turns before the
+> confirmed `tLSWallets` C4 model + 8 process flows (client-meeting 2026-06-16) were found — only
+> because the operator said "check the md files." The signal ("C4 model done") was already in
+> `database.md` and got read past.
+
 ### 1. Locate the DDL files
 
 Check `reference/` for `.sql` files. Identify:

@@ -160,7 +160,7 @@ EXECUTION ORDER:
 4. Update drill-multi-revision.sql (same)
 5. Update myps-views.sql → vProjectLatest (add column to SELECT)
 6. Update ERD diagram (cosmetic)
-7. Run all affected drills to validate
+7. Run the ENTIRE drill suite to green — clean-slate per drill (SKL-013/014), not just affected ones
 ```
 
 ---
@@ -211,13 +211,20 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
    User Management), document the FK as deferred and note when it should be wired.
 4. **Breaking > Incomplete > Cosmetic.** Fix Breaking issues before merging. Incomplete
    can be a follow-up. Cosmetic can wait.
-5. **Run the drills.** The final step is always: execute all affected drills and verify
-   they still pass. Paper analysis is not enough.
-6. **Definition of Done — docs are consumers, not follow-ups (SKL-010).** A schema change is
-   NOT complete until **every** consumer is updated **in the same pass** — including the
-   documentation consumers: `database.md`, ERDs, data-flow diagrams, design specs, developer
-   handoffs, and the consolidated process-flow doc. Do not report a change "done" with stale
-   docs. (Caught live: a component rework left 6 docs stale until the operator asked — twice.)
+5. **Run the drills — ALL of them, to green (SKL-013).** The final step is always: execute
+   **every** drill in the suite (not just the ones you think are affected) and confirm each runs
+   green. Drills are executable consumers that rot silently: caught live — a PCMA refactor +
+   ADR-018 rename left 5 of 6 drills broken while the docs listed all 6 as valid with check counts.
+   Paper analysis is not enough; a drill is not "valid" until an execution proves it.
+   Note the runner reality (SKL-014): targeted-cleanup drills can share business keys and can't
+   always coexist — run each against a clean transactional slate.
+6. **Definition of Done — docs are consumers (SKL-010); drills are EXECUTABLE consumers (SKL-013).**
+   A schema change is NOT complete until **every** consumer is updated **in the same pass** — the
+   documentation consumers (`database.md`, ERDs, data-flow diagrams, design specs, developer
+   handoffs, consolidated process-flow) **and** every drill **re-executed to green**. Do not report
+   a change "done" with stale docs or an un-run drill. (Caught live: a component rework left 6 docs
+   stale until the operator asked — twice (SKL-010); a later PCMA refactor + rename left 5 of 6
+   drills broken while docs vouched for them (SKL-013).)
 
 ---
 
@@ -229,7 +236,7 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
 - [ ] Constraint compatibility verified (type match, existing data, deferred FKs)
 - [ ] Execution order specified
 - [ ] Breaking impacts have concrete fix actions
-- [ ] Drills re-run after all changes applied
+- [ ] **EVERY** drill re-executed to green (SKL-013) — not just the touched ones; no drill labeled "valid" in docs without an execution behind it
 - [ ] FK width/length checked (not just type); CREATE VIEW/SP/FN GO-separated
 - [ ] **Definition of Done:** docs/diagrams/specs/process-flow updated in the same pass (SKL-010)
 
