@@ -148,6 +148,15 @@ Check every place columns come in *matched pairs*, both sides:
 consumers. Any file containing both is a desync suspect. Any file with only the old name is unmigrated.
 Verify INSERT↔SELECT and JOIN both-sides pairing by reading the statement, not just matching the name.
 
+**Homonym trap (SKL-015):** before a global find-replace, check whether the old name *also* names a
+column on a **different, unrelated table**. `TransactionId` was dropped from `tTransactionLog` but is a
+live column on `tRevisionDetails` — a blind replace-all of `TransactionId` would have silently corrupted
+the `tRevisionDetails` INSERT. Renames must disambiguate **by table**, never by bare column name. After
+editing, grep the *old* name one more time and confirm every survivor sits on a table that legitimately
+still owns it — a straggler most often hides in the one syntactic position your edits didn't target
+(a `WHERE`/`DELETE` filter, not the INSERT/SELECT you were focused on). Caught live: a `WHERE
+TransactionId IN (…)` cleanup line survived a rename pass; only the drill re-run (SKL-013) flagged it.
+
 ### 7. Recommend execution order
 
 If multiple files need updating, state the order:
