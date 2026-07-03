@@ -332,6 +332,10 @@ All invokable skills live in `ai-sa-employee/skills/`.
 > **How to invoke (SKL-012):** these are **employee skills, not registered `Skill()` tools** — calling
 > `Skill(name)` returns *Unknown skill*. To invoke one, **read its `.md` file with the Read tool** and
 > follow it. "Invoke X" / "Invoke by saying…" below means *read that skill file and apply it*, not call a tool.
+> **Slash menu (added 2026-07-03):** every skill also has a thin wrapper in `.claude/commands/<name>.md`
+> (+ aliases `/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`), so `/gather-requirements`
+> etc. appear in Claude Code's slash-command menu. Wrappers are entry points ONLY — they redirect here;
+> never put skill content in a wrapper. New skill → also generate its wrapper (see `new-skill`).
 
 | File | Invoked by saying... |
 |---|---|
@@ -345,6 +349,7 @@ All invokable skills live in `ai-sa-employee/skills/`.
 | `status-report.md` | "status update", "RAG report" |
 | `plan-project.md` | "build the plan", "timeline", "WBS" |
 | `scrum-master.md` | "be the scrum master", "facilitate the sprint", "run the standup/daily", "sprint planning/review", "retrospective", "backlog refinement", "velocity", "burndown", "impediment/blocker", "are we doing scrum right", "kanban", "scrumban", "WIP limits", "scale to multiple teams" |
+| `task-board.md` | "task board", "show the board", "move [ID] to [status]", "assign [ID] to", "sprint planning" (board recording — scrum-master runs the ceremony), "what's blocked", "what's next", "generate the xlsx report" — Jira/monday-style board on the project's `board.md`; xlsx = Dashboard+BE+FE+QA sheets, WORKDAY dates, variance→calibration |
 | `scope-estimate.md` | "estimate this", "how long will X take" |
 | `advise-client.md` | "advise the client", "what should we tell them" |
 | `project-status.md` | "what are we working on", "where are we" |
@@ -381,8 +386,8 @@ All invokable skills live in `ai-sa-employee/skills/`.
 | `system-drill.md` | "run a drill", "test the system", "system check", "smoke test the employee" |
 | `self-improvement.md` | "/check-improvements", "check improvements", "what should we improve", "audit yourself", "any gaps in the system" · alias "/capture-workflow", "that worked, save the pattern", "should this be a skill" — **agent self-improvement**, dual-lens (distinct from B9 PM continuous-improvement): Lane A friction → `SKL-` proposals, Lane B successful workflows → `WFC-` proposals |
 | `memory-hygiene.md` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" — compacts/promotes/archives claude-mem against the ~50-entry budget so it never bloats or crashes |
-| `developer-handoff.md` | "hand this off to the developer", "make dev tickets", "implementation spec", "ready for dev" — packages design into `DEV-` tickets with acceptance criteria, build order, out-of-scope |
+| `developer-handoff.md` | "hand this off to the developer", "make dev tickets", "implementation spec", "ready for dev" — packages design into `DEV-` tickets with acceptance criteria, build order, out-of-scope. **Natural chain (WFC-005, observed 6×):** for each dev-ready module, run `developer-handoff` → `test-strategy` → an FE/BE task-breakdown pass (discipline sub-tasks, estimates, deps) → a user-level QA test plan (manual test cases) → board cards. Checkpoint accumulated decisions before delicate modules; sync every consumer doc in the same pass; give each shared service exactly one owner module. |
 | `api-contract-design.md` | "design the API", "what endpoints", "REST contract", "GraphQL schema", "OpenAPI" — routes, request/response shapes, status codes, error envelope, auth, versioning |
-| `test-strategy.md` | "test plan", "test strategy", "QA plan", "UAT plan", "definition of done", "regression checklist" — coverage matrix, scenarios, regression set, UAT scripts, exit criteria |
+| `test-strategy.md` | "test plan", "test strategy", "QA plan", "UAT plan", "definition of done", "regression checklist" — coverage matrix, scenarios, regression set, UAT scripts, exit criteria. Natural chain: follows `developer-handoff` — see WFC-005 there |
 | `data-migration-playbook.md` | "migrate the data", "move data from [old] to [new] schema", "ETL the legacy data", "backfill" — map→transform→order→validate→rollback (data level; below conversion-analysis) |
 | `calibration-review.md` | "calibrate", "estimate accuracy", "how accurate were our estimates", "were we right about the risks" — drives `calibration.md`: bias ratio, risk hit-rate, feed-forward correction into scope-estimate |

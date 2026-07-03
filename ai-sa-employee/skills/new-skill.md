@@ -16,7 +16,13 @@ If missing: ask "What should this skill do, and when should I invoke it?"
 3. Show the complete proposed file content.
 4. **Wait for "proceed" / "apply" / "yes" / "go ahead"** before writing.
 5. Save to `ai-sa-employee/skills/[name].md` (kebab-case name).
-6. Remind the developer to add it to the skill routing table in `CLAUDE.md` if it should be auto-routed.
+6. **Update ALL consumers in the same pass (SKL-010 applied to skills):**
+   - `.claude/commands/[name].md` — slash-menu wrapper (frontmatter `description:` = the skill's Purpose
+     first sentence; body = "Read and follow ai-sa-employee/skills/[name].md exactly … Apply it to: $ARGUMENTS")
+   - `CLAUDE.md` — trigger-table row + skills-list line + skill count (×2 in structure diagrams) + Build Status
+   - `ai-sa-employee/skills/skills.md` — index entry
+   - `README.md` — skill table row + counts
+   A skill is NOT done until all five consumers are updated — the operator caught README drift 2026-07-03.
 
 ## Output format
 ```

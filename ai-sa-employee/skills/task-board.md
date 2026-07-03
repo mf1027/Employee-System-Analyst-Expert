@@ -1,0 +1,121 @@
+# Skill: task-board
+
+## Purpose
+Run a per-project **Jira/monday.com-style task board** in plain markdown — statuses, assignees,
+priorities, sprints, dependencies, progress — driven entirely through chat, with an on-demand
+**xlsx report** (Dashboard + BE + FE + QA sheets) for the delivery team. The board is the **live
+status tracker**; the handoff/breakdown/QA docs remain the **spec**. One direction of truth:
+chat command → confirm → `board.md` → (optionally) regenerate xlsx.
+
+> **Drift rule (SKL-010 applied to ourselves):** card/sub-task **titles live in the board;
+> detail lives in the spec docs.** Never copy acceptance criteria, tech notes, or steps into the
+> board — link the spec. If a title changes, change it in the board and note the spec doc if it
+> must follow.
+
+## Trigger
+"task board" / "show the board" / "board status" / "move [ID] to [status]" / "start [ID]" /
+"tick [sub-task]" / "assign [ID] to [name]" / "sprint planning" / "add [IDs] to S[N]" /
+"what's blocked" / "what's next" / "progress" / "burndown" / "generate the xlsx report".
+Chain: after `developer-handoff` + `test-strategy` produce the tickets; alongside `scrum-master`
+for the ceremonies (scrum-master runs the meeting, task-board records the outcome).
+
+## Minimum context required
+- The project's `board.md` (`memory/clients/[client]/[project]/board.md`). If none exists,
+  offer to migrate one from the project's DEV register / breakdown docs (Tier 1 — confirm first).
+- For xlsx generation: the board + the project's user-level QA plans.
+
+---
+
+## Board file format — `board.md`
+
+```markdown
+# Board — [Project]
+> Managed by `task-board`. Statuses: Backlog | To Do | In Progress | In Review | QA | Blocked | Done
+> Est→Days: S=1 · M=2 · L=5 (config — change here, xlsx follows)
+
+## Sprints
+| Sprint | Dates | Goal | Status |
+|---|---|---|---|
+| S1 | TBD | [goal] | proposed |
+(blank Sprint on a card = Backlog; `GATED` = cannot be planned — name the gate)
+
+## Epic: [Module] ([DEV range]) — [n]/[total] done
+### DEV-NNN · [title] — `Status` · P1 · M
+> Deps: DEV-… · Sprint: — · Assignee: — · Start: — · Spec: [breakdown doc]
+- [ ] BE-NNN.1 (S) [short title]
+- [ ] FE-NNN.1 (M) [short title]
+
+## Activity log
+- YYYY-MM-DD · DEV-NNN → In Progress · [who/why one-liner]
+```
+
+Field rules:
+- **Status** — card-level; the 7 values above, nothing else. Sub-tasks are just checkboxes.
+- **Priority** — P1 (critical path) / P2 (default) / P3 (optimization, docs).
+- **Est** — card-level S/M/L (from the handoff); sub-tasks carry their own (S/M/L) inline.
+- **Deps** — card-level "don't start before" list. Visual gate only — never auto-schedule from it.
+- **Sprint** — assigned at card level during sprint planning; sub-tasks inherit. Blank = Backlog.
+- **Activity log** — one line per status change, newest on top. This is the Jira history.
+
+## Chat commands (the UI)
+
+| Command | Action |
+|---|---|
+| "show the board" | Render: per-epic `done/total` progress, count per status, blocked list, current sprint summary. Compact — not the whole file. |
+| "move DEV-045 to in progress" / "start DEV-045" | Set status, log activity. Warn if unmet Deps ("DEV-043's dependency DEV-057 is not Done — proceed?"). |
+| "tick BE-050.2" / "done BE-050.2" | Check the sub-task box. If all boxes on a card are ticked and status ≠ Done, propose closing the card. |
+| "assign DEV-050 to [dev]" | Set assignee. |
+| "sprint planning" / "add DEV-035, 036 to S1" | Set Sprint on the cards; confirm capacity sanity (sum of Est-days vs sprint length × devs) and dependency order; update the Sprints table. |
+| "what's blocked" | Cards with status Blocked or with un-Done Deps, each with the reason/gate. |
+| "what's next" | Dependency-free, un-started cards in priority order — the pull list. |
+| "progress" / "burndown" | Per-epic + per-sprint % done; sprint scope vs done vs carry-over. |
+
+**Every mutation:** show the change in chat → apply to `board.md` → append the activity log line.
+Batch multiple changes from one message into one confirm.
+
+## xlsx report — on demand only ("generate the xlsx report")
+
+A **timestamped snapshot** (`[project]-board-YYYY-MM-DD.xlsx`), never a source of truth — edits
+flow chat → board → regenerate. Built with openpyxl; generator script lives at
+`memory/clients/[client]/[project]/scripts/generate-board-xlsx.py` (write on first use; reuse after).
+Output to the project's `deliverables/reports/`.
+
+| Sheet | Content |
+|---|---|
+| **Dashboard** | Per-epic progress, status counts, blocked list, Sprints table, Est→Days config lookup, holidays table (PH public holidays) |
+| **BE** / **FE** | One row per sub-task: `Task ID · Parent Card · Module · Task · Est · Days · Start Date · End Date · Actual End · Variance · Status · Sprint · Depends On · Priority · Assignee · Spec Link · Notes` |
+| **QA** | One row per **user-level test case** (from the `*-qa-user-level-test-plan.md` docs): `TC ID · Module · Area · Steps · Expected · Planned Date · Executed Date · Result · Severity · Tester · Bug Ref · Notes` |
+
+Formula/formatting spec:
+- `Days` = VLOOKUP(Est, config) — **S=1, M=2, L=5**, editable once on Dashboard.
+- `End Date` = `WORKDAY(Start, Days, Holidays)` — skips weekends + the holidays range.
+- `Variance` = `Actual End − End Date` (network days); red when positive. Feeds `calibration.md` —
+  after 2+ sprints run `calibration-review` on the variances.
+- `Start Date` / `Actual End` — **manual** (sprint-planning output / dev fills at completion).
+  **No auto-cascade from Depends On** — deliberate; cascading date formulas break on first contact
+  with reality. Depends On is a visual gate.
+- Status column: data-validation dropdown, monday-style fills (Backlog gray · To Do blue ·
+  In Progress orange · In Review purple · Done green · Blocked red). Frozen header + autofilter
+  every sheet. Overdue rule: `End Date < TODAY() AND Status <> Done` → red row.
+
+## Steps (any invocation)
+1. Read `board.md`. No board → offer migration (Tier 1 gate).
+2. Parse the command; show the intended change(s); on confirm, write the file + activity log.
+3. On "show/progress/blocked/next" — render views only, no writes.
+4. On xlsx request — regenerate the script's data from the current board + QA plans, run it,
+   report the output path. Never hand-edit a previous workbook.
+5. Sprint planning — apply `scrum-master` discipline: capacity first, pull by priority within
+   dependency order, flag overcommit; record the sprint goal in the Sprints table.
+
+## Quality checklist
+- [ ] Board mutations confirmed in chat before writing; activity log appended
+- [ ] No spec detail copied into the board (titles + links only)
+- [ ] Deps warnings honored on start/move; GATED cards never pulled into a sprint
+- [ ] xlsx is a timestamped snapshot in `deliverables/reports/`; formulas per spec (WORKDAY + holidays + variance)
+- [ ] QA sheet sourced from the user-level QA plans, not invented
+- [ ] Sprint assignments at card level; capacity sanity-checked; sprint goal recorded
+- [ ] Variance data offered to `calibration-review` once actuals accumulate
+
+## Failure exit
+"No `board.md` exists for this project and there's no DEV register / breakdown set to migrate
+from — run `developer-handoff` first so there are tickets to track, then I'll stand up the board."

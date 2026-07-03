@@ -262,6 +262,7 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `test-strategy` | "test plan", "QA plan", "UAT plan", "regression checklist" |
 | `data-migration-playbook` | "migrate the data", "move data from [old] to [new] schema", "backfill" |
 | `calibration-review` | "calibrate", "estimate accuracy", "were we right about the risks" |
+| `task-board` | "task board", "show the board", "move [ID] to [status]", "sprint planning", "what's blocked", "generate the xlsx report" — Jira/monday-style board on the project's `board.md`; chat commands mutate (confirm-first), xlsx report on demand (Dashboard + BE + FE + QA sheets, weekend-aware dates, variance → calibration) |
 
 **Meta skills (the agent improves itself):**
 
@@ -311,6 +312,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (read at every session start)
 ├── README.md                          ← This file
 ├── .claude/settings.json              ← MCP servers + env vars + permissions
+├── .claude/commands/                  ← 56 slash-command wrappers (52 skills + 4 aliases) → point to ai-sa-employee/skills/
 ├── .gitignore
 ├── package.json
 │
@@ -322,9 +324,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 51 SA/PM/DBA/delivery/meta skills (flat)
+│   ├── skills/                        ← 52 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [51 individual skill files]
+│   │   └── [52 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready

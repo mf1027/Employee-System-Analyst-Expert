@@ -17,6 +17,15 @@ Invoke when the operator says "hand this off to the developer", "make dev ticket
 into tasks for coding", "what does the developer need", "implementation spec", "ready for dev",
 "gawing dev tasks". Also a natural chain after DESIGN/PLAN mode produces a locked design.
 
+**Module delivery pack (WFC-005, observed 6× across MYPS 2026-07-01/02):** for each dev-ready
+module, this skill is step one of a chain — `developer-handoff` → `test-strategy` → an FE/BE
+task-breakdown pass (discipline sub-tasks with estimates + deps) → a user-level manual QA test
+plan → cards on the project `board.md`. Run the whole chain per module rather than one step across
+all modules — it lets you checkpoint accumulated decisions before the next, more delicate module.
+Two things that made this repeat cleanly: sync every consumer doc (register, risks, decisions) in
+the *same* pass per module, not batched at the end; and give any service shared across modules
+(an ID generator, a validator, a rule engine) exactly one owning module so the others just consume it.
+
 ## Minimum context required
 - A confirmed requirement set (`REQ-` IDs) and/or a locked design (`ADR-`s, schema, architecture).
 - The target stack (so technical notes are concrete, not generic).

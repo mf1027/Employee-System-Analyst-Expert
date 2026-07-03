@@ -183,6 +183,7 @@ These are always active. No mode, client, or task overrides them.
 | "build the plan" / "timeline" / "WBS" / "gawin na nating plan" | Enter **PLAN**; invoke `plan-project` |
 | "be the scrum master" / "facilitate the sprint" / "run the daily/standup" / "sprint planning" / "sprint review" / "retro" / "retrospective" / "backlog refinement" / "are we doing scrum right" / "kanban" / "scrumban" / "WIP limits" / "scale to multiple teams" | Invoke `scrum-master`; facilitate per Scrum Guide 2020; log `IMP-`/`REC-` |
 | "velocity" / "burndown" / "sprint goal" / "are we on track this sprint" / "the team is blocked" / "impediment" / "remove this blocker" | Invoke `scrum-master`; flow/velocity (forecasting-only) + impediment removal (`IMP-`) |
+| "task board" / "show the board" / "move [ID] to [status]" / "assign [ID] to" / "sprint planning" / "what's blocked" / "what's next" / "generate the xlsx report" | Invoke `task-board`; Jira/monday-style board on the project's `board.md` — chat commands mutate (confirm-first), xlsx report on demand (Dashboard + BE + FE + QA sheets) |
 | "risks" / "what could go wrong" / "RAID" | Invoke `risk-management`; record `RISK-` IDs |
 | "database" / "schema" / "migration" / "query" / "performance" / "ERD" | Invoke `database-admin`; apply DBA lens |
 | "design the schema" / "restructure table" / "new table" / "merge tables" / "split table" / "rename column" / "move column" / "normalize" | Invoke `database-admin` **→ DBA sub-skill chain** (quick-ingest → interview → trace → review → drill). **Hard gate:** schema design/restructuring MUST run the chain before producing a recommended schema. |
@@ -264,7 +265,7 @@ ai-sa-employee/                 ← self-contained employee package (everything 
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-├── skills/                     ← 51 SA/PM/DBA/delivery/meta skills + skills.md index
+├── skills/                     ← 52 SA/PM/DBA/delivery/meta skills + skills.md index
 └── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
 
 (setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
@@ -333,7 +334,7 @@ All invokable skills live in `ai-sa-employee/skills/`. Full inventory and intera
 
 **SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review, conversion-analysis
 **Delivery skills (design → build bridge):** developer-handoff, api-contract-design, test-strategy, data-migration-playbook
-**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review, scrum-master, calibration-review
+**PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review, scrum-master, calibration-review, task-board
 **DBA skills:** database-admin → schema chain: dba-process-interview, dba-schema-ingest, dba-data-flow-trace, dba-schema-review, dba-schema-drill; additional: dba-execution-plan, dba-index-strategy, dba-cross-domain-impact, dba-sql-object-chain, dba-performance-baseline, dba-schema-changelog, dba-security-audit
 **Client skills:** advise-client, new-client-setup, new-project, resume-client
 **Memory/capture skills:** claude-mem, context-mode, ingest-reference, ingest-meeting-notes, end-of-task, learn-from-feedback
@@ -393,7 +394,8 @@ upstream and make future re-vendoring harder, for no functional gain.
 Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (this file)
 ├── .claude/
-│   └── settings.json                  ← MCP servers + env vars + permissions
+│   ├── settings.json                  ← MCP servers + env vars + permissions
+│   └── commands/                      ← 56 slash-command wrappers (52 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
 ├── .gitignore
 ├── package.json + package-lock.json
 │
@@ -405,7 +407,7 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (51 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (52 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
 │   │   └── [40 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
@@ -516,4 +518,5 @@ Employee System Analyst Expert/
 | Meta-skill system | ✅ Done 2026-06-24 — `self-improvement` (`/check-improvements` → `SKL-`), `workflow-capture` (`/capture-workflow` → `WFC-`), `memory-hygiene` (`/check-memory`); command-driven + cheap breadcrumb logging in `memory/improvement-backlog.md` (no ambient token cost) |
 | Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
 | Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |
-| Skill library count | ✅ 51 skills — `workflow-capture` merged into `self-improvement` (dual-lens: `SKL-`+`WFC-`) 2026-06-26 |
+| Skill library count | ✅ 52 skills — `task-board` added 2026-07-03 (Jira/monday-style board + xlsx report); `workflow-capture` merged into `self-improvement` 2026-06-26 |
+| Slash-command registration | ✅ Done 2026-07-03 — all 52 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility) |
