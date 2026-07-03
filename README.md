@@ -276,6 +276,66 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 
 ---
 
+## Task Delegation & Board Workflow
+
+Once a module's design is locked (schema confirmed, ADRs written, drills green), this is how you
+turn it into work a developer, tester, and PM can actually pick up — the **module delivery pack**.
+It chains four existing skills, then tracks the result on a live board.
+
+### The chain (run per module)
+
+```
+1. developer-handoff   →  "hand this off to the developer"
+   Produces:  DEV- tickets — acceptance criteria, tech notes, build order, out-of-scope
+
+2. test-strategy        →  "test plan for [module]"
+   Produces:  coverage matrix, scenarios, regression set, exit criteria (dev test automation)
+
+3. FE/BE task breakdown →  "break DEV-0xx down into FE and BE tasks"
+   Produces:  one sub-task list per discipline (BE-0xx.n / FE-0xx.n) with estimates + dependencies
+
+4. User-level QA plan   →  "write a manual QA test plan for [module]"
+   Produces:  plain test cases a human tester runs against the running app — steps, expected
+              result, severity — separate from the dev test-strategy in step 2
+
+5. task-board            →  "put [module]'s tickets on the board"
+   Produces:  cards on the project's board.md — one per DEV ticket, sub-tasks as a checklist
+```
+
+Run the **whole chain for one module** before moving to the next — that lets you checkpoint
+decisions (schema questions, scope calls) before they compound into the next, more complex module.
+Two habits that keep this clean across many modules:
+- **Sync every consumer doc in the same pass** (the tickets register, `risks.md`, `decisions.md`)
+  — don't batch it for later, it never happens later.
+- **Give any service shared across modules one owner.** If two modules both need an ID generator
+  or a validation rule, build it once in whichever module owns it first; the other just calls it.
+
+### Working the board day-to-day
+
+Once cards exist, drive everything through chat — the board file is never hand-edited:
+
+```
+"show the board"                        → progress per module, status counts, what's blocked
+"move DEV-045 to in progress"           → updates status, logs the change
+"tick BE-050.2"                         → checks off a sub-task
+"assign DEV-050 to [name]"              → sets the assignee
+"sprint planning — pull the next 2 weeks of foundation work" → proposes a sprint, waits for confirm
+"what's blocked" / "what's next"        → dependency-aware queries
+"generate the xlsx report"              → snapshot workbook: Dashboard + BE + FE + QA sheets
+```
+
+**Every board change is proposed in chat first — nothing writes to `board.md` until you confirm.**
+That confirmed markdown file is the single source of truth; the xlsx (when you ask for it) is
+always a timestamped snapshot generated *from* the confirmed board, never edited back into it.
+
+The xlsx's BE/FE sheets auto-calculate working-day end dates from a Start Date you enter (skips
+weekends), and an Actual End / Variance pair feeds `calibration-review` once real dates land.
+
+**Full skill reference:** `task-board` and `developer-handoff` in the Skills Reference table above;
+complete mechanics in `ai-sa-employee/skills/task-board.md`.
+
+---
+
 ## Memory System
 
 | What | Where | Pushed to git? |
@@ -365,6 +425,7 @@ Employee System Analyst Expert/
 │   ├── pdf2md.ps1 / pdf2md.sh         ← PDF → Markdown
 │   ├── fetch-libreoffice-local.ps1    ← Install LibreOffice into engines/ (in-project)
 │   ├── verify-engines.ps1 / .sh       ← Test document engines end-to-end
+│   ├── generate-board-xlsx.py         ← Task-board xlsx report (board.md → Dashboard+BE+FE+QA workbook)
 │   └── backup.ps1 / backup.sh         ← Client data + engines backup
 │
 ├── workspace/                         ← 🚫 GITIGNORED — local scratch: skill eval runs, temp tooling, throwaway analysis
@@ -405,4 +466,8 @@ The `setup.ps1` / `setup.sh` scripts check and install everything automatically.
 "weekly review"                              → portfolio sweep + system audit, RAG digest
 "run a drill"                                → synthetic client smoke test, PASS/FAIL report
 "backup client data"                         → zip all local-only data with retention
+"hand this off to the developer"             → DEV- tickets with acceptance criteria + build order
+"break DEV-050 into FE and BE tasks"         → discipline sub-tasks with estimates + dependencies
+"show the board"                             → per-module progress, status counts, blocked list
+"generate the xlsx report"                   → Dashboard + BE + FE + QA workbook snapshot
 ```

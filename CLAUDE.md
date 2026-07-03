@@ -456,6 +456,7 @@ Employee System Analyst Expert/
 │   ├── pdf2md.ps1 / pdf2md.sh         ← ✅ batch/bare-name/path resolution → @opendataloader/pdf → pypdf fallback
 │   ├── fetch-libreoffice-local.ps1    ← ✅ Extract LibreOffice MSI into engines/ (no system install)
 │   ├── verify-engines.ps1 / .sh       ← ✅ End-to-end document engine test (PASS/FAIL checklist)
+│   ├── generate-board-xlsx.py         ← ✅ Task-board xlsx report (any project's board.md → 4-sheet workbook; task-board skill)
 │   └── backup.ps1 / backup.sh         ← ✅ Zip client data + engines, retention-aware
 │   (Client-specific scripts do NOT live here — they go in
 │    memory/clients/[client]/[project]/scripts/ which is gitignored.)
