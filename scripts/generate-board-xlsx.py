@@ -22,6 +22,7 @@ Conventions (spec: ai-sa-employee/skills/task-board.md → "xlsx report"):
 Usage:
     python3 scripts/generate-board-xlsx.py --project memory/clients/myps/myps-system
     python3 scripts/generate-board-xlsx.py --project <dir> --out custom-name.xlsx
+    python3 scripts/generate-board-xlsx.py --project <dir> --module Program   # one epic only
 """
 import argparse
 import os
@@ -62,6 +63,33 @@ RE_EPIC = re.compile(r"^## Epic: (.+?) \((DEV-[^)]*)\)(.*)$")
 RE_CARD = re.compile(r"^### (DEV-\d+) · (.*?) — `([^`]+)` · (P\d) · ([SML])\s*$")
 RE_SUB = re.compile(r"^- \[( |x)\] ([A-Z]+-[\d.]+) \(([SML])\) (.*)$")
 RE_SPRINT_ROW = re.compile(r"^\| (S\d+|[^|]+?) \| ([^|]*) \| ([^|]*) \| ([^|]*) \|$")
+
+
+def normalize(s):
+    """Lowercase, alphanumeric-only — for loose matching across naming-convention drift
+    (e.g. board.md's "tTransactionLog" epic vs a QA-plan filename-derived "Transactionlog")."""
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def slugify(s):
+    """Lowercase, hyphen-separated — for filenames."""
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
+
+def find_epic(board, module_arg):
+    """Match --module against board epic names via normalized substring match (either
+    direction, so 'program' matches 'Program' and 'transactionlog' matches 'tTransactionLog').
+    Exits with the real epic names on no/ambiguous match rather than silently picking one."""
+    target = normalize(module_arg)
+    matches = [e for e in board["epics"]
+               if target in normalize(e["name"]) or normalize(e["name"]) in target]
+    available = ", ".join(e["name"] for e in board["epics"])
+    if not matches:
+        sys.exit(f"ERROR: --module '{module_arg}' matches no epic. Available: {available}")
+    if len(matches) > 1:
+        sys.exit(f"ERROR: --module '{module_arg}' matches multiple epics "
+                  f"({', '.join(m['name'] for m in matches)}). Be more specific. Available: {available}")
+    return matches[0]
 
 
 def parse_board(path):
@@ -245,10 +273,10 @@ def build_qa_sheet(wb, rows):
     return ws
 
 
-def build_dashboard(wb, board, task_rows, qa_count, src_path):
+def build_dashboard(wb, board, task_rows, qa_count, src_path, module_note=""):
     ws = wb.active
     ws.title = "Dashboard"
-    ws["A1"] = f"{board['title']} — Task Board Report"
+    ws["A1"] = f"{board['title']} — Task Board Report{module_note}"
     ws["A1"].font = Font(bold=True, size=14, color="1F4E78")
     ws["A2"] = f"Generated {datetime.now():%Y-%m-%d %H:%M} · source: {src_path} · SNAPSHOT — edits flow chat → board.md → regenerate"
     ws["A2"].font = Font(italic=True, size=9, color="808080")
@@ -308,7 +336,8 @@ def build_dashboard(wb, board, task_rows, qa_count, src_path):
 def main():
     ap = argparse.ArgumentParser(description="Generate the 4-sheet task-board xlsx from board.md")
     ap.add_argument("--project", required=True, help="project dir containing board.md")
-    ap.add_argument("--out", help="output filename (default: <project>-board-<date>.xlsx)")
+    ap.add_argument("--module", help="filter to one epic/module (e.g. 'Program') — omit for the whole-system board")
+    ap.add_argument("--out", help="output filename (default: <project>[-<module>]-board-<date>.xlsx)")
     args = ap.parse_args()
 
     board_path = os.path.join(args.project, "board.md")
@@ -316,6 +345,15 @@ def main():
         sys.exit(f"ERROR: no board.md at {board_path} — run the task-board skill migration first.")
     board = parse_board(board_path)
     qa_rows = parse_qa_plans(os.path.join(args.project, "deliverables", "documents"))
+
+    module_suffix, module_note = "", ""
+    if args.module:
+        epic = find_epic(board, args.module)
+        board = {**board, "epics": [epic]}
+        qa_rows = [q for q in qa_rows if normalize(q["module"]) in normalize(epic["name"])
+                                       or normalize(epic["name"]) in normalize(q["module"])]
+        module_suffix = f"-{slugify(epic['name'])}"
+        module_note = f" — {epic['name']} only"
 
     task_rows = []
     for e in board["epics"]:
@@ -335,7 +373,7 @@ def main():
 
     wb = Workbook()
     wb.calculation.fullCalcOnLoad = True
-    build_dashboard(wb, board, task_rows, len(qa_rows), board_path)
+    build_dashboard(wb, board, task_rows, len(qa_rows), board_path, module_note)
     build_task_sheet(wb, "BE", [t for t in task_rows if t["sheet"] == "BE"])
     build_task_sheet(wb, "FE", [t for t in task_rows if t["sheet"] == "FE"])
     build_qa_sheet(wb, qa_rows)
@@ -343,7 +381,7 @@ def main():
     out_dir = os.path.join(args.project, "deliverables", "reports")
     os.makedirs(out_dir, exist_ok=True)
     slug = os.path.basename(os.path.normpath(args.project))
-    out = os.path.join(out_dir, args.out or f"{slug}-board-{datetime.now():%Y-%m-%d}.xlsx")
+    out = os.path.join(out_dir, args.out or f"{slug}{module_suffix}-board-{datetime.now():%Y-%m-%d}.xlsx")
     wb.save(out)
     print(f"WROTE: {out}")
     print(f"  cards: {sum(len(e['cards']) for e in board['epics'])} across {len(board['epics'])} epics"

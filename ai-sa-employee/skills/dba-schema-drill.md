@@ -439,6 +439,14 @@ The drill FAILS if:
    `database.md` listed all 6 as valid with check counts.
 7. **SET options in every header (SKL-014).** `QUOTED_IDENTIFIER ON` + `ANSI_NULLS ON` — omitting them
    fails with Msg 1934 on tables with filtered indexes / computed columns.
+8. **Assert output CONTENT, not just row/count shape (SKL-019).** A drill (or any generator/tooling
+   verification) that only checks row counts, `LEN()`, or pass/fail flags can go green while the
+   actual generated text is silently truncated or malformed — a display-layer bug (e.g. a client
+   tool eating a line) doesn't change row counts at all. When validating generated SQL/code/config
+   output, `SELECT` or `PRINT` the **actual content** and read it — or diff it against a known-good
+   sample — not just its length or shape. Caught live: two "green" verification passes both missed a
+   silently-dropped output line because they checked `LEN(@Result)` and row counts, never the
+   rendered text itself.
 
 ---
 
@@ -456,6 +464,7 @@ The drill FAILS if:
 - [ ] Header sets QUOTED_IDENTIFIER ON + ANSI_NULLS ON (SKL-014 — avoids Msg 1934)
 - [ ] Drill self-seeds its FK parents + uses a unique business-ID namespace (SKL-014 — no cross-drill collision)
 - [ ] Whole suite re-executed to green after any schema change, clean-slate per drill (SKL-013)
+- [ ] Generated/output content verified by reading the actual text, not just counts/LEN (SKL-019)
 - [ ] Script is syntactically valid T-SQL
 
 ## Failure exit

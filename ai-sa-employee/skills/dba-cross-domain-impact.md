@@ -235,6 +235,16 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
    stale until the operator asked — twice (SKL-010); a later PCMA refactor + rename left 5 of 6
    drills broken while docs vouched for them (SKL-013).)
 
+   **Finish with a stale-term consistency sweep (WFC-006).** After editing every consumer in the
+   pass, build a short list of terms/phrases that describe the **superseded** concept (the exact
+   words the old design used — e.g. a dropped rule count, a removed table name, a retired process
+   description) and grep every touched consumer for them. The pass isn't done until that grep comes
+   back with **zero live hits** (matches inside "superseded"/"was X, now Y" explanatory notes are
+   fine — those are supposed to still mention the old term). Report the grep as evidence, not just
+   a claim of completeness. This has caught real stragglers twice: a 07-01 drill-suite repair and a
+   07-06/07 nine-document rewrite each had 2–3 leftover mentions of the old design that a
+   file-by-file read-through missed but the terminal grep caught immediately.
+
 ---
 
 ## Quality checklist
@@ -248,6 +258,8 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
 - [ ] **EVERY** drill re-executed to green (SKL-013) — not just the touched ones; no drill labeled "valid" in docs without an execution behind it
 - [ ] FK width/length checked (not just type); CREATE VIEW/SP/FN GO-separated
 - [ ] **Definition of Done:** docs/diagrams/specs/process-flow updated in the same pass (SKL-010)
+- [ ] **Stale-term sweep run, zero live hits (WFC-006)** — grep the superseded concept's exact
+      terms across every touched consumer; report the grep result as evidence
 
 ## Failure exit
 

@@ -49,7 +49,14 @@ If missing: run gather-requirements first.
     `mcp__claude_ai_Postman__getSpec`) to retrieve and validate interface contracts.
     Flag spec gaps or mismatches as open design questions.
 11. Flag open design questions and assumptions.
-12. Output. Wait for confirmation before writing to `decisions.md` or `database.md`.
+12. **Canonical field doc for scattered specs (SKL-021).** If a module's design ends up spread
+    across 3+ documents (process flow, C4 model, dev handoff, task breakdown...), create one
+    canonical `<module>-schema.md` that holds the authoritative field/column list and wins on any
+    conflict — every other doc points to it instead of repeating the fields. Build it the moment
+    the 3rd doc is about to duplicate field detail, not after the operator has to re-ask for the
+    same details a third time. Caught live: LS Wallet's field spec was re-assembled from 5 narrative
+    docs on three separate occasions before a single `ls-wallet-schema.md` was built.
+13. Output. Wait for confirmation before writing to `decisions.md` or `database.md`.
 
 ---
 
@@ -112,6 +119,7 @@ Next: confirm design → write ADRs to decisions.md → update database.md
 - [ ] Has the database lens been applied — every data-owning component flagged?
 - [ ] Are open design questions explicit, not buried?
 - [ ] Are new risks flagged for `risks.md`?
+- [ ] If the module's spec spans 3+ docs, is there a canonical `<module>-schema.md` (SKL-021)?
 
 ## Failure exit
 "Cannot design without confirmed requirements. Gather and sign off requirements first."

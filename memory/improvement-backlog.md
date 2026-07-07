@@ -15,8 +15,8 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-017
-Next-WFC: WFC-006
+Next-ID: SKL-022
+Next-WFC: WFC-007
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
 > dual-lens skill: Lane A (friction → `SKL-`), Lane B (successful workflows → `WFC-`).
@@ -27,30 +27,26 @@ Next-WFC: WFC-006
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
-- 2026-07-03 · post-mortem(near-miss) · two parallel sessions mutated the same lane files (tasks.md/decisions.md
-  got LS Wallet rows from another session while this one was slimming tasks.md into board.md) — no data lost
-  this time because the harness surfaced the diff, but there is no convention for concurrent-session writes to
-  lane files · [system]
+_(none active — all cleared 2026-07-07, see Resolved)_
 
 ## Workflow candidates (awaiting `/check-improvements` — Lane B)
 
-- 2026-06-23 · DBA schema chain (ingest→interview→trace→review→drill) ran clean (69/69 drill pass)
-  across MYPS modules · already codified as the `database-admin` chain · [myps] → captured, no action
 - 2026-06-25 · 4-diagram module documentation set (workflow state + data-flow + ERD + module-map) · [myps]
   → candidate, observed once — keep observing before codifying
 - 2026-07-01 · User-level process walkthrough (plain-language ①–⑧ flow, confirm each step) before schema
   design on a business-rule-heavy module · [myps] → **log only** — observed once, was operator-driven
   (they said "discuss the process first"). Promote to WFC- if I self-initiate it next complex module.
-- 2026-07-01 · Consumer-suite audit-and-repair: connectivity → count-reconcile vs docs → grep consumers for
-  dropped-object refs → EXECUTE each → ground every failure in live `sys.columns`/FK before editing → fix
-  against the passing/gold-standard drill as reference → clean-slate re-run to green → update docs · [myps]
-  → **log only** — observed once, clean result (6/6 green). This is the operational side of SKL-013; promote
-  to WFC- if it recurs on another schema change.
 
 ## Proposals (`SKL-` / `WFC-`)
 
 | ID | Title | Priority | Recommendation | Status |
 |---|---|---|---|---|
+| SKL-017 | Tier-1 plan-gate drift — crisp instruction treated as confirmation | 🔴 | Applied: `CLAUDE.md` Standing Instruction #1 — multi-file or DB-mutating work requires a numbered plan + explicit go signal; a crisp request is not itself confirmation. Caught live: operator had to say "plan first, wait for my go" 3× in two days before this became the default. | **Resolved** 2026-07-07 |
+| SKL-018 | Concurrent-session lane-file writes — no convention, near-miss | 🟡 | Applied: `CLAUDE.md` Standing Instruction #7 — re-read the lane file (and its `Next-ID` header) immediately before writing, never from stale context; merge alongside unexpected rows, never overwrite. Caught live: two parallel sessions both mutated `tasks.md`/`decisions.md` in the same window; no data lost only because the harness surfaced the diff. | **Resolved** 2026-07-07 |
+| SKL-019 | T-SQL authoring + verification traps (sqlcmd bracket-strip, STRING_AGG, content-vs-count drills) | 🟡 | Applied: `dba-sql-object-chain.md` rules 6–7 (STRING_AGG WITHIN GROUP over undefined `@var += ORDER BY`; classic ODBC sqlcmd silently drops `[`-leading first lines of PRINT output — guard by never letting a bracket line be first). `dba-schema-drill.md` rule 8 + checklist — assert generated output CONTENT, not just row counts/LEN. Caught live: an hour chasing a vanished `[Table(...)]` line that two "green" checks (row counts, LEN) never would have caught. | **Resolved** 2026-07-07 |
+| SKL-020 | Traceability gate missing from developer-handoff (RISK-026 root cause) | 🟡 | Applied: `developer-handoff.md` step 6 — bidirectional coverage check (forward REQ→ticket, reverse ticket→REQ; unbacked functions minted as DRAFT REQ- on the spot) as a standing handoff-time step, not audit-only. Closes RISK-026's recommendation (`myps/risks.md`). Caught live: 2 functions (incl. Program's most complex capability) shipped with zero requirement citation, found only on a later re-audit. | **Resolved** 2026-07-07 |
+| SKL-021 | Design scatter — module spec re-assembled from 5+ docs, 3 separate times | 🟡 | Applied: `solution-design.md` step 12 + `database-admin.md` rule 7 — once a module's spec spans 3+ docs, build one canonical `<module>-schema.md` (wins on conflict, others point to it) proactively, not after a 3rd re-ask. Modeled on `ls-wallet-schema.md`, built 2026-07-07 after the operator asked for the same LS Wallet field list a third time. | **Resolved** 2026-07-07 |
+| WFC-006 | Consumer-sync pass + terminal stale-term consistency grep | 🟢 | Applied: `dba-cross-domain-impact.md` Definition-of-Done rule 6 — after editing every consumer, grep the superseded concept's exact terms across all touched files; done only at zero live hits, reported as evidence. Merges the 2026-07-01 "consumer-suite audit-and-repair" candidate (same root pattern). Observed 2×: 07-01 drill-suite repair (6/6 green) and the 07-06/07 nine-document LS Wallet rewrite — both caught real stragglers the grep found that a read-through missed. | **Resolved** 2026-07-07 |
 | WFC-005 | Module delivery pack: developer-handoff → test-strategy → FE/BE breakdown → user-level QA plan → board cards | 🟢 | Applied: documented as a "natural chain" in `developer-handoff.md` (Trigger section) + a pointer in `skills.md` §6 for both `developer-handoff.md` and `test-strategy.md`. No new skill built — the chain reuses 4 existing skills; only the sequencing + the two success factors (sync consumers same pass; one owner per shared service) needed writing down. Observed 6× (Program/Project-Components/Groups/Revision/tTransactionLog in this thread + LS Wallet in a parallel session — independent re-derivation was the strongest promotion signal). | **Resolved** 2026-07-03 |
 | SKL-016 | New-skill "done" = ALL five consumers updated (wrapper, CLAUDE.md, skills.md, README, counts) | 🟡 | Applied: consumer checklist added to `new-skill` step 6 (slash wrapper + CLAUDE.md + skills.md + README + counts); all 52 skills registered as `.claude/commands/` wrappers same day (SKL-012 visibility resolved). Caught live: task-board build declared done with README stale — SKL-010's lesson recurring for skill additions. | **Resolved** 2026-07-03 |
 | SKL-015 | Homonym trap: renamed column shares its name with a live column on another table | 🟢 | Applied: homonym caveat added to `dba-cross-domain-impact` §6b (cascade-rename). A global find-replace of a renamed column is unsafe when the old name still legitimately names a column on a *different* table (`TransactionId` dropped from tTransactionLog but live on tRevisionDetails) — disambiguate by table, then re-grep the old name and confirm every survivor's table still owns it; stragglers hide in the WHERE/DELETE filter position, not the INSERT/SELECT you edited. Caught live: `WHERE TransactionId IN (…)` cleanup line survived the rename; drill re-run (SKL-013) flagged it. | **Resolved** 2026-07-01 |

@@ -63,8 +63,19 @@ Each work item is a ticket with everything the developer needs and nothing they 
 5. Apply the **triple lens**: SA (does every REQ map to a ticket — coverage check?), PM (is the
    build order and estimate realistic?), DBA (do tickets touching data carry the right schema notes
    and migration order?).
-6. Surface at least one `REC-` (e.g. a slice that should be a spike first, or a risky dependency).
-7. Write the handoff pack to `memory/clients/[client]/[project]/deliverables/documents/` and update
+6. **Bidirectional coverage check (SKL-020) — run BOTH directions, not just REQ→ticket:**
+   - Forward: every `REQ-` in scope maps to ≥1 `DEV-` ticket (the existing check).
+   - **Reverse:** every ticket's real acceptance criteria/sub-tasks are checked against the actual
+     REQ text — a ticket can *look* covered by a REQ number while doing something the REQ never
+     described. Also flag any ticket implementing a function with **no REQ citation at all** —
+     mint it as a DRAFT `REQ-` (reverse-engineered from the ticket, clearly labeled unconfirmed)
+     rather than leaving it silently untraced.
+   - Do this **at handoff time**, not only when an operator asks for an audit later. Caught live:
+     a module handoff shipped with two real functions (one of them the module's most complex,
+     critical-path capability) carrying zero requirement citation — found only when re-auditing
+     weeks after the handoff was called done (RISK-026).
+7. Surface at least one `REC-` (e.g. a slice that should be a spike first, or a risky dependency).
+8. Write the handoff pack to `memory/clients/[client]/[project]/deliverables/documents/` and update
    `tasks.md`/`plan.md` with the `DEV-` IDs.
 
 ---
@@ -75,7 +86,9 @@ DEVELOPER HANDOFF — [project] — [YYYY-MM-DD]
 Stack: [target stack]   Source: [REQ set / design version]
 
 COVERAGE CHECK
-  [N] requirements → [N] tickets   (every REQ- maps to ≥1 DEV- · gaps: none / listed)
+  Forward: [N] requirements → [N] tickets   (every REQ- maps to ≥1 DEV- · gaps: none / listed)
+  Reverse: [N] tickets checked against real acceptance criteria (unbacked functions: none / listed
+    — minted as DRAFT REQ- if found, per SKL-020)
 
 DEV-001 — [title]                                    Est: [O/M/P]   Critical path: yes/no
   Traces to:   REQ-F03, ADR-018
@@ -99,6 +112,8 @@ Close with **Decisions needed / Open questions / Next steps**.
 
 ## Quality checklist
 - [ ] Every `REQ-` traces to at least one ticket (coverage check shown, gaps named)
+- [ ] **Reverse-checked (SKL-020):** every ticket's real acceptance criteria matched against the
+      REQ text it cites; any function with no REQ backing minted as a DRAFT `REQ-`, not left silent
 - [ ] Every ticket has testable acceptance criteria and an explicit out-of-scope line
 - [ ] Build order has a marked critical path; parallel work identified
 - [ ] Tickets are vertical slices (demoable), not horizontal layers

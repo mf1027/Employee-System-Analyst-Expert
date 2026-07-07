@@ -171,6 +171,19 @@ DRILL COVERAGE:
 3. **Inline TVF over multi-statement.** Multi-statement TVFs are performance traps.
 4. **Schema-qualify everything.** `dbo.tTable`, not `tTable`.
 5. **Plan-validate before shipping.** Every new object gets an execution plan check.
+6. **`SELECT @var += expr ... ORDER BY` is undefined behavior (SKL-019).** Building a string by
+   accumulating a variable across rows with an `ORDER BY` is not guaranteed by SQL Server — a plan
+   recompile can silently change or drop the accumulated content. Use `STRING_AGG(expr, sep) WITHIN
+   GROUP (ORDER BY ...)` instead — it's the documented, deterministic equivalent. Cast the
+   expression to `NVARCHAR(MAX)` if any branch could exceed `STRING_AGG`'s 8000-byte default.
+7. **Classic ODBC sqlcmd eats leading `[bracket]` output lines (SKL-019).** `sqlcmd` (the older
+   ODBC-driver build, not the newer Go rewrite) silently drops the **first line** of a `PRINT`
+   message when that line starts with `[` — the same logic it uses to strip its own
+   `[Microsoft][ODBC Driver...]` prefixes. A generated object whose first line is an attribute like
+   `[Table(...)]` or `[Key]` vanishes from both console and `-o` file output with no error. This is
+   a **display-layer** bug, not a SQL bug — SSMS is unaffected. If a helper proc prints generated
+   code, guard it: when a print chunk's first character is `[`, prepend a blank line so the bracket
+   line is never the message's first line.
 
 ## Failure exit
 

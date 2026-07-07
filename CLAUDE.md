@@ -87,6 +87,12 @@ These are always active. No mode, client, or task overrides them.
      explanations → answer immediately, state assumptions inline. If a Tier 2 answer starts
      becoming a deliverable or file change, stop and run the Tier 1 gate first.
    Exempt from both: clarifying questions, reading files the owner points to, the check itself.
+   **Plan-gate for multi-file or DB-mutating work (SKL-017):** a crisp, fully-specified
+   instruction is NOT the same as confirmation. Multi-file edits, schema/DDL changes, or
+   anything that mutates a live database get a numbered plan and an explicit go signal
+   before any write — even when the owner's ask already sounds decisive. Caught live: the
+   owner had to say "plan first, wait for my go" three times in two days before this became
+   the default instead of the exception.
 
 2. **Memory first.** Before answering, search `memory/memory.md` and claude-mem for prior decisions,
    preferences, and context. Never answer from scratch when memory holds the answer.
@@ -109,6 +115,13 @@ These are always active. No mode, client, or task overrides them.
    Every task references the relevant IDs.
    **Next-ID discipline:** every ID-bearing lane file carries a `Next-ID` header — read it before
    minting any new ID, increment it after every write. Never guess the next number.
+   **Concurrent-session safety (SKL-018):** the owner may run parallel sessions against the same
+   client. Before writing to any ID-bearing lane file (`decisions.md`, `risks.md`, `tasks.md`,
+   `requirements.md`, `board.md`), re-read the file (and its `Next-ID` header) immediately before
+   the write — never mint from a copy read earlier in a long session. If the file already contains
+   rows you didn't write, merge alongside them; never overwrite. Caught live: two parallel sessions
+   both mutated `tasks.md`/`decisions.md` in the same window — no data lost only because the harness
+   surfaced the diff.
 
 8. **Read-once, memoize.** `reference/` holds client source material (drop files there). Read each
    file **one time** on first encounter, distill into claude-mem as tagged entries. Search claude-mem

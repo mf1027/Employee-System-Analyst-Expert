@@ -69,6 +69,7 @@ Field rules:
 | "what's blocked" | Cards with status Blocked or with un-Done Deps, each with the reason/gate. |
 | "what's next" | Dependency-free, un-started cards in priority order — the pull list. |
 | "progress" / "burndown" | Per-epic + per-sprint % done; sprint scope vs done vs carry-over. |
+| "generate the xlsx report for [module]" | Runs the xlsx generator scoped to that one epic (`--module`) instead of the whole system — see "xlsx report" below. |
 
 **Every mutation:** show the change in chat → apply to `board.md` → append the activity log line.
 Batch multiple changes from one message into one confirm.
@@ -85,6 +86,21 @@ python3 scripts/generate-board-xlsx.py --project memory/clients/[client]/[projec
 ```
 
 Output to the project's `deliverables/reports/`.
+
+**Scoped to one module** ("generate the xlsx report for Program") — add `--module`:
+
+```
+python3 scripts/generate-board-xlsx.py --project memory/clients/[client]/[project] --module Program
+```
+
+Matches against the project's `## Epic: [Module]` names in `board.md`, case/punctuation-insensitive
+and tolerant of naming drift (e.g. `transactionlog` matches an epic named `tTransactionLog`). No
+match, or matches more than one epic (e.g. `Project` matching both `Project/Components` and
+`Project Groups`), is a hard error listing the real epic names — never silently picks one. All four
+sheets scope to that epic only (Dashboard title notes "— [Module] only"; QA sheet filters to that
+module's `*-qa-user-level-test-plan.md`); output filename gets a `-[module]` suffix so it never
+collides with the whole-system snapshot. Cross-module `Depends On` references stay plain text, same
+as the whole-system report — no live cross-sheet links, so nothing breaks when viewed in isolation.
 
 | Sheet | Content |
 |---|---|
@@ -117,8 +133,9 @@ Formula/formatting spec:
 1. Read `board.md`. No board → offer migration (Tier 1 gate).
 2. Parse the command; show the intended change(s); on confirm, write the file + activity log.
 3. On "show/progress/blocked/next" — render views only, no writes.
-4. On xlsx request — run `scripts/generate-board-xlsx.py --project <project dir>` (parses the
-   current board + QA plans), report the output path. Never hand-edit a previous workbook.
+4. On xlsx request — run `scripts/generate-board-xlsx.py --project <project dir>` (add `--module
+   [name]` if the request named one module), report the output path. Never hand-edit a previous
+   workbook.
 5. Sprint planning — apply `scrum-master` discipline: capacity first, pull by priority within
    dependency order, flag overcommit; record the sprint goal in the Sprints table.
 

@@ -123,6 +123,11 @@ The loop is a named part of the chain, not an exception. Log the loop-back trigg
    before recommending UPDATE-in-place or table merges.
 6. **Transaction boundaries matter.** Every multi-table operation needs a transaction.
    Flag any that don't have one.
+7. **Canonical field doc once a module's spec scatters (SKL-021).** When a module's field-level
+   detail is duplicated across 3+ documents (process flow, C4 model, handoff, task breakdown), stop
+   repeating it — build one `<module>-schema.md` that is the single authoritative field/column list
+   (wins on conflict; every other doc points to it). Do this proactively at the 3rd-doc point, not
+   after the operator has asked for the same field list a third time.
 
 ---
 
