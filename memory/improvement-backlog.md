@@ -15,7 +15,7 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-022
+Next-ID: SKL-024
 Next-WFC: WFC-007
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
@@ -27,20 +27,27 @@ Next-WFC: WFC-007
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
-_(none active — all cleared 2026-07-07, see Resolved)_
+- 2026-07-07 · post-mortem · paused mid-execution of an already-approved destructive action (Pass-column
+  drop) partway through dependent-checks, needed a "you stopped" nudge to finish · [system] → one-off,
+  no proposal — an approved action with passing dependent-checks should run to completion without a
+  restart prompt. Promote if this recurs.
 
 ## Workflow candidates (awaiting `/check-improvements` — Lane B)
 
 - 2026-06-25 · 4-diagram module documentation set (workflow state + data-flow + ERD + module-map) · [myps]
   → candidate, observed once — keep observing before codifying
 - 2026-07-01 · User-level process walkthrough (plain-language ①–⑧ flow, confirm each step) before schema
-  design on a business-rule-heavy module · [myps] → **log only** — observed once, was operator-driven
-  (they said "discuss the process first"). Promote to WFC- if I self-initiate it next complex module.
+  design on a business-rule-heavy module · [myps] → **log only, reviewed 2026-07-07** — the RBAC build
+  ran process-first too, but that was `dba-process-interview` (the existing DBA chain) doing its job,
+  not self-initiated freehand work. For DB modules this is already covered — only still a live
+  candidate for **non-DB** modules where no chain currently mandates a process walkthrough first.
 
 ## Proposals (`SKL-` / `WFC-`)
 
 | ID | Title | Priority | Recommendation | Status |
 |---|---|---|---|---|
+| SKL-023 | Post-deploy metadata drift + as-built NULL/domain profiling before seed | 🟡 | Applied: `dba-schema-drill.md` new Step 0 (metadata assert — cascade actions, nullability, uniqueness vs. deployed reality) + rule 9 + checklist item. `data-migration-playbook.md` stage 2 (TRANSFORM) + step 3 + checklist — profile source NULLs/domains against every target column that tightens a constraint before the load runs. Caught live: `tUserGroupMemberships` FKs deployed `NO_ACTION` vs documented `CASCADE` (caught by a pre-drill metadata query); seed `Msg 515` from `tGroups.CreatedDate` nullable-in-source/NOT-NULL-in-target (cost a full children-first reseed). Both from the same RBAC deployment session. | **Resolved** 2026-07-07 |
+| SKL-022 | claude-mem MCP tools unreachable — documented everywhere, absent in practice | 🟡 | **Diagnosed, fix pending user action.** Root cause found (not "plugin is dead"): claude-mem's worker process is genuinely healthy (`.claude-mem/worker.pid` → live PID on port 37777), but its MCP server (`'.mcp.json'`, command `"sh"`) never registers because `sh.exe` (`C:\Program Files\Git\bin\sh.exe` / `...\Git\usr\bin\sh.exe`) is **not on the Windows system PATH** — only `C:\Program Files\Git\cmd` is, which has `git` but not `sh`. Claude Code spawns MCP servers as native Windows processes, so the `sh -c "..."` command silently fails to launch and the tools never surface, even though `enabledPlugins` says `true` and the plugin is correctly installed at `C:\Users\Msi\.claude\plugins\cache\thedotmack\claude-mem\13.4.0`. Confirmed live: `sh` resolves fine inside the Bash tool's Git Bash environment but `Get-Command sh` fails in native PowerShell. **Fix (one-time, operator action):** add `C:\Program Files\Git\bin` to the Windows System PATH (System Properties → Environment Variables → Path → New), then restart Claude Code. Not applied automatically — editing the machine-wide PATH is a persistent, machine-wide change outside repo scope, and its effect can't be verified until a fresh session start (MCP servers load once at session start). Docs (`CLAUDE.md` memory-tier table, `memory-hygiene.md`) left as-is pending verification — re-documenting to "claude-mem may be absent" would be premature given the fix is this concrete and cheap. | **Diagnosed 2026-07-07 — awaiting PATH fix + next-session verification** |
 | SKL-017 | Tier-1 plan-gate drift — crisp instruction treated as confirmation | 🔴 | Applied: `CLAUDE.md` Standing Instruction #1 — multi-file or DB-mutating work requires a numbered plan + explicit go signal; a crisp request is not itself confirmation. Caught live: operator had to say "plan first, wait for my go" 3× in two days before this became the default. | **Resolved** 2026-07-07 |
 | SKL-018 | Concurrent-session lane-file writes — no convention, near-miss | 🟡 | Applied: `CLAUDE.md` Standing Instruction #7 — re-read the lane file (and its `Next-ID` header) immediately before writing, never from stale context; merge alongside unexpected rows, never overwrite. Caught live: two parallel sessions both mutated `tasks.md`/`decisions.md` in the same window; no data lost only because the harness surfaced the diff. | **Resolved** 2026-07-07 |
 | SKL-019 | T-SQL authoring + verification traps (sqlcmd bracket-strip, STRING_AGG, content-vs-count drills) | 🟡 | Applied: `dba-sql-object-chain.md` rules 6–7 (STRING_AGG WITHIN GROUP over undefined `@var += ORDER BY`; classic ODBC sqlcmd silently drops `[`-leading first lines of PRINT output — guard by never letting a bracket line be first). `dba-schema-drill.md` rule 8 + checklist — assert generated output CONTENT, not just row counts/LEN. Caught live: an hour chasing a vanished `[Table(...)]` line that two "green" checks (row counts, LEN) never would have caught. | **Resolved** 2026-07-07 |

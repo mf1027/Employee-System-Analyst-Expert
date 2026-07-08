@@ -36,6 +36,23 @@ Type changes, unit/format conversion, key remapping (natural → surrogate), spl
 de-duplication, cleansing (the embedded-newline / special-char traps that break naive exports).
 Each rule stated explicitly so it's reviewable and re-runnable.
 
+**Profile the source's actual NULL/domain reality against the target's constraints (SKL-023)
+before writing a single INSERT.** A column can be nullable in the source with real, current NULL
+rows in production even if the design assumes it's always populated. Run, per mapped column that
+the target makes `NOT NULL` or narrows the domain of:
+
+```sql
+SELECT COUNT(*) AS null_count FROM source.tYourTable WHERE YourColumn IS NULL;
+SELECT DISTINCT YourColumn FROM source.tYourTable; -- domain check vs target's enum/FK
+```
+
+Any non-zero NULL count against a target `NOT NULL` column needs an explicit default rule in the
+mapping (e.g. `ISNULL(CreatedDate, GETDATE())`), decided **before** the load runs — not discovered
+mid-script. Caught live (RBAC migration, 2026-07-07): `tGroups.CreatedDate` was nullable in the
+as-built source with real NULLs in production, but `NOT NULL` in the new schema — the seed script
+died with `Msg 515` partway through, forcing a full children-first delete-and-reseed instead of a
+clean single pass.
+
 ### 3. ORDER — load sequence that respects dependencies
 Topologically sort by FK dependency: parents/lookups before children. **The circular-dependency
 trap:** if generating the target's seed depends on the target already having data, you deadlock —
@@ -58,7 +75,9 @@ assessed *before* running, not discovered during an incident.
 2. Build the **mapping table** (stage 1) — every target column sourced; every source column mapped or
    dropped-on-purpose. Surface unmapped items.
 3. Specify **transform rules** (stage 2), calling out the data-quality traps (newlines, encoding,
-   nulls, duplicate keys).
+   nulls, duplicate keys). **Profile source NULLs/domains against target constraints (SKL-023)**
+   for every column the target tightens — a nullable-to-NOT-NULL or widened-to-narrowed domain
+   gap needs an explicit default/cleansing rule before the load runs, not a mid-script failure.
 4. Determine **load order** (stage 3); explicitly check for and break circular dependencies.
 5. Write **validation queries** (stage 4) — counts, checksums, integrity, invariants.
 6. Define **rollback + cutover** (stage 5) with go/no-go criteria.
@@ -103,6 +122,7 @@ Close with **Decisions needed / Open questions / Next steps**.
 ## Quality checklist
 - [ ] Every target column has a source; every source column mapped or dropped-on-purpose (no silent loss)
 - [ ] Transform rules explicit, incl. the data-quality traps that break naive exports
+- [ ] Source NULLs/domains profiled against every target column that tightens a constraint, with an explicit default/cleansing rule decided up front (SKL-023)
 - [ ] Load order is FK-topological; circular dependencies checked and broken
 - [ ] Validation queries cover counts, checksums, integrity, and business invariants
 - [ ] Rollback + cutover defined with go/no-go criteria before any run

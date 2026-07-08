@@ -62,6 +62,38 @@ option. Every drill MUST follow these to stay runnable:
 
 ## Steps
 
+### 0. Metadata assert — deployed reality vs. the design doc (SKL-023)
+
+Before writing a single INSERT, query the **live deployed schema's metadata** and diff it against
+what the design doc claims — cascade actions, nullability, and uniqueness are exactly the kind of
+detail that silently drifts between "what I wrote in the DDL file" and "what actually got created,"
+and a drill built on the assumed version will pass while the deployed version is wrong.
+
+```sql
+-- Cascade actions: does delete_referential_action_desc match the design doc?
+SELECT fk.name, fk.delete_referential_action_desc, fk.update_referential_action_desc
+FROM sys.foreign_keys fk WHERE fk.parent_object_id = OBJECT_ID('dbo.tYourTable');
+
+-- Nullability: does IS_NULLABLE match what the drill's INSERTs assume?
+SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tYourTable';
+
+-- Uniqueness: are the constraints the design doc promises actually there?
+SELECT i.name, i.is_unique, i.is_primary_key
+FROM sys.indexes i WHERE i.object_id = OBJECT_ID('dbo.tYourTable');
+```
+
+Caught live (RBAC build, 2026-07-07): `tUserGroupMemberships`'s FKs deployed as `NO_ACTION` while
+the design doc said `CASCADE` — found only because this query happened to run before the drill was
+written; the drill would eventually have caught it too, but as a confusing mid-run failure instead
+of a 30-second check. Same session, a seed script died on `Msg 515` because `tGroups.CreatedDate`
+was nullable in the as-built source (real NULLs in production data) but NOT NULL in the new schema —
+a nullability mismatch a metadata query would have surfaced before the first row was written.
+
+**The rule:** run this against the target table set once, right after deployment and before
+authoring step 1's fixtures. Fix any mismatch (or the doc, if the deployed version is actually
+correct) before the drill script is written — don't let the drill discover it.
+
 ### 1. Generate the lifecycle script (full-content fixtures — SKL-007)
 
 For every step from the data-flow-trace, write actual T-SQL:
@@ -447,6 +479,11 @@ The drill FAILS if:
    sample — not just its length or shape. Caught live: two "green" verification passes both missed a
    silently-dropped output line because they checked `LEN(@Result)` and row counts, never the
    rendered text itself.
+9. **Metadata-assert the deployed schema before authoring fixtures (SKL-023).** Query cascade
+   actions, nullability, and uniqueness against the live deployed objects and diff against the
+   design doc — don't assume the DDL you wrote is the DDL that landed. Caught live: a cascade
+   deployed as `NO_ACTION` against a documented `CASCADE`, and a nullable-vs-NOT-NULL mismatch
+   that broke a seed script mid-run. See Step 0.
 
 ---
 
@@ -465,6 +502,7 @@ The drill FAILS if:
 - [ ] Drill self-seeds its FK parents + uses a unique business-ID namespace (SKL-014 — no cross-drill collision)
 - [ ] Whole suite re-executed to green after any schema change, clean-slate per drill (SKL-013)
 - [ ] Generated/output content verified by reading the actual text, not just counts/LEN (SKL-019)
+- [ ] Deployed schema metadata-asserted (cascade actions, nullability, uniqueness) against the design doc before fixtures were authored (SKL-023)
 - [ ] Script is syntactically valid T-SQL
 
 ## Failure exit
