@@ -140,6 +140,14 @@ These are always active. No mode, client, or task overrides them.
    and `decisions.md` for confirmed prior design of that module. If it exists, start from it and
    reconcile deltas (operator wins on conflict) — never re-derive from scratch. A status label like
    "interview pending" is not proof no design exists; open the artifacts, don't trust the label.
+   **Mechanism-level preflight (SKL-035):** the same discipline extends past table shapes to
+   procedural logic. Before writing any non-trivial procedural logic in a mock/drill/proc — ID
+   construction, stage-advance/copy-forward loops, state-machine transitions, any multi-step sequence
+   with a locked spec — grep the spec docs AND prior mock/drill files for the same mechanism first; a
+   correct implementation may already exist and the locked spec doc is the authority, not memory. And
+   a drill that checks "did it run" is NOT a spec-compliance check — assert output against the
+   documented format explicitly. Caught live: rebuilt the `ProjectId` BP→P swap + zero-padding loops
+   from scratch when a correct reference existed, shipped a green drill that never checked ID format.
    **sqlcmd runs via PowerShell, never Git Bash (SKL-005):** always execute `sqlcmd` through the
    PowerShell tool — `& sqlcmd -S "SERVER\INSTANCE" -E -d db -Q "…"` (or `-i file.sql`). In Git Bash
    the `-i`/interactive path fails with a misleading "-E and -U/-P mutually exclusive" error. This
@@ -398,6 +406,18 @@ upstream and make future re-vendoring harder, for no functional gain.
 | LibreOffice | DOCX/PPTX/XLSX ops | ✅ Installed (26.2.4) — system or project `engines/`; auto-installed by setup |
 | Poppler | PDF → image conversion | ✅ Installed (25.07.0) — auto-installed by setup scripts |
 | Claude Code | Plugin hooks, MCP | Required |
+
+**`.ps1` encoding rule (SKL-027):** keep repo `.ps1` scripts ASCII-only, or UTF-8 **with BOM** if a
+non-ASCII character is unavoidable. Windows PowerShell 5.1 misreads BOM-less UTF-8 via the system
+codepage — a single stray em-dash silently broke `setup.ps1`'s parser, and the reported error
+pointed at a line far from the real one (line 220 for a bad character on line 84). Caught live
+2026-07-08.
+
+**Engine status above is per-machine, not global (SKL-027).** "✅ Installed" reflects whichever
+machine last ran `setup.ps1` — this repo has moved machines before (stale `khen`-user paths were
+found in `.claude/settings.json` this session) and LibreOffice/Poppler were **not** actually
+present here despite the table saying so. After any machine move, re-run
+`scripts/verify-engines.ps1` before trusting this table — don't assume the doc is current.
 
 ---
 

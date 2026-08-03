@@ -6,6 +6,39 @@
 
 ---
 
+## Archived 2026-07-17 — `memory/memory.md` "Last Session" entry (2026-07-08 → 2026-07-10)
+
+> Compacted out of the hot tier (retention rule: clear when >2 sessions stale). claude-mem MCP
+> tools were unreachable this hygiene pass too (SKL-022, PATH fix still pending operator action) —
+> this archive move was done on `memory/memory.md` only, same as the two prior hygiene passes below.
+
+- **2026-07-08 → 2026-07-10:** Admin Area re-split into 5 tables + AAMS backfill (ADR-029, 4 real
+  bugs caught); RBAC ported to junction-schema views then fully reverted to LOCAL-MYPS's as-is
+  CSV-blob shape (ADR-030 → ADR-031, backend-fidelity trigger: RISK-035/036); RISK-018 re-opened/
+  re-accepted, RISK-034 retired; 7 views rewritten as optimized re-implementations, proven
+  byte-identical via a 15-check cross-DB parity drill. LS Wallet workflow doc completed (RISK-033
+  found). Module 12 Multi-Year: second draft ingested, reconciled against the existing URD, put
+  ON HOLD pending client discussion. Full detail in `memory/clients/myps/myps-system/decisions.md`
+  (ADR-027–031), `risks.md`, `requirements.md`, `multi-year-planning-draft-urd.md`.
+  **Superseded 2026-07-17:** the Admin Area schema (ADR-029) was itself restructured and locked
+  (ADR-047) — see the newer archive entry / current `memory.md` Last Session for that pass.
+
+---
+
+## Archived 2026-07-10 — `memory/memory.md` "Last Session" entry (2026-07-07)
+
+> Compacted out of the hot tier (retention rule: clear when >2 sessions stale). claude-mem MCP
+> tools were unreachable this hygiene pass (SKL-022, PATH fix still pending) — this archive move
+> was done on `memory/memory.md` only. The 2026-06-12→06-16 entry that sat alongside this one in
+> the hot tier was already a compacted pointer to the archive entry below (archived 2026-07-07) —
+> not re-archived here, only this newer entry is new to cold storage.
+
+- **2026-07-07:** MYPS User Permissions (RBAC) module fully shipped (ADR-026 — junction-table
+  redesign, schema+seed+drill green). Superseded 2026-07-10 by ADR-031 (reverted to LOCAL-MYPS's
+  as-is CSV-blob shape — see `memory/clients/myps/myps-system/decisions.md` ADR-031).
+
+---
+
 ## Archived 2026-07-07 — `memory/memory.md` "Last Session" entries (2026-06-12 → 2026-06-16)
 
 > Compacted out of the hot tier because they were >2 sessions stale (the file's own retention

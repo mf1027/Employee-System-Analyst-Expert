@@ -41,6 +41,16 @@ State clearly:
 
 ### 2. Map all consumers of the affected table(s)
 
+**Scope the search by catalog dependency, not by name-pattern (SKL-028).** When the task is
+"find every view/SP/object touching domain X," a name filter (e.g. objects with "User" or
+"Permission" in the name) is a lossy proxy — it silently drops in-domain objects named
+otherwise. Use `sys.sql_modules` / `sys.dm_sql_referenced_entities` / `sys.foreign_keys` to find
+every object that actually references the affected table(s), then classify each hit as in-scope
+or excluded-with-reason. Caught live: porting "the user/permission views" by name missed
+`vAppModules` and would have missed `vAPIPermissions` too — neither has "User" in its name but
+both read RBAC-domain tables. Two operator corrections later, a full `sys.sql_modules` sweep
+closed the search properly and surfaced 2 more candidates to assess-and-exclude on their merits.
+
 Search for every file that references the affected table by name:
 
 | Consumer type | Where to search | What to look for |

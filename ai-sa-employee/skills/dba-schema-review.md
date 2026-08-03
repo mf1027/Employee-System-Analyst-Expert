@@ -34,6 +34,31 @@ Invoke when:
 
 ---
 
+## Step 0 — Preflight: check database.md before writing ANY finding (SKL-029)
+
+Before a finding becomes text — not after, not "I'll flag it and let the operator sort it out" —
+grep the project's own `database.md` (and `decisions.md`) for the exact table/column in question.
+If the behavior is already documented as intentional design, it is **not a finding**. Do not
+present it as an open gap needing a decision.
+
+**Why this is its own step, separate from SKL-011:** SKL-011 already requires a preflight before
+*designing* a module (interview kickoff). This is a different failure point — a finding gets
+written *during the review itself*, after design is long past, and the same "did I check what
+already exists" question applies just as hard there. Caught live (2026-07-15, Components domain):
+two findings — "no FK on `tProjectMajorWorkItem.ComponentId`" and "`ComponentId` is a naming
+homonym across 3 tables" — were both already documented, word-for-word, in `database.md:196`. It
+was the 3rd occurrence of the same root cause system-wide (see
+`verify-against-as-built-before-building.md`), and the operator had already explained the exact
+mechanism (component-type numbering: CW/CW1/CW2/CW3) in an earlier conversation before this
+review ran.
+
+**How to apply:** for every finding candidate, before writing the `[F-NNN]` block, ask "does
+`database.md` already describe this?" If yes, drop it silently (it was never a gap) or fold it in
+as confirmed context, not a numbered finding. Only write findings for things that are genuinely
+undocumented or genuinely inconsistent with what's documented.
+
+---
+
 ## Review dimensions (check ALL of these)
 
 ### 1. Normalization (1NF → 3NF)
@@ -142,6 +167,30 @@ worse — let the operator see both options. For MYPS, manual snapshots were cho
 history is per-stage (not per-edit) and the shell/snapshot split needs explicit control.
 Document the evaluation even when the answer is "manual snapshots win."
 
+### 11. Domain cohesion — for any proposed table merge (SKL-025)
+
+Before recommending (or building) a table that unions two or more entity types under one
+discriminator column, check whether they actually belong together:
+
+| Signal a merge crosses a real domain boundary | Example |
+|---|---|
+| The union spans **disjoint natural-key namespaces** | one type keyed by `GdbId` (geo-boundary), another by `ParticipantId` (org-participant) — same table, keys that never overlap except at one shared entity |
+| The entity types have **different sync sources** | one type synced from a geography import, another from an org-chart import — a single table means every sync has to filter by discriminator to avoid touching the other type's rows |
+| The entity types have **different consumers** | one type is read by user/permission logic, another by project-location logic — nothing in the app ever needs both at once |
+| The union needs a **type-conditional hierarchy** (some rows' `ParentId` means "geographically inside," others mean "organizationally reports to") | the exact trap that produced a wrong DEO→Province link in MYPS ADR-027 — the merge itself is what made "parent" ambiguous enough to get wrong |
+
+**If 2+ signals are present, don't just build the merge — present the split as the primary
+recommendation**, with the merge as the documented alternative (fewer tables, one place to look;
+tradeoff: filtered syncs, ambiguous `ParentId` semantics). Let the operator choose with the
+tradeoff visible, rather than building the merge silently because it was asked for concisely.
+
+**Why this exists:** MYPS's admin-area table was merged into one (ADR-027) on a one-line operator
+request, then split back into 5 domain-scoped tables one session later (ADR-029) once the mixed
+`ParentId` semantics produced a real bug (DEO wired to Province instead of Region). The signal was
+already on the page — the ADR-027 DDL's own header noted "two separate natural-key namespaces
+coexist" — but nothing forced that observation into a "maybe don't merge these" recommendation
+before building. A full build+drill+doc cycle was unwound same-day as a result.
+
 ---
 
 ## Output format
@@ -178,12 +227,16 @@ SUMMARY:
   Indexes: [N recommendations]
   Pagination: [keyset-ready or offset-only?]
   Temporal: [evaluated — manual snapshots / temporal tables / not applicable]
+  Domain cohesion: [any proposed merge checked against the 4 signals — split recommended / merge OK / n/a]
 ```
 
 ---
 
 ## Rules
 
+0. **Check `database.md` before writing a finding (SKL-029).** Not at interview kickoff only —
+   at the moment each finding candidate is about to become text. If it's already documented as
+   intentional, it isn't a finding.
 1. **Flag, don't fix.** Present findings with options. The operator/developer decides.
 2. **Ask "does it already exist?"** Before recommending a new lookup table, check the
    DDL for an existing one (e.g., `tOptionPCMAStatus` before inventing `tOptionConstructionStatus`).
@@ -206,6 +259,8 @@ SUMMARY:
 
 ## Quality checklist
 
+- [ ] Every finding candidate checked against `database.md`/`decisions.md` first (SKL-029) —
+      nothing already-documented-as-intentional gets written up as an open gap
 - [ ] All 7 review dimensions checked
 - [ ] Every finding has severity + evidence + impact + options
 - [ ] No new entities invented without asking "does it already exist?"
@@ -217,6 +272,7 @@ SUMMARY:
 - [ ] Temporal-table evaluation documented (even if answer is "manual snapshots win")
 - [ ] Pagination readiness checked: keyset-pagination-friendly PKs/indexes exist on list-query tables
 - [ ] FK count stated (especially if zero)
+- [ ] Any proposed table merge checked against the domain-cohesion signals (disjoint natural keys, different sync sources, different consumers, type-conditional hierarchy) — split presented as the primary option if 2+ signals present (SKL-025)
 
 ## Failure exit
 

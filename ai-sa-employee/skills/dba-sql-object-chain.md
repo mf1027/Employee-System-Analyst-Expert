@@ -128,6 +128,7 @@ Add test queries for the object to the relevant drill file:
 - [ ] Output parameters or return codes documented
 - [ ] No dynamic SQL unless necessary (SQL injection risk)
 - [ ] Execution plan validated for the primary code path
+- [ ] `SET QUOTED_IDENTIFIER ON` (+ `ANSI_NULLS ON`) precedes the `CREATE OR ALTER` statement itself, not just inside the body — verified via `OBJECTPROPERTY(..., 'ExecIsQuotedIdentOn') = 1` if the object writes to a table with a filtered index/computed column (SKL-033)
 
 ### Function checklist
 - [ ] Inline TVF preferred over multi-statement TVF
@@ -184,6 +185,18 @@ DRILL COVERAGE:
    a **display-layer** bug, not a SQL bug — SSMS is unaffected. If a helper proc prints generated
    code, guard it: when a print chunk's first character is `[`, prepend a blank line so the bracket
    line is never the message's first line.
+8. **`QUOTED_IDENTIFIER`/`ANSI_NULLS` for a proc or view are captured at `CREATE` time, not read at
+   call time (SKL-033).** A `SET QUOTED_IDENTIFIER ON` written *inside* the object's body does
+   nothing — SQL Server bakes in whatever session setting was active when the `CREATE`/`CREATE OR
+   ALTER` statement itself ran, and enforces that stored setting on every future call regardless of
+   the caller's own session settings. If the object writes to a table with a filtered index or
+   computed column, a wrong stored setting fails with **Msg 1934** on every execution, not just the
+   first. The fix: put `SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON;` **before** the `CREATE OR ALTER
+   PROCEDURE`/`VIEW` statement (as its own batch, `GO`-separated), not inside the `BEGIN...END` body.
+   Verify with `SELECT OBJECTPROPERTY(OBJECT_ID('dbo.YourProc'), 'ExecIsQuotedIdentOn')` — must
+   return `1`. This is a distinct variant of the Msg-1934 family from SKL-005 (which is about the
+   *client/session* setting for ad-hoc `sqlcmd` calls) — here the setting that matters belongs to the
+   **object definition itself**, and no amount of fixing the caller's session helps.
 
 ## Failure exit
 

@@ -59,6 +59,27 @@ Only when no prior confirmed design is found (or the operator says start fresh) 
 > because the operator said "check the md files." The signal ("C4 model done") was already in
 > `database.md` and got read past.
 
+**Mechanism-level preflight (SKL-035) — the same discipline extends past table shapes to procedural
+logic.** SKL-011 above catches a re-derived *schema*; this catches a re-derived *algorithm*. Before
+writing any non-trivial procedural logic in a new mock/drill/proc — ID construction, stage-advance /
+copy-forward loops, state-machine transitions, any multi-step sequence with a locked spec — **grep
+the spec docs AND the prior mock/drill files for the same mechanism first.** A working, already-correct
+implementation may already exist, and a locked spec doc (e.g. `project-id-generation-spec.md`) is the
+authority, not memory. Two related traps:
+- **Reference impl already exists.** Reconstructing a loop from memory when a correct one is already
+  filed re-does work and risks diverging from the agreed behavior.
+- **A drill that checks "did it run" is not a spec-compliance check.** "IDs were generated" and "IDs
+  match the documented format" are *distinct* assertion categories — a drill that only proves the
+  former gives false confidence. When a locked format/spec exists, assert the output against it
+  explicitly (byte/format match), not just existence.
+
+> Caught live (SKL-035): rebuilt `myps-mock-full-lifecycle.sql`'s BP→P `ProjectId` swap +
+> year-zero-padding loops from scratch when a correct reference impl already existed in
+> `myps-mock-program-lifecycle.sql`, and never re-read the locked `project-id-generation-spec.md`.
+> Shipped a "23/23 PASS" drill that never checked ID *format* compliance. Operator: *"do you have no
+> records or knowledge about the generation of the ProjectId?! it looks like you didn't plan
+> thoroughly."* The records existed and weren't consulted.
+
 ### 1. Locate the DDL files
 
 Check `reference/` for `.sql` files. Identify:
@@ -70,6 +91,24 @@ Check `reference/` for `.sql` files. Identify:
 
 SSMS exports are typically **UTF-16 LE with BOM**. Python's `open(f, 'r')` defaults
 to UTF-8 and will fail. Always use `encoding='utf-16'` for SSMS-exported scripts.
+
+**If the reference material is a spreadsheet export (CSV/xlsx), also precheck code/ID columns for
+Excel scientific-notation corruption (SKL-030).** Excel silently rewrites any long numeric-looking
+string (an ID, a hierarchical code) as scientific notation the moment a column isn't explicitly
+typed as text — `104305000` → `1.03171E+12`. This destroys the exact value a join/business key
+depends on, and a quick eyeball of a few rows won't catch it (short codes survive; only the long
+ones corrupt). Before treating any such column as authoritative:
+
+```
+grep -c 'E+' the_file.csv     # or a per-column scan if multiple code columns exist
+```
+
+Any non-zero count means that column cannot be used as a join key until the source is re-exported
+with it forced to text — reformatting the corrupted value back is lossy once precision is lost past
+~15 significant digits. Caught live twice on the same domain: 74 `CityMunicipality.Code` values in
+one AAMS export, then 1,620/1,643 city rows + 46/257 district rows (99%/18%) in a second,
+independently-supplied CSV set months later — this recurs with every fresh Excel-touched export of
+the same source data, so it's a standing check, not a one-time fix.
 
 **Tooling fallback:** the preferred way to parse a large DDL is `ctx_execute_file`
 (keeps the raw bytes out of context). But that tool reads the file as UTF-8 and will
@@ -125,6 +164,17 @@ Before designing any object that depends on a status, enum, or lookup value:
    - **Derived/rolled-up value** (e.g. a project status computed from component statuses) — get the
      precedence/derivation rule, not just the output column.
    Inspect real source rows to confirm: `SELECT TOP 20 [GeneratedIdCol] FROM [SOURCE-DB].dbo.[t];`
+
+6. **A parent-shaped column proves a linkage exists, not what kind (SKL-024).** If a table carries
+   only one column that looks like a parent reference (e.g. `ProvinceGdbId` on a district-office
+   table), it's tempting to wire it as *the* hierarchy `ParentId`. But a table can sit at the
+   intersection of more than one hierarchy — organizational, geographic, financial — and only one
+   of them is the real tree parent. Ask the operator (or `dba-process-interview` Q6) explicitly:
+   *which* relationship is the org-chart/hierarchy parent, not just *whether* a parent-shaped column
+   exists. Caught live (MYPS admin-area, 2026-07-08): a district office's `ProvinceGdbId` was wired
+   as `ParentId` on the assumption it was the only candidate — it was a geographic fact, not the
+   organizational parent (which turned out to be the Region, sourced from an external authoritative
+   file after the fact).
 
 **Why this exists:** in the MYPS revision session, 6 errors were caught by the operator — not the
 drill — because the fixture encoded the same wrong assumptions as the code. An enum was invented
@@ -205,6 +255,7 @@ Parser script: [path to reusable script]
 
 - [ ] Every table in the DDL is accounted for (no silent omissions)
 - [ ] Encoding handled correctly (UTF-16 for SSMS, UTF-8 for others)
+- [ ] If source is a spreadsheet export, code/ID columns prechecked for `E+`/`e+` scientific-notation corruption (SKL-030)
 - [ ] FK count stated explicitly (especially if zero)
 - [ ] View JOINs parsed if FKs are absent
 - [ ] Domain classification covers all tables

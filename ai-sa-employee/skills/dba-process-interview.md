@@ -87,6 +87,17 @@ not generic ones.
 - Siblings: what else is created/deleted together?
 - External: does any external system read/write this? (linked servers, APIs, exports)
 
+**For a hierarchy/tree entity, ask per edge, not once for the whole shape (SKL-024):** a column
+that looks like a parent reference only proves *a* linkage exists — it doesn't say what *kind*.
+"What does this belong to?" can have more than one true answer (organizational parent vs.
+geographic container vs. financial owner), and only one of them is the real `ParentId`. Ask
+explicitly: *"For each parent-child edge — is this relationship organizational, geographic, or
+something else? Which ONE edge is the actual hierarchy parent?"* Caught live (MYPS admin-area,
+2026-07-08): a DEO table carried a `ProvinceGdbId` column, which got wired as `ParentId` on the
+assumption "this is the only parent-shaped column here" — but that link was geographic (which
+province a district's territory covers), not organizational. The real org-parent (Region) required
+an external authoritative source to surface, costing a full second reconciliation pass.
+
 ### Q7 — Edge cases
 "What happens in unusual situations?"
 - Can this entity exist without a parent? (orphan risk)

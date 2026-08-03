@@ -47,8 +47,13 @@ option. Every drill MUST follow these to stay runnable:
    `SET NOCOUNT ON; SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON; SET XACT_ABORT ON;`.
    Project/program tables carry filtered indexes / computed columns — without `QUOTED_IDENTIFIER ON`
    any INSERT/UPDATE/DELETE on them fails with *Msg 1934 (incorrect SET options)*.
-2. **Unique business-ID namespace per drill.** No two drills may share a program/project key
-   (`FP-2026-0001` was claimed by two drills → their targeted cleanups collided). Give each drill its own prefix.
+2. **Unique business-ID namespace per drill — chosen so a sibling's `LIKE` can never match it (SKL-032).**
+   No two drills may share a program/project key (`FP-2026-0001` was claimed by two drills → their
+   targeted cleanups collided). A "distinct-looking" prefix is not enough if it's a *substring* of
+   another mock's prefix — `LIKE 'MOCK_PRG_%'` still matches `MOCK_PRG_SKIP`/`MOCK_PRG_FULL` once both
+   exist, causing FK-violation cleanup crashes and inflated counts in the other drill. Pick a prefix
+   where `LIKE 'yourprefix%'` cannot match any sibling's rows even after future mocks are added — a
+   numbered series (`MOCK_PRG_0%`) or a fully distinct stem, not a shared root with a suffix tacked on.
 3. **Self-seed every FK parent.** A drill creates the programs/projects/lookups its rows reference —
    never depend on data another drill (or a prior era's mock) left behind. A hardcoded surrogate key
    (`ProjectRevisionFK = 18`) is the classic trap; capture real IDs with `SCOPE_IDENTITY()`.
@@ -93,6 +98,15 @@ a nullability mismatch a metadata query would have surfaced before the first row
 **The rule:** run this against the target table set once, right after deployment and before
 authoring step 1's fixtures. Fix any mismatch (or the doc, if the deployed version is actually
 correct) before the drill script is written — don't let the drill discover it.
+
+**This includes discriminator/enum values you write yourself, not just migrated data.** Profiling
+source data catches drift *from the source*, but a column sized for labels you're inventing right
+now (an `OrgType` discriminator, a status-string enum) needs the same check against your own
+longest literal — profiling only the migrated data misses it because the value never existed in
+the source to profile. Caught live (MYPS admin-area, 2026-07-08): `OrgType NVARCHAR(20)` was sized
+before deciding the actual label set, then `'CongressionalDistrict'` (21 chars, a label I invented,
+not migrated) truncated and failed the load. `SELECT MAX(LEN(x)) FROM (VALUES ('Label1'),('Label2'),...) v(x)`
+against your own planned literal list costs nothing and would have caught it before the first run.
 
 ### 1. Generate the lifecycle script (full-content fixtures — SKL-007)
 
@@ -354,6 +368,55 @@ Why split: the seed is reusable for manual exploration, demos, and app dev again
 drill is the automated gate. Both share the same seed logic (copy it, don't cross-depend — see
 auto-seed rule 5). This separation is what makes the fixture a *reusable asset* instead of drill-only scaffolding.
 
+### WFC-009 — Read-only structural-validation drill (for a reference-data lock)
+Not every drill validates a mutable entity's lifecycle. Locking a **reference/lookup schema** (no
+transactional lifecycle — e.g. an admin-area/geography table set) calls for a different, cheaper
+archetype: a **read-only** drill against **live** data, with no fixture seed and nothing to clean up.
+
+Assert, directly against production rows:
+- **Structure** — the columns/indexes/constraints the lock was supposed to produce actually exist
+  (e.g. a dropped column is really gone, a new UNIQUE index is really unique).
+- **Hierarchy/referential integrity** — no orphans in the real data, no cycles in a self-referencing
+  `ParentId` walk (bound the recursive CTE depth to catch a cycle instead of an infinite loop).
+- **View/function correctness** — a new consumption view returns the right slice, doesn't leak a row
+  it shouldn't (wrong type, deprecated row), and per-branch counts sum to the whole.
+- **Real-data-untouched** — row counts unchanged by the lock (the DDL touched structure, not data).
+
+```sql
+-- example: no cycle in a self-referencing hierarchy (bounded depth catches what an
+-- unbounded recursive CTE would spin forever on)
+;WITH anc AS (
+    SELECT Id, ParentId, 1 AS depth FROM dbo.tYourTable WHERE ParentId IS NOT NULL
+    UNION ALL
+    SELECT a.Id, o.ParentId, a.depth+1 FROM anc a JOIN dbo.tYourTable o ON o.Id=a.ParentId WHERE a.depth < 50
+)
+SELECT CASE WHEN ISNULL((SELECT MAX(depth) FROM anc),0) < 50 THEN 'PASS' ELSE 'FAIL — cycle' END;
+```
+
+This is a **third archetype**, distinct from WFC-001 (transactional force→verify→ROLLBACK, for a
+status-routed schema) and WFC-002 (persistent seed + validation-gate split, for a mutable entity) —
+both of those assume something changes over time; this one proves a static/reference schema is
+sound as-is. Caught live (MYPS admin-area schema lock, ADR-047): `drill-admin-area-v3.sql`, 12/12
+PASS first run, zero rework — no fixture needed because the thing being validated (GdbId dropped,
+Code re-keyed, 8 per-type views) is a property of the live table/view definitions themselves, not
+of any transaction.
+
+### WFC-008 — Dynamic lookup-value selection (avoid hardcoded literal NameIds)
+When a drill needs to seed an app-enforced (no-FK) lookup column — `Category`, `Thrust`, `Origin`,
+`Agency`, and similar `NameId`-keyed columns — select a **real** value at drill-runtime instead of
+hardcoding a literal guessed or copied from a prior drill:
+
+```sql
+DECLARE @CatId INT = (SELECT TOP 1 CategoryId FROM dbo.tOptionProjectCategory WHERE IsActive = 1 ORDER BY CategoryId);
+DECLARE @ThrustKey INT = (SELECT TOP 1 PAPKey FROM dbo.tOptionProjectThrustList WHERE IsActive = 1 ORDER BY PAPKey);
+```
+
+Why: a hardcoded literal silently breaks if the lookup table's numbering ever changes — or worse,
+it keeps "working" but resolves to the **wrong** name without the drill failing at all, since
+nothing enforces the FK. This is the same "ground in real values, never invent" principle behind
+SKL-006/008, applied specifically to drill *authoring* rather than production design. Caught live
+2026-07-16 (`drill-project-list-views.sql`, 11 lookup columns) — no rework, 9/9 PASS first run.
+
 ---
 
 ## Output format
@@ -481,9 +544,79 @@ The drill FAILS if:
    rendered text itself.
 9. **Metadata-assert the deployed schema before authoring fixtures (SKL-023).** Query cascade
    actions, nullability, and uniqueness against the live deployed objects and diff against the
-   design doc — don't assume the DDL you wrote is the DDL that landed. Caught live: a cascade
-   deployed as `NO_ACTION` against a documented `CASCADE`, and a nullable-vs-NOT-NULL mismatch
-   that broke a seed script mid-run. See Step 0.
+   design doc — don't assume the DDL you wrote is the DDL that landed. Also size-check discriminator/
+   enum columns against your OWN planned literal set, not just migrated data — a column sized before
+   the label set is finalized will truncate a self-authored value the same way it would a source
+   value. Caught live: a cascade deployed as `NO_ACTION` against a documented `CASCADE`, a
+   nullable-vs-NOT-NULL mismatch that broke a seed script mid-run, and an `OrgType NVARCHAR(20)`
+   truncating `'CongressionalDistrict'` — a label the author invented, not something migrated. See
+   Step 0.
+10. **Verification SELECTs must be per-table, never UNION'd across tables with different column
+    sets (SKL-026).** A UNION spanning tables whose columns don't line up forces a phantom column
+    reference somewhere — and that's a *compile* error, which kills the whole batch silently
+    (every later `GO`-batch still runs, but on an unseeded fixture) rather than a clean runtime
+    FAIL on the one thing that's actually wrong. Caught live: a drill's own STEP 1 verification
+    `SELECT` referenced `RegionId` on a table that has no such column (the Region table has no
+    parent) — Msg 207 killed the seed insert, and every downstream assertion printed FAIL,
+    shadowing the one real bug under nine phantom ones.
+11. **Diagnose top-down on a first run, and NEVER through a PASS/FAIL output filter (SKL-026/036).**
+    If a compile-level or runtime `Msg` error (not a `PRINT 'FAIL'`) appears anywhere in the output,
+    fix that first and re-run before trusting any individual PASS/FAIL below it — a batch-compile
+    failure *or a setup-phase FK/constraint violation* can silently skip/void a whole seeding step,
+    and everything downstream fails for a reason that has nothing to do with what each assertion
+    claims to test. **When you filter the run output to `PASS|FAIL|RESULT` lines, you HIDE these
+    `Msg` errors** — so on any *unexpected* FAIL, re-run the drill UNFILTERED and read the raw output
+    top-down before diagnosing the assertion itself. Caught live: a fixture hardcoded a component
+    type (`CW1`) that an unrelated cleanup (ADR-057) had deleted; the setup `INSERT` failed silently
+    with `Msg 547` (FK violation), and two downstream CHKs failed confusingly — the filtered output
+    showed only the phantom FAILs, not the real cause. (Root-cause prevention: WFC-008 below —
+    select lookup values at runtime instead of hardcoding them.)
+12. **A "full suite" run is regenerated from `database.md`'s Drills registry, never from memory
+    (SKL-031).** Building the re-run command list by habit/recall silently drops a registered drill
+    from the run — it stays *documented* as valid while no longer being *proven* valid, and nothing
+    flags the gap because the doc still lists it. Before any "re-run everything" pass, re-open the
+    registry and enumerate every row currently marked active; treat any list assembled from memory
+    as suspect. Caught live: `drill-revision-views.sql` (21 checks, registered) was silently absent
+    from several consecutive "full suite" runs because the run list had been carried forward turn to
+    turn instead of re-derived from the registry each time.
+13. **Tag every drill self-cleaning vs. persistent-validator, and route the suite run accordingly
+    (SKL-031).** A **self-cleaning** drill seeds its own fixture and cleans up after itself — safe to
+    run after a full `reset-transactional.sql`. A **persistent-validator** drill checks a fixture that
+    lives *outside* the drill (a `*-mock-data.sql` seed meant to persist as a deliverable, per
+    WFC-002) — running it after a reset finds nothing and reports a false FAIL, or worse, a reset run
+    ahead of it silently wipes a persistent mock the operator was shown as "live data." Persistent-
+    validators run **after a reseed**, never after a reset; self-cleaning drills are the only ones
+    safe in the reset-preceded loop. Caught live: a persistent-mock validator placed in the
+    reset-preceded loop produced a spurious FAIL (0 rows found) when the reset wiped the mock it
+    was meant to check; separately, a full-suite reset silently deleted a persistent 15-program/
+    35-project deliverable that had already been delivered to the operator as live data that same
+    session.
+14. **The registry tag / drill header is a HINT, not truth — verify a drill's real destructiveness
+    by reading it before a sweep (SKL-036).** Rule 13 routes by a drill's self-cleaning vs.
+    persistent-validator tag — but that tag (in `database.md`'s registry, or the drill's own header
+    comment) can be *wrong*, and trusting it blind is how a "safe" regression sweep wipes live data.
+    Before including ANY drill in a sweep, open it and confirm what its cleanup and seeding actually
+    do — then correct the registry if it lied. Two live catches, same session: (a)
+    `drill-project-list-views.sql` was documented "self-cleaning" but has only a *pre*-cleanup (no
+    bottom cleanup) — it leaves residue that inflated two other drills' `COUNT(*)` assertions;
+    (b) `drill-revision-full.sql`'s header says "leaves data in place" but it full-truncates
+    `tPrograms`/`tProjects`/the whole revision domain with no `WHERE` — it silently wiped a
+    26/26-PASS standard mock mid-sweep. A drill's actual `DELETE`/`TRUNCATE` footprint is the truth;
+    its label is a claim to be checked.
+15. **T-SQL variable-scope traps in fixtures (SKL-037).** Two silent-corruption patterns, both of
+    which pass a naive drill and fail a later count/content assertion:
+    - **Table-type variables do NOT reset per loop iteration.** A `DECLARE @m dbo.SomeTableType;`
+      inside a `WHILE` loop is *not* re-initialized each pass (unlike scalar `DECLARE @x = val;`,
+      which does reset) — rows accumulate across iterations. Declare the table variable ONCE outside
+      the loop and make `DELETE FROM @m;` the first statement inside it. Caught live: a
+      `RevisionMapType` var re-declared each hop made `pCopyProjectDetailChain` re-copy an
+      ever-growing map, inflating component/work-item counts 3→92 across 6 stage-advance hops.
+    - **A shared `SCOPE_IDENTITY()` variable is overwritten by sibling INSERTs.** When a fixture
+      inserts several sibling rows through the same capture variable (`SET @cc = SCOPE_IDENTITY();`
+      after each of CW→ROW→LS), a later step needing "the FIRST sibling's Id" silently gets the last
+      one. Capture a specific sibling's Id into its own uniquely-named variable (`@ccCW`) immediately
+      after its own INSERT, before any sibling INSERT can overwrite the shared one. Caught live in 2
+      files same session (`drill-revision-full.sql`, `myps-mock-data.sql`).
 
 ---
 
@@ -503,6 +636,14 @@ The drill FAILS if:
 - [ ] Whole suite re-executed to green after any schema change, clean-slate per drill (SKL-013)
 - [ ] Generated/output content verified by reading the actual text, not just counts/LEN (SKL-019)
 - [ ] Deployed schema metadata-asserted (cascade actions, nullability, uniqueness) against the design doc before fixtures were authored (SKL-023)
+- [ ] Discriminator/enum column widths checked against your own planned literal set, not just migrated data (SKL-023)
+- [ ] Verification SELECTs are per-table, never UNION'd across mismatched column sets (SKL-026)
+- [ ] On a first run OR any unexpected FAIL, re-run UNFILTERED (not `PASS|FAIL`-grepped) and diagnose setup-phase Msg errors top-down before trusting individual assertions (SKL-026/036)
+- [ ] Business-ID prefix chosen so a sibling mock's `LIKE 'prefix%'` cannot match it, now or after future mocks are added (SKL-032)
+- [ ] "Full suite" run lists regenerated from `database.md`'s Drills registry each time, not carried forward from memory (SKL-031)
+- [ ] Each drill tagged self-cleaning or persistent-validator; persistent-validators run after a reseed, never after `reset-transactional.sql` (SKL-031)
+- [ ] Before a sweep, each drill's ACTUAL destructiveness/cleanup verified by reading it — registry tag/header treated as a hint, and corrected if wrong (SKL-036)
+- [ ] Loop table-type variables declared once outside the loop + cleared (`DELETE FROM @t;`) each iteration; a needed sibling's Id captured into its own variable right after its INSERT (SKL-037)
 - [ ] Script is syntactically valid T-SQL
 
 ## Failure exit

@@ -53,6 +53,34 @@ as-built source with real NULLs in production, but `NOT NULL` in the new schema 
 died with `Msg 515` partway through, forcing a full children-first delete-and-reseed instead of a
 clean single pass.
 
+**Size-check discriminator/label columns against your OWN planned literal list too, not just
+source data (SKL-023 addendum).** If the migration introduces a new discriminator column (a type
+tag that didn't exist as a distinct field in the source), profiling the source can't catch a
+too-narrow width for it — the value never existed there to profile. Check `MAX(LEN(...))` against
+every literal you plan to write, before the column is sized. Caught live (MYPS admin-area,
+2026-07-08): a migration-introduced `OrgType NVARCHAR(20)` truncated `'CongressionalDistrict'`
+(21 chars, an author-chosen label, not migrated data).
+
+**Precheck CSV code/ID columns for Excel scientific-notation corruption before loading (SKL-030).**
+When the source is a spreadsheet export, Excel silently converts any long numeric-looking string
+(an ID, a hierarchical code) into scientific notation the moment the column isn't explicitly typed
+as text — `104305000` becomes `1.03171E+12`, destroying the exact value a join key depends on. This
+is invisible on a quick eyeball of a few rows (short codes survive) and only shows up as a
+near-total corruption rate once you check every row. Before mapping any source code/ID column:
+
+```sql
+-- or the file-reading equivalent if the source hasn't been staged yet
+SELECT COUNT(*) AS corrupted FROM staging.tYourTable WHERE YourCodeColumn LIKE '%E+%' OR YourCodeColumn LIKE '%e+%';
+```
+
+Any non-zero count means the column is not usable as a join key or a stored value as-is — the
+source must be **re-exported with that column forced to text** (not "fixed" by reformatting the
+corrupted value back, which is lossy once precision is lost past ~15 digits). Caught live twice:
+74 `CityMunicipality.Code` values in the ADR-029 AAMS backfill (repaired that time), then 1,620 of
+1,643 city rows + 46 of 257 district rows (99%/18%) in a *second, independently-supplied* source
+CSV set for the same domain — the corruption recurs with every fresh Excel-touched export, so this
+is now a standing precheck, not a one-time fix.
+
 ### 3. ORDER — load sequence that respects dependencies
 Topologically sort by FK dependency: parents/lookups before children. **The circular-dependency
 trap:** if generating the target's seed depends on the target already having data, you deadlock —
@@ -78,6 +106,8 @@ assessed *before* running, not discovered during an incident.
    nulls, duplicate keys). **Profile source NULLs/domains against target constraints (SKL-023)**
    for every column the target tightens — a nullable-to-NOT-NULL or widened-to-narrowed domain
    gap needs an explicit default/cleansing rule before the load runs, not a mid-script failure.
+   **If the source is a spreadsheet export, precheck every code/ID column for `E+` scientific-
+   notation corruption (SKL-030)** before it's trusted as a join key.
 4. Determine **load order** (stage 3); explicitly check for and break circular dependencies.
 5. Write **validation queries** (stage 4) — counts, checksums, integrity, invariants.
 6. Define **rollback + cutover** (stage 5) with go/no-go criteria.
@@ -119,10 +149,52 @@ RISK-NNN (per D3): [lock / data-loss / downtime risk + mitigation]
 
 Close with **Decisions needed / Open questions / Next steps**.
 
+## Reusable techniques (captured workflows)
+
+### WFC-007 — Client-file → embedded-staging reconciliation recipe
+When an operator drops a spreadsheet/export as an authoritative correction against already-live
+data (not a from-scratch migration — a targeted reconciliation), this sequence has proven itself
+twice (MYPS IOMS org-chart, MYPS AAMS geography) and hardened with three corrections each time:
+
+1. **Read the file with a script, not by eye** (`openpyxl`/equivalent) — binary formats aren't
+   readable directly, and a script lets you diff systematically instead of skimming.
+2. **Diff both directions against the live DB before touching anything**: what's new, what's
+   misclassified, what's misparented. Don't assume the file is a pure superset or pure correction —
+   check both ways.
+3. **Math-check the total BEFORE executing**: `(existing rows) + (net new) = (source file's row
+   count)`. If it doesn't reconcile exactly, something is misunderstood — find out what before
+   writing DML, not after.
+4. **Verify the join key is actually unique in the source before joining on it.** A name that looks
+   unique often isn't — 108 town names collided across different Philippine provinces in AAMS; a
+   name-only join would have silently cross-wired the wrong `Code`/`Hierarchy` onto rows with zero
+   error. Check `GROUP BY key HAVING COUNT(*) > 1` against the *real* source data before trusting
+   any join key, and widen to a compound key if collisions exist.
+5. **Chunk staging INSERTs to ≤500 rows.** SQL Server's row-constructor VALUES clause caps at 1000
+   rows per statement — a large staging table (1,000+ source rows) will fail to parse otherwise.
+6. **NULL, don't guess, for source-side corruption — but precheck for it first (SKL-030).** Scan
+   every code/ID column for `E+`/`e+` (Excel scientific-notation corruption) before mapping it as a
+   join key — this recurs on *every* fresh Excel-touched export, not just once. Where corruption is
+   found, leave the target NULL and log it (or, better, get the source re-exported as text) — don't
+   reverse-engineer or interpolate a value the source doesn't actually contain.
+7. **Self-contained final script**: embed the staging rows directly in the SQL file (generated via
+   the same script that read the source) rather than depending on the source file being present at
+   run time. Transactional, with inline verification counts.
+8. **Extend the drill, run it, then log gaps as `RISK-`/`ASS-` entries** rather than chasing every
+   edge case to zero — a reconciliation pass legitimately ends with some rows still NULL because
+   the source itself is incomplete; that's a documented gap, not a bug to keep fixing indefinitely.
+
+Distinct from the general MAP→TRANSFORM→ORDER→VALIDATE→ROLLBACK stages above in one way: this
+recipe assumes the target schema and most of the target data already exist — it's a *correction*
+pass triggered by a client-supplied authoritative file, not a first migration.
+
+---
+
 ## Quality checklist
 - [ ] Every target column has a source; every source column mapped or dropped-on-purpose (no silent loss)
 - [ ] Transform rules explicit, incl. the data-quality traps that break naive exports
 - [ ] Source NULLs/domains profiled against every target column that tightens a constraint, with an explicit default/cleansing rule decided up front (SKL-023)
+- [ ] Any migration-introduced discriminator/label column sized against your own planned literal list, not just source data (SKL-023)
+- [ ] If the source is a spreadsheet export, every code/ID column prechecked for `E+`/`e+` scientific-notation corruption before being trusted as a join key (SKL-030)
 - [ ] Load order is FK-topological; circular dependencies checked and broken
 - [ ] Validation queries cover counts, checksums, integrity, and business invariants
 - [ ] Rollback + cutover defined with go/no-go criteria before any run

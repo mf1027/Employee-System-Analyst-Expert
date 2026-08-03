@@ -81,7 +81,7 @@ $odlBin = Join-Path $root "node_modules\.bin\opendataloader-pdf"
 if (Test-Path $odlBin) {
     Write-OK "@opendataloader/pdf binary ready"
 } else {
-    Write-WARN "@opendataloader/pdf binary not found — pdf2md.ps1 will fall back to pypdf"
+    Write-WARN "@opendataloader/pdf binary not found - pdf2md.ps1 will fall back to pypdf"
 }
 
 # -- 3. Python dependencies ----------------------------------------------------
