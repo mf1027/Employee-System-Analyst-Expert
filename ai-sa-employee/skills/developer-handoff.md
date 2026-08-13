@@ -160,3 +160,12 @@ pass (RISK-073–080, ADR-094) reconciled them.
    updated alone. Prefer generating it from the canonical files (see `myps-db-asbuilt.md` /
    `scripts/generate-db-asbuilt.py` for the existing generated-not-hand-maintained pattern) over
    maintaining it by hand.
+
+**Concrete implementation (MYPS, 2026-08-13):**
+`memory/clients/myps/myps-system/CODEX_SYNC_STARTUP.md` — role split, startup checklist, canonical
+file list, DB safety rules, current Revision authority, and a report-back protocol, meant to be
+read at the start of every Codex/MYPS implementation chat. Paired with a read-only
+`scripts/codex-sync-startup.ps1` in the same folder (prints branch/dirty-file state for both
+repos, latest ADR/RISK headers, a DB-target warning; never writes, never connects to a database
+unless `-CheckDb` is passed, and even then the target is hardcoded, not parameterizable). Use this
+pair as the template when another client needs the same external-agent protocol.
