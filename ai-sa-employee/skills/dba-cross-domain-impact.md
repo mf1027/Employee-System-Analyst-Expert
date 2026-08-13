@@ -254,6 +254,63 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
    a claim of completeness. This has caught real stragglers twice: a 07-01 drill-suite repair and a
    07-06/07 nine-document rewrite each had 2–3 leftover mentions of the old design that a
    file-by-file read-through missed but the terminal grep caught immediately.
+7. **A "✅ Current" / status mark is a claim someone made once, not evidence (SKL-041).** Rule 6
+   requires docs stay updated in the same pass as the change — but a status mark set correctly at
+   that moment silently rots the moment anything else changes underneath it, and nothing forces a
+   re-check. Caught live, twice in two consecutive days: 2 diagrams marked ✅ Current in
+   `database.md` carried columns dropped 4–6 weeks earlier (the mark was never re-punched after the
+   drift); `database.md` documented `vProjectComponentCost`/`vRevisionProjectComponentCost` as live
+   PCMA views in **two separate table sections**, and a same-day fix of one location missed the
+   other — the phantom-object script caught the second one immediately, a manual re-read hadn't.
+   **Before trusting any ✅/Current/status mark on anything schema-sensitive, re-run
+   `scripts/verify-erd-vs-schema.py`** (diagrams + `database.md`'s own object tables) rather than
+   trusting the mark or a manual re-read — see WFC-011 below for the pattern this generalizes.
+8. **A new column's placement is part of the impact assessment, not an afterthought (SKL-043).**
+   When the change is "add column X to object Y," decide **where** X goes before drafting the
+   DDL — keys → attributes → state → audit → `IsDeleted` last (ADR-060). For a **table**, weigh
+   this against the real cost of a physical rebuild (no in-place reorder in SQL Server, every
+   index/FK/default lost and re-created) — appending last is often the right call there. For a
+   **view or TVF**, that cost doesn't exist (`CREATE OR ALTER` reorders for free) — appending last
+   is a default, not a decision, and should be argued for, not assumed. Run
+   `scripts/verify-column-order.py --object <name>` before calling the change done. Caught live:
+   `OldSourceId` appended last on both a view and a brand-new TVF in the same pass, 2 weeks after
+   an identical operator complaint (ADR-060) had already forced a 4-table rebuild to fix the same
+   pattern on live tables.
+
+---
+
+## Reusable techniques (captured workflows)
+
+### WFC-011 — Equivalence-proof-gated object change
+Whenever an existing view/function/proc is altered (not created fresh), don't just confirm the new
+version compiles and does the intended thing — prove it does **nothing else**:
+
+1. **Capture baseline.** Before the change, run every affected object (and its direct neighbours
+   that share dependencies but aren't being touched) into named result tables.
+2. **Make the change.**
+3. **Re-capture** the same objects into a second set of named tables.
+4. **`EXCEPT` in BOTH directions** (before-except-after, after-except-before) and assert the diff
+   equals the **intended** set exactly — either zero rows everywhere, or a specific named set you
+   predicted before running the diff (e.g. "exactly these 3 projects should differ, nowhere else").
+5. **Include untouched neighbours in the capture, not just the target.** Proving a neighbouring
+   object did NOT move is as valuable as proving the target did — it's what makes an interface
+   freeze ("same columns, same names, for the downstream client") a checked fact instead of a hope.
+6. **Teardown is a required step, not cleanup hygiene.** Name the baseline capture tables so they're
+   obviously scratch (a `_` prefix or similar), and drop them explicitly at the end of the SAME
+   session that created them — don't defer it. A proof that left `_R061_ViewBefore`/`VisBefore`/
+   `VisAfter` (12,646 rows) sitting in the database was found by an unrelated sweep a day later; the
+   plan that ran it simply had no teardown step written down. A later repeat of the same pattern,
+   this time WITH a planned teardown step, dropped clean at zero residue.
+
+Observed 7+ times, all clean: a program-stage view rewrite (0-diff), a PCMA-publication overlay (an
+intentionally *non-zero*, precisely-predicted diff on exactly 3 projects and nowhere else — proving
+the technique also works when SOME change is expected, not just none), a security-view rewrite
+proven against 574 real users / 6,314 rows, two function rebuilds gated on zero diff across 9
+downstream procs. Twice this technique caught the analyst's OWN error before it became a permanent
+record — once a miscounted object total, once an eyeballed-not-summed percentage — because the
+proof runs against the live system, not against the analyst's memory of what should happen.
+
+Generalizability: universal — any change to any DB object with consumers.
 
 ---
 
@@ -270,6 +327,14 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
 - [ ] **Definition of Done:** docs/diagrams/specs/process-flow updated in the same pass (SKL-010)
 - [ ] **Stale-term sweep run, zero live hits (WFC-006)** — grep the superseded concept's exact
       terms across every touched consumer; report the grep result as evidence
+- [ ] **Any ✅/Current/status mark re-verified via `scripts/verify-erd-vs-schema.py`, not trusted or
+      manually re-read (SKL-041)** — a mark set correctly once silently rots as everything else
+      changes; only a re-run is evidence
+- [ ] **If altering an existing object, ran the equivalence-proof-gated change (WFC-011)** —
+      baseline → change → `EXCEPT` both directions → assert the diff equals the intended set exactly
+- [ ] **If the change adds a column, its placement was decided per ADR-060 and verified via
+      `scripts/verify-column-order.py --object <name>` (SKL-043)** — not appended last by default
+      → untouched neighbours included in the capture → scratch tables torn down in the same pass
 
 ## Failure exit
 

@@ -71,6 +71,18 @@ Follow these conventions:
 - Alias all columns clearly — no ambiguous column names in JOINs
 - Include only columns the consumers actually need (no `SELECT *`)
 - For "latest revision" patterns, use `ROW_NUMBER()` or `MAX(Id)` subquery — document which
+- **Column order is a design decision, not a byproduct of write order (SKL-043):** place every
+  new column deliberately — keys first (bare `Id`, then `*PK`, then `*FK`, then other `*Id`
+  identifiers) → domain attributes → state flags → audit (`CreatedBy`/`CreatedDate`/`UpdatedBy`/
+  `UpdatedDate`) → `IsDeleted` last (ADR-060's canonical order). "Append at the end" is correct
+  reasoning for a **table** (SQL Server has no in-place reorder — moving a column needs a full
+  rebuild, real risk against a live FK-interlinked table) but is the **wrong** reasoning for a
+  view/TVF, where `CREATE OR ALTER` reorders at zero cost. Don't carry a table-grade constraint
+  into a class where it doesn't apply. Caught live: `OldSourceId` landed at ordinal 21 on a brand
+  new TVF built with total design freedom, mirroring a view's own append-last mistake — twice in
+  one pass, on top of an identical operator complaint 2 weeks earlier (ADR-060) that already cost
+  a 4-table physical rebuild. Run `scripts/verify-column-order.py` against the object before
+  calling the draft done.
 
 **Stored procedures:**
 - Use `CREATE OR ALTER PROCEDURE`
@@ -118,6 +130,7 @@ Add test queries for the object to the relevant drill file:
 - [ ] Execution plan shows seeks, not scans on fact tables
 - [ ] WHERE filter pushdown verified (if view is filtered externally)
 - [ ] Column names are unambiguous (aliased where needed)
+- [ ] Column order follows ADR-060 (keys → attributes → state → audit → `IsDeleted` last) — not appended-last by default (SKL-043)
 - [ ] SCHEMABINDING considered (prevents accidental table drops)
 
 ### Stored procedure checklist
@@ -136,6 +149,7 @@ Add test queries for the object to the relevant drill file:
 - [ ] Return type documented
 - [ ] NULL handling explicit (what happens with NULL input?)
 - [ ] CROSS APPLY pattern documented for consumers
+- [ ] Column order follows ADR-060 — appending last is a decision to defend, not the default, since a TVF has zero rebuild cost (SKL-043)
 
 ---
 

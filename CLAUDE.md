@@ -148,6 +148,16 @@ These are always active. No mode, client, or task overrides them.
    a drill that checks "did it run" is NOT a spec-compliance check — assert output against the
    documented format explicitly. Caught live: rebuilt the `ProjectId` BP→P swap + zero-padding loops
    from scratch when a correct reference existed, shipped a green drill that never checked ID format.
+   **Column placement is a design decision, gated mechanically (SKL-043):** a new column's
+   position follows ADR-060's canonical order — keys → attributes → state → audit → `IsDeleted`
+   last — decided before drafting the DDL, not left to fall out of write order. "Append last" is
+   correct reasoning for a **table** (no in-place reorder in SQL Server; a real rebuild against a
+   live FK-interlinked table) but is the wrong default for a **view/TVF**, where `CREATE OR ALTER`
+   reorders at zero cost — don't carry a table-grade constraint into a class where it doesn't
+   apply. Run `scripts/verify-column-order.py --object <name>` before calling a new/altered
+   object done. Caught live: `OldSourceId` appended last (ordinal 21) on both `vProjectLatest`
+   AND a brand-new TVF built with total design freedom, 2 weeks after an identical operator
+   complaint (ADR-060) had already forced a 4-table physical rebuild over the same pattern.
    **sqlcmd runs via PowerShell, never Git Bash (SKL-005):** always execute `sqlcmd` through the
    PowerShell tool — `& sqlcmd -S "SERVER\INSTANCE" -E -d db -Q "…"` (or `-i file.sql`). In Git Bash
    the `-i`/interactive path fails with a misleading "-E and -U/-P mutually exclusive" error. This

@@ -63,6 +63,41 @@ option. Every drill MUST follow these to stay runnable:
 5. **Idempotent + self-cleaning.** Re-runnable from any state: clean the prior run at the top, remove
    what you seeded at the end.
 
+### Drill classification tokens (SKL-038) — a mechanical gate, not a remembered one
+
+Rule 14 below ("the registry tag is a hint, verify by reading before a sweep") is the *correct*
+instruction — and it still failed **three times** across four days: a phantom-risk report on
+already-retired drills (2026-08-03), a full mock wipe when `drill-revision-full.sql` ran inside a
+sweep the very next day (2026-08-04) — the exact failure the rule exists to prevent, repeated less
+than 24 hours after being written down — and a third recurrence two days later reporting retired
+drills as broken. Three recurrences of a documented rule means the rule's *shape* is wrong, not that
+it needs repeating a fourth time. A note that must be remembered before every sweep will keep failing
+under exactly the conditions (a long session, many files, working from a list) that sweeps happen in.
+
+**The fix: every drill file declares its own classification in its header, and a sweep is not
+allowed to include a file that hasn't declared one.** Three tokens, one per file, in the header
+comment block:
+
+```sql
+-- @DESTRUCTIVE   -- unqualified DELETE/TRUNCATE across shared tables (e.g. drill-revision-full.sql)
+-- @HISTORICAL    -- superseded, self-documents "do not run" — kept for the record only
+-- @NEEDS-FIXTURE -- a paired persistent-validator; must run AFTER its *-mock-data.sql seed, never after a reset
+```
+
+A file with none of the three tokens is an ordinary self-cleaning drill, safe in the standard
+reset-preceded sweep loop (rule 4 above / SKL-014).
+
+**The sweep gate:** before running any bulk `drill-*.sql` sweep, grep every candidate file's header
+for these tokens first. `@DESTRUCTIVE` and `@HISTORICAL` files are **excluded from the sweep by
+default** — they only run if named explicitly by the operator or by a task that specifically needs
+them. `@NEEDS-FIXTURE` files are excluded from the reset-preceded loop and run in their own
+reseed-then-validate pass. This turns rule 14's "read it and remember" into "the sweep runner
+mechanically cannot include it" — the same shift SKL-013 made for drill *execution* (a doc claiming
+a drill is valid isn't evidence; only a run is) applied here to drill *selection*.
+
+Stamping is a one-time pass per file, done once at authoring time or the next time the file is
+touched — not a retroactive project to re-open all 40+ existing drills at once.
+
 ---
 
 ## Steps
@@ -617,6 +652,14 @@ The drill FAILS if:
       one. Capture a specific sibling's Id into its own uniquely-named variable (`@ccCW`) immediately
       after its own INSERT, before any sibling INSERT can overwrite the shared one. Caught live in 2
       files same session (`drill-revision-full.sql`, `myps-mock-data.sql`).
+16. **A bulk sweep may only include files that have declared a classification token, and excludes
+    `@DESTRUCTIVE`/`@HISTORICAL` by default (SKL-038 — hardens rule 14 into a mechanical gate).**
+    Rule 14's "verify by reading before a sweep" is correct but proved insufficient on its own —
+    it failed 3 times in 4 days, including a full mock wipe the day after being written down. Grep
+    header tokens (see "Drill classification tokens" above) before assembling any sweep list; a file
+    with no token is an ordinary self-cleaning drill, one with `@DESTRUCTIVE`/`@HISTORICAL` is
+    excluded unless named explicitly, one with `@NEEDS-FIXTURE` runs in its own reseed-first pass.
+    Do not rely on remembering which files are which — grep the tokens every time.
 
 ---
 
@@ -644,6 +687,8 @@ The drill FAILS if:
 - [ ] Each drill tagged self-cleaning or persistent-validator; persistent-validators run after a reseed, never after `reset-transactional.sql` (SKL-031)
 - [ ] Before a sweep, each drill's ACTUAL destructiveness/cleanup verified by reading it — registry tag/header treated as a hint, and corrected if wrong (SKL-036)
 - [ ] Loop table-type variables declared once outside the loop + cleared (`DELETE FROM @t;`) each iteration; a needed sibling's Id captured into its own variable right after its INSERT (SKL-037)
+- [ ] This drill declares its classification token (`@DESTRUCTIVE` / `@HISTORICAL` / `@NEEDS-FIXTURE` / none = ordinary) in its header (SKL-038)
+- [ ] Before assembling ANY sweep list, header tokens grepped fresh — `@DESTRUCTIVE`/`@HISTORICAL` excluded by default, `@NEEDS-FIXTURE` routed to its own reseed-first pass (SKL-038)
 - [ ] Script is syntactically valid T-SQL
 
 ## Failure exit
