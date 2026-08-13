@@ -15,7 +15,7 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-044
+Next-ID: SKL-045
 Next-WFC: WFC-014
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
@@ -27,6 +27,18 @@ Next-WFC: WFC-014
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
+- 2026-08-13 · ad-hoc-process · `[→ SKL-044, applied 2026-08-13]` **a separate session investigating
+  `RevisionController.cs` directly in the app repo built a full parallel `docs/`+`sources/`+`memory/`
+  tree (ERDs, knowledge-base, test strategy, a hand-maintained master-context doc, 3 investigation
+  logs) instead of writing into the standard `memory/clients/[client]/[project]/` lanes.** It sat
+  parked in `reference/codex/` — 8 real defects (schema-authority conflict, silent data-loss bugs,
+  a PCMA-rollback gap) went unlogged as `RISK-`/`ADR-` entries for the same day they were found,
+  while `risks.md` was independently logging unrelated findings (RISK-070–072) from the *same* day
+  with no cross-reference between the two authorities. Required a manual reconciliation pass
+  (RISK-073–080, ADR-094) to fold the findings back in. Applied: `developer-handoff.md` gained an
+  "External-agent export" section — generate the bundle FROM the canonical lane files at handoff
+  time, findings come back as RISK-/ADR- in the same pass, never let a parallel doc tree be the
+  place findings live. · myps
 - 2026-08-13 · recurring-error · **Wrote "three wholly undocumented domains" into ADR-092 without running the SKL-011 preflight first, then had to correct it an hour later.** When asked to continue grounding those 3 domains, a name-search across the project found a full ERD for infrastructure inventory dated 2026-06-17 (RISK-011, resolved that day) and a complete design (ADR-043) for the import DB layer I'd called undocumented — only the reporting surface and a Hangfire-vs-confirmed-architecture question were genuinely new. The check that caught this is exactly SKL-011's own preflight ("read the project's own prior deliverables before treating something as blank") — it just ran one turn too late, after the claim was already written into a decision record instead of before. · myps → this is SKL-011 failing to fire at the moment a NEW factual claim about domain coverage is asserted, not just at "start of module design." Candidate: any claim of the form "undocumented" / "no record of" / "new domain" should trigger the same grep-before-assert discipline the schema-design preflight already has, regardless of whether the surrounding task is formally a "design" task.
 - 2026-08-12 · recurring-error · **Answered a live schema question from documentation without checking whether the database itself had been replaced.** Told the operator `ComponentId` doesn't exist on `tProjectComponentCostPerYear`/`tProjectMajorWorkItem` while debugging an EF Core FK violation — true of the database I'd been querying for weeks, false of the one their application was hitting. `myps_db` had been rebuilt from scratch that evening (102 tables / 330K rows, replacing ~76 tables of mock); `sys.databases.create_date` would have shown it in one query. SKL-006/008 say "ground in the as-built source" and I did — I just never asked whether *the source itself* was still the same object. New failure mode: not doc-drift (doc wrong about a stable thing) but **substrate replacement** (doc right about a thing that got swapped). · myps → candidate: any schema assertion should be cheap-gated on `create_date`/`modify_date` vs. the asserting document's date, the way SKL-041 gates a "✅ Current" mark. Partially mitigated same session by ADR-092 making the inventory generated, but the *habit* of checking substrate identity before answering isn't encoded anywhere.
 

@@ -98,7 +98,14 @@
       "PowerShell(\"--- moving ---\")",
       "PowerShell(if \\($?\\) { \"moved skills/ -> ai-sa-employee/skills/\" })",
       "PowerShell(if \\($?\\) { \"moved document-skills/ -> ai-sa-employee/document-skills/\" })",
-      "PowerShell(\"--- verify ---\")"
+      "PowerShell(\"--- verify ---\")",
+      "Bash(git -C \"c:/Users/khen/Documents/ChatGPT/MYPS\" status --short)",
+      "PowerShell(& sqlcmd -S \".\" -E -d master -Q \"SELECT @@SERVERNAME AS ServerName, @@VERSION AS Ver\" -C -h -1 2>&1)",
+      "PowerShell(& sqlcmd -S \".\\\\MSSQLSERVER01\" -E -d master -Q \"SELECT @@SERVERNAME AS ServerName\" -C -h -1 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d master -Q \"SELECT name, state_desc, create_date FROM sys.databases ORDER BY name\" -C -h -1 2>&1)",
+      "PowerShell(& sqlcmd -S \".\\\\MSSQLSERVER01\" -E -d master -Q \"SELECT name, state_desc, create_date FROM sys.databases ORDER BY name\" -C -h -1 2>&1)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "enabledPlugins": {

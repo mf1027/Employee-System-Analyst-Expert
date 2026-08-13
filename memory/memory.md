@@ -45,6 +45,23 @@
 
 ### Last Session
 
+- **2026-08-13 (today) — Client resumed via `resume-client`.** `ai-sa-employee/` framework and
+  `memory/clients/myps/` were found populated on disk (not freshly copied by this session, but
+  not yet registered/read this session either). Working Memory above was stale by ~4 weeks
+  relative to the project files — `decisions.md`/`risks.md`/`database.md`/`tasks.md` all carry
+  entries through 2026-08-13, while this section's last entry stopped at 2026-07-17. Read
+  `myps.md`, `requirements.md`, `risks.md` (head), `plan.md`, `tasks.md`, `decisions.md` (head —
+  ADR-091/092/093), `database.md` (head — ADR-092 re-baseline banner), `calibration.md` (still an
+  empty scaffold). **Current top-of-stack state:** ADR-093 (Kafka dropped, Hangfire+SignalR
+  confirmed for import dispatch) is the latest decision; RISK-072 (`tProjectIdSequence` desync,
+  🔴 silent `P`-suffix ID collision) is **open, investigation paused**, blocking on operator
+  confirmation of whether a legacy `MAX+1`-style query is still live anywhere in app code;
+  RISK-070/071 (two reporting-proc defects — dead `@region` filter + a fully commented-out
+  `WHERE` clause in `usp_extract_PC_MIOW_list`) are open, unfixed, unowned. Task board (`board.md`,
+  509KB) and full `decisions.md`/`risks.md`/`database.md` were not read in full this pass — see
+  those files directly for anything not summarized here. This Working Memory section's Active
+  Tasks table below is **not** re-verified against current state as part of this resume; treat it
+  as historical until spot-checked against `tasks.md`/`board.md`.
 - **2026-07-15 → 2026-07-17:** Bulk Project Import System built (ADR-043 — `tImportJob` hard-reject
   lock + `tProjectIdSequence`/`pReserveProjectIdBlock` atomic ID allocation, replacing the as-built
   full-scan+race mechanism). AlternateId relocated to `tProjects` (ADR-044). Canonical
