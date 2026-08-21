@@ -27,6 +27,24 @@ Next-WFC: WFC-014
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
+- 2026-08-21 · recurring-error · **SKL-044's applied fix didn't prevent a recurrence one week later,
+  because it treated the wrong root cause.** A session did the Obsidian-vault gap analysis and built
+  `MYPS-Obsidian-Knowledge-Digest.md` + `AGENTS.md`/`CLAUDE.md` in `project_myps`, entirely blind to
+  `memory/clients/myps/myps-system/` — the actual canonical ADR-098/RISK-083 record — because this
+  repo's own CLAUDE.md session-start gate (read `memory/memory.md`, search claude-mem, open-items
+  scan) never ran, silently, for the whole session. Separately, the same week, Codex wrote a new
+  standalone orientation doc (`codex-current-agent-state-and-doc-gaps-2026-08-21.md`) instead of
+  refreshing `CODEX_SYNC_STARTUP.md` directly — a milder instance of the identical pattern.
+  SKL-044's fix (`developer-handoff.md`'s "External-agent export" section) only covers handoff-*time*
+  export FROM the lane files; it does nothing for a session that never opens the lane files in the
+  first place. Reconciled this pass: `project_myps`'s guidance files now name `myps-system` as the
+  top-priority source, the vault now points back at it, `CODEX_SYNC_STARTUP.md` refreshed and the
+  new doc folded in/marked superseded. **Not fixed by this pass:** the actual mechanism that makes a
+  session skip the memory-read gate in the first place — that's still a note to remember, not a
+  mechanical gate, the same shape SKL-038 explicitly found didn't work at this failure's scale
+  ("a rule's shape... doesn't work at this failure's actual scale... promoted to a mechanical gate").
+  Candidate for `/check-improvements`: does this session-start gate need the same treatment (a
+  mechanical check, not a paragraph in CLAUDE.md) that SKL-038 gave the drill-sweep problem? · myps
 - 2026-08-13 · ad-hoc-process · `[→ SKL-044, applied 2026-08-13]` **a separate session investigating
   `RevisionController.cs` directly in the app repo built a full parallel `docs/`+`sources/`+`memory/`
   tree (ERDs, knowledge-base, test strategy, a hand-maintained master-context doc, 3 investigation
