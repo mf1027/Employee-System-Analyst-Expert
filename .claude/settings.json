@@ -115,11 +115,89 @@
       "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log --oneline -8)",
       "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps diff -- WebAPI/Controllers/Revision/RevisionController.cs)",
       "Bash(grep -n '^| \\\\*\\\\*Status\\\\*\\\\* | Open, found not fixed |$' c:/Users/khen/Documents/ChatGPT/MYPS/memory/clients/myps/myps-system/risks.md)",
-      "PowerShell(& \"c:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\scripts\\\\codex-sync-startup.ps1\")"
+      "PowerShell(& \"c:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\scripts\\\\codex-sync-startup.ps1\")",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '%Revision%' AND TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME\" -C -h -1 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tTransactionLog' ORDER BY ORDINAL_POSITION\" -C -h -1 -s \"|\" -W 2>&1)",
+      "Bash(find /c/Users/khen/source/repos/mf1027/project_myps/DBHelper/Models -iname *Revision* -o -iname *TransactionLog*)",
+      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log --oneline -10)",
+      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log --oneline -3 -- WebAPI/Services/Revision/IRevisionPcmaPublisher.cs)",
+      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log -1 --stat)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; EXEC sp_helptext 'pRecomputeProjectPublishable'\" -C -h -1 -W -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id = OBJECT_ID\\('dbo.pRecomputeProjectPublishable'\\)\" -C -h -1 -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id = OBJECT_ID\\('dbo.pRecomputeProjectPublishable'\\)\" -C -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SELECT o.name, o.type_desc FROM sys.sql_modules m JOIN sys.objects o ON o.object_id=m.object_id WHERE m.definition LIKE '%IsPublishable%' ORDER BY o.name\" -C -h -1 -s \"|\" -W 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id=OBJECT_ID\\('dbo.sp_myps_pub_project'\\)\" -C -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id=OBJECT_ID\\('dbo.pPublishProgram'\\)\" -C -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SELECT OBJECT_DEFINITION\\(OBJECT_ID\\('dbo.pRecomputeProjectPublishable'\\)\\)\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -i \"C:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\deliverables\\\\documents\\\\drill-project-publishable.sql\" -y 0 -W 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -i \"C:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\deliverables\\\\documents\\\\drill-project-publishable.sql\" -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SELECT OBJECT_DEFINITION\\(OBJECT_ID\\('dbo.fProjectComponentCost'\\)\\)\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name FROM sys.procedures WHERE name IN \\('sp_myps_pub_funding_byProgram','sp_myps_pub_funding_byProject','sp_myps_pub_origin_byProjComp','sp_myps_pub_PrexC','sp_myps_pub_program','sp_myps_pub_ProgramType','sp_myps_pub_project','sp_myps_pub_project_component_byProgram','sp_myps_pub_project_component_byProject'\\) ORDER BY name\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectStages' ORDER BY ORDINAL_POSITION\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT 'tProjectMajorWorkItem' AS TableName, COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectMajorWorkItem' ORDER BY ORDINAL_POSITION\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectComponentCost' ORDER BY ORDINAL_POSITION\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT OBJECT_DEFINITION\\(OBJECT_ID\\('dbo.fProjectMajorWorkItem'\\)\\)\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='vProjectLatest' ORDER BY ORDINAL_POSITION\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectMajorWorkLocations' ORDER BY ORDINAL_POSITION\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name FROM sys.procedures WHERE name = 'pExportRawProjectsMajorItems'\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name, create_date, modify_date FROM sys.procedures WHERE name = 'pGenerateAIP01'\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectComponentCostPerYear' ORDER BY ORDINAL_POSITION\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN \\('vAdminDEO','vAdminOperatingUnit','vAdminImplementingOffice','tOptionAdminAreaCongressionalDistrict'\\)\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tOptionAdminAreaCongressionalDistrict'\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT TOP 3 ProgramId, ProgramFK FROM tProgramRevisions\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"EXEC dbo.pGenerateAIP01 @ProgramId = N'jimeneznr_08132026_182745', @StageName = N'BP'\" -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name, create_date, modify_date FROM sys.procedures WHERE name = 'pGenerateAIPComponents'\" -y 0)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -i \"C:\\\\Users\\\\khen\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-khen-Documents-ChatGPT-MYPS\\\\de3fac78-284f-42a4-8296-a6c96d22bc3d\\\\scratchpad\\\\fix-pGenerateAIP01.sql\" -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"EXEC dbo.pGenerateAIP01 @ProgramId = N'jimeneznr_08132026_182745'\" -y 0 2>&1)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT p.name AS ProcName, pa.parameter_id AS Ord, pa.name AS ParamName, t.name AS DataType, pa.max_length, pa.is_nullable, pa.has_default_value, pa.default_value FROM sys.procedures p JOIN sys.parameters pa ON pa.object_id = p.object_id JOIN sys.types t ON t.user_type_id = pa.user_type_id WHERE p.name IN \\('pGenerateAIP01','pGenerateRDIP','pGenerateRBPComponents','pGenerateRBP','pGenerateAIPComponents'\\) ORDER BY p.name, pa.parameter_id\" -y 0 -W)",
+      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT p.name AS ProcName, pa.parameter_id AS Ord, pa.name AS ParamName, t.name AS DataType, pa.max_length, pa.is_nullable, pa.has_default_value, pa.default_value FROM sys.procedures p JOIN sys.parameters pa ON pa.object_id = p.object_id JOIN sys.types t ON t.user_type_id = pa.user_type_id WHERE p.name IN \\('pGenerateAIP01','pGenerateRDIP','pGenerateRBPComponents','pGenerateRBP','pGenerateAIPComponents'\\) ORDER BY p.name, pa.parameter_id\" -y 0)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(echo \"---exit: $?---\")",
+      "Bash(jq --version)",
+      "Bash(chmod +x .claude/hooks/*.sh)",
+      "Bash(rm -rf .claude/memory/gate)",
+      "Bash(bash .claude/hooks/memory-gate-mark-read.sh)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(bash .claude/hooks/memory-gate-check.sh)",
+      "Bash(echo \"exit=$? \\(blank above = correct\\)\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\Main",
+      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps",
+      "C:\\Users\\khen\\Desktop\\Projects\\Obsidian\\project_obsidian_mem"
     ]
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
     "context-mode@context-mode": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/memory-gate-mark-read.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/memory-gate-check.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   }
 }
