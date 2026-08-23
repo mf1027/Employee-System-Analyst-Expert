@@ -37,13 +37,19 @@ This workspace supports **multi-client** work. Each client has a record at
 
 Before responding to anything in a new session, in this exact order:
 
-0. **Environment check.** Verify claude-mem and context-mode tools respond. Announce the
-   active memory tier (Tier 0/1/2). If degraded, say so explicitly — *"claude-mem unavailable,
-   operating at Tier 0 (file memory only)"* — and adjust: read memory files more thoroughly,
-   never silently pretend episodic memory exists.
+0. **Environment check.** Verify context-mode tools respond. **This system runs at Tier 0 —
+   file memory only (confirmed 2026-08-23, ADR-111).** claude-mem is NOT operational: its store
+   has not been written since 2026-07-02 and its MCP tools do not connect. Do not claim, imply,
+   or plan around episodic memory. If context-mode is also unavailable, say so explicitly and
+   read the memory files more thoroughly to compensate.
 1. Read this file (`CLAUDE.md`).
 2. Read `memory/memory.md` end-to-end — working memory first, then long-term profile and decisions.
-3. Search claude-mem: `mem search recent` — recall prior decisions, open items, and unresolved questions.
+   **Check its currency:** compare its "Last Session" date against the newest entry in the relevant
+   client's `decisions.md`. If it lags, say so — a stale working memory is worse than none, because
+   it reads as current. (It was 10 days and 17 ADRs behind when this check was added.)
+3. Search context-mode (`ctx_search`) for prior session context — decisions, errors, plans.
+   Note its limits: it captures session events and indexed content, **not** curated engagement
+   facts. The lane files remain the authority.
 4. If the task involves a specific client → read `memory/clients/[client-name].md`.
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,
    open risks, blocked decisions, outstanding deliverables. Format:
@@ -83,6 +89,11 @@ These are always active. No mode, client, or task overrides them.
    - **Tier 1 (hard gate):** anything that creates/modifies files, produces a deliverable,
      is client-facing, or commits to scope or estimates → restate understanding (1–3 lines)
      and **STOP**. Wait for explicit confirmation. If corrected, restate and re-confirm.
+   - **Explicit carve-out (2026-08-24, resolves the old #1-vs-#10 contradiction — same fact
+     stated at both instructions, don't restate independently):** routine `ID-` entries into a
+     lane file (`REQ-`/`RISK-`/`ADR-`/`ASS-`/`TASK-`) for a fact that has already emerged in the
+     conversation are **not** a Tier 1 trigger — see Instruction #10 for exactly what auto-saves
+     vs. what still gates.
    - **Tier 2 (answer directly):** read-only, informational asks — quick questions, lookups,
      explanations → answer immediately, state assumptions inline. If a Tier 2 answer starts
      becoming a deliverable or file change, stop and run the Tier 1 gate first.
@@ -94,8 +105,10 @@ These are always active. No mode, client, or task overrides them.
    owner had to say "plan first, wait for my go" three times in two days before this became
    the default instead of the exception.
 
-2. **Memory first.** Before answering, search `memory/memory.md` and claude-mem for prior decisions,
-   preferences, and context. Never answer from scratch when memory holds the answer.
+2. **Memory first.** Before answering, read `memory/memory.md` and the relevant client lane files
+   for prior decisions, preferences, and context. Never answer from scratch when memory holds the
+   answer. (claude-mem is not operational — see Memory Tiers. `ctx_search` may help for
+   *this* session's context, but it is not a substitute for the lane files.)
 
 3. **Client disambiguation.** If a task doesn't name a client and multiple are active,
    ask "Which client/project?" before proceeding.
@@ -124,9 +137,11 @@ These are always active. No mode, client, or task overrides them.
    surfaced the diff.
 
 8. **Read-once, memoize.** `reference/` holds client source material (drop files there). Read each
-   file **one time** on first encounter, distill into claude-mem as tagged entries. Search claude-mem
-   before any task that may benefit from prior knowledge. Re-read source only when a file changes, an
-   entry is suspect, or the owner asks. Use `ai-sa-employee/skills/ingest-reference.md` for the workflow.
+   file **one time** on first encounter and distill it into the client's own lane files
+   (`database.md`, `requirements.md`, `decisions.md`) — **not** claude-mem, which is not operational
+   (see Memory Tiers). Check those lane files before any task that may benefit from prior knowledge.
+   Re-read source only when a file changes, an entry is suspect, or the owner asks. Use
+   `ai-sa-employee/skills/ingest-reference.md` for the workflow.
 
 9. **Database lens.** Apply DBA expertise proactively — flag schema risks, query performance issues,
    HA/DR gaps, and compliance implications whenever relevant, even if not explicitly asked.
@@ -181,9 +196,16 @@ These are always active. No mode, client, or task overrides them.
    valid without an execution behind it — is the SKL-013 trap (5 of 6 drills silently broken after a
    PCMA refactor + rename). Never report a change done with stale docs or an un-run drill.
 
-10. **Auto-capture without being asked.** Whenever a decision, requirement, risk, assumption, or open
-    question emerges in conversation — even informally — log it immediately with the correct ID.
+10. **Auto-capture without being asked — the boundary, made explicit (2026-08-24).** Whenever a
+    decision, requirement, risk, assumption, or open question emerges in conversation — even
+    informally — log it immediately with the correct ID, **without asking first**, when it is a
+    genuinely new entry describing something that is just true and was already established.
     Never wait for the owner to say "document that."
+    **Still requires the Tier 1 gate (Instruction #1) before writing:** anything that
+    **supersedes or closes** an existing entry, **changes structure** (a new lane file, a new
+    ID scheme, a schema/DDL change), or is **client-facing**. Auto-capture is for adding a new,
+    uncontroversial fact to the record — not for retiring an old one or reshaping the record
+    itself; those are exactly the kind of change a restated-understanding-and-wait still protects.
 
 11. **Triple-lens review.** Every deliverable is reviewed simultaneously through three lenses before
     delivery: **SA** (requirements complete, gaps identified), **PM** (risks flagged, plan impact,
@@ -338,22 +360,27 @@ Fallback (no memory skill): writes to `docs/` folder in project repo.
 | `memory/memory.md` | Working memory + operator profile + decisions log | Every session start |
 | `memory/communication.md` | Comms standards + RAG template + ID reference | Communication/reporting tasks |
 | `memory/clients/[name]/[name].md` | Per-client context, stack, constraints | That client is in scope |
-| claude-mem | Episodic + knowledge base (tagged entries) | Before any task — search first |
+| ~~claude-mem~~ | ~~Episodic + knowledge base~~ | **NOT OPERATIONAL — see Memory Tiers below** |
 
 Rules:
 - Convert relative dates to absolute. Each long-term entry: *what*, *why*, *how to apply*, *source*.
 - Update — don't duplicate. Mark superseded entries. Memory never contradicts reality.
-- No secrets in memory.
+- No secrets in memory. **This rule is currently violated — see RISK-090/091.**
+- **Version control:** `memory/clients/` is gitignored by this repo (client data must never be
+  pushed) but carries its own **local-only** git repo for diff/rollback. It has no remote and must
+  never gain one. Added 2026-08-23 after the canonical lane files were found to have no history at all.
 
-### Memory Tiers
+### Memory Tiers — ACTUAL STATE: Tier 0 (confirmed 2026-08-23, ADR-111)
 
-| Tier | Stack | Effect |
+| Tier | Stack | Status |
 |---|---|---|
-| Tier 0 | Skill only | Full hot layer; writes to `memory/` files; diligent save-session required |
-| Tier 1 | + claude-mem | Episodic memory via hooks; claude-mem speaks first at session start |
-| Tier 2 | + context-mode | ~98% token reduction on heavy tool outputs |
+| **Tier 0** | Files only | ✅ **This is what's running.** `memory/` files are the entire durable memory |
+| ~~Tier 1~~ | ~~+ claude-mem~~ | ❌ **DEAD.** Store last written 2026-07-02; MCP tools do not connect; project-local `.claude-mem/` holds logs but no database. Diagnosed as SKL-022, unresolved since |
+| Tier 2 | + context-mode | 🟡 Partial — token reduction works, and `ctx_search` returns session events, but it holds **no curated engagement facts** |
 
-- `CLAUDE_MEM_DATA_DIR=./.claude-mem` — memory stored project-locally; `.claude-mem/` is gitignored
+**Do not write instructions, skills, or plans that depend on claude-mem** until it is actually
+revived and re-verified. Any skill step that says "store in claude-mem" is currently a no-op —
+write to the lane files instead.
 - `context-mode` runs as a global Claude Code plugin (`context-mode@context-mode`); enabled in both `~/.claude/settings.json` and `.claude/settings.json`
 - **New machine setup:** run `scripts/setup.ps1`; follow the printed plugin install instructions
 

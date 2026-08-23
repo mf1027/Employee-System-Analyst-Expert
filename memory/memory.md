@@ -45,7 +45,21 @@
 
 ### Last Session
 
-- **2026-08-13 (today) — Client resumed via `resume-client`.** `ai-sa-employee/` framework and
+- **2026-08-23 — Memory-architecture audit (ADR-110/111). This section had been 10 days and
+  17 ADRs stale**, still naming ADR-093 as "the latest decision" while canonical was at ADR-110.
+  A staleness check is now step 2 of the session-start gate in `CLAUDE.md` so this is caught
+  rather than inherited. **Canonical top-of-stack is now: `decisions.md` → ADR-110
+  (`Next-ID: ADR-111`), `risks.md` → RISK-091 (`Next-ID: RISK-092`).** Work done: ran a real
+  read-only drill (`tools/verify-function-sql-mindmap.ps1` 47/52 → **49/49 green** after
+  un-staling its ADR-107/108 assumptions and tightening its wikilink check, which exposed 13
+  genuinely broken links); fixed 6 vault anchor notes citing a deleted source file; **initialized
+  a local-only git repo for `memory/clients/`** — the canonical lane files previously had *no*
+  version history at all while both subordinate surfaces did; **formally dropped the system to
+  Tier 0** (claude-mem confirmed dead since 2026-07-02, SKL-022). **New: RISK-091 🔴 Critical** —
+  the RISK-090 `sa` credential exists in 6 locations, not 2, incl. a paste-ready `sqlcmd` line
+  pushed to 3 remote branches; rotation is the operator's decision, nothing was deleted.
+  ⚠️ The Active Tasks table below is still **not** re-verified — it remains historical.
+- **2026-08-13 — Client resumed via `resume-client`.** `ai-sa-employee/` framework and
   `memory/clients/myps/` were found populated on disk (not freshly copied by this session, but
   not yet registered/read this session either). Working Memory above was stale by ~4 weeks
   relative to the project files — `decisions.md`/`risks.md`/`database.md`/`tasks.md` all carry
@@ -98,9 +112,12 @@
 
 ## Knowledge Base Summary
 
-> Distilled KB entries stored in claude-mem — retrieve with `mem search [topic]`.
-> This section lists CATEGORIES only; full entries retrieved on demand.
-
-| Category | Count | Key topics |
-|---|---|---|
-| — | — | — |
+> **⚠️ SUPERSEDED 2026-08-23 (ADR-111).** This section previously said "retrieve with
+> `mem search [topic]`". That store is **not operational** — last written 2026-07-02, MCP tools
+> do not connect (SKL-022, diagnosed 2026-07, never resolved). The table below was always empty,
+> so nothing was lost — but the instruction pointed readers at a dead retrieval path.
+>
+> **Where engagement knowledge actually lives:** the per-client lane files under
+> `memory/clients/[client]/[project]/` — `decisions.md` (ADR-), `risks.md` (RISK-/ASS-),
+> `requirements.md` (REQ-), `database.md`, `board.md`. Those are the knowledge base.
+> The system runs at **Tier 0 — file memory only**.

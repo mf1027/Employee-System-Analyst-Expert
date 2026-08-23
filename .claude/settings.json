@@ -167,12 +167,10 @@
     "additionalDirectories": [
       "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\Main",
       "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps",
-      "C:\\Users\\khen\\Desktop\\Projects\\Obsidian\\project_obsidian_mem"
+      "C:\\Users\\khen\\Desktop\\Projects\\Obsidian\\project_obsidian_mem",
+      "C:\\Users\\khen\\.claude",
+      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\.claude"
     ]
-  },
-  "enabledPlugins": {
-    "claude-mem@thedotmack": true,
-    "context-mode@context-mode": true
   },
   "hooks": {
     "PostToolUse": [
@@ -199,5 +197,9 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true,
+    "context-mode@context-mode": true
   }
 }
