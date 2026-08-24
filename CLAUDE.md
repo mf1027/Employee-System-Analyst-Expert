@@ -489,7 +489,7 @@ Employee System Analyst Expert/
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
 │   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (55 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [40 individual skill files]
+│   │   └── [55 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -537,14 +537,19 @@ Employee System Analyst Expert/
 │   ├── fetch-libreoffice-local.ps1    ← ✅ Extract LibreOffice MSI into engines/ (no system install)
 │   ├── verify-engines.ps1 / .sh       ← ✅ End-to-end document engine test (PASS/FAIL checklist)
 │   ├── generate-board-xlsx.py         ← ✅ Task-board xlsx report (any project's board.md → 4-sheet workbook; task-board skill)
+│   ├── session-sync.ps1               ← ✅ SessionStart hook payload (git state + latest ADR/RISK + memory.md staleness + vault node coverage, ADR-113/117), wired globally via ~/.claude/settings.json + ~/.codex/hooks.json
 │   └── backup.ps1 / backup.sh         ← ✅ Zip client data + engines, retention-aware
 │   (Client-specific scripts do NOT live here — they go in
 │    memory/clients/[client]/[project]/scripts/ which is gitignored.)
 │
-├── workspace/                         ← 🚫 GITIGNORED — local scratch: skill-creator eval runs, temp tooling, throwaway analysis
-│   └── README.md                      ← what belongs here vs client/product folders
+├── tools/                             ← Vault-generation/verification scripts (one-directional canonical → Obsidian vault bridge, ADR-112)
+│   ├── generate-vault-memory-nodes.py ← Generates vault ADR/RISK/ASS node files + regenerates the 2 index files from canonical decisions.md/risks.md (--dry-run supported)
+│   └── verify-vault-memory-nodes.py   ← Read-only coverage/link-integrity checker for generated vault nodes (exit 0/1); wired into session-sync.ps1 (ADR-117)
 │
-├── archive/                           ← Superseded reference files
+├── workspace/                         ← 🚫 GITIGNORED — local scratch: skill-creator eval runs, temp tooling, throwaway analysis. Created on demand; not currently present.
+│   └── README.md                      ← what belongs here vs client/product folders (not currently present — see Build Status)
+│
+├── archive/                           ← NOT YET CREATED — superseded reference files currently live in memory/archive/ instead (different location, already populated; see Build Status)
 │
 └── node_modules/                      ← gitignored
 ```
@@ -561,7 +566,7 @@ Employee System Analyst Expert/
 | claude-mem plugin (global + project) | ✅ Done — project-local DB at `.claude-mem/` |
 | memory/memory.md | ✅ Done |
 | memory/communication.md | ✅ Done |
-| ai-sa-employee/skills/ library (40 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section |
+| ai-sa-employee/skills/ library (55 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section |
 | ai-sa-employee/document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done — consolidated under ai-sa-employee/ |
 | context-mode plugin (global + project) | ✅ Done — context-mode@context-mode v1.0.162, marketplace registered |
 | chromadb (semantic memory search) | ✅ Done — v1.5.9, Python 3.14 |
@@ -569,7 +574,7 @@ Employee System Analyst Expert/
 | scripts/setup.ps1 | ✅ Done |
 | reference/ stub (client source material input) | ✅ Done |
 | deliverables/ stub (document output folder) | ✅ Done |
-| archive/ (superseded files) | ✅ Done |
+| archive/ (superseded files) | ⬜ Not built — folder doesn't exist on disk (confirmed 2026-08-25). Superseded material currently lives in `memory/archive/` instead (different location, already populated — see `deliverables/dba-skill-chain-improvement-plan.md`'s move there same day). |
 | ai-sa-employee/references/ (build refs moved from root) | ✅ Done — skill-creator.md |
 | ai-sa-employee/SKILL.md | ✅ Done — 5 modes, 8 operational modes, trigger table, skill chain, quality gate |
 | ai-sa-employee/references/modes.md | ✅ Done — full playbooks for all 5 project modes |
@@ -595,7 +600,7 @@ Employee System Analyst Expert/
 | pdf-source/ folder + smart pdf2md | ✅ Done 2026-06-15 — default PDF drop folder; resolution: no-arg batch / bare-name (pdf-source→cwd) / path / folder; tested |
 | pdf2md robustness fix | ✅ Done 2026-06-15 — Windows .cmd shim + output-file existence check (was false-OK on stale exit code); honest pypdf fallback when Java absent |
 | Java in pre-install | ✅ Done 2026-06-15 — setup §3b installs OpenJDK 21 (winget/brew/apt); verified opendataloader now produces high-fidelity output (was falling back to pypdf) |
-| Repo restructure (Option B) | ✅ Done 2026-06-24 — `workspace/` gitignored scratch area; client scripts → `memory/clients/[client]/[project]/scripts/`; `scripts/` is general-purpose only; `.gitignore` tightened (`__pycache__/`, `*.pyc`, `*.zip`, `workspace/`, `tmp-*`); 16 tracked `.pyc` untracked |
+| Repo restructure (Option B) | ✅ Done 2026-06-24 — `workspace/` gitignored scratch area (created on demand, not currently present on disk — that's expected, not a gap); client scripts → `memory/clients/[client]/[project]/scripts/`; `scripts/` is general-purpose only; `.gitignore` tightened (`__pycache__/`, `*.pyc`, `*.zip`, `workspace/`, `tmp-*`); 16 tracked `.pyc` untracked (confirmed still 0 as of a 2026-08-25 sweep) |
 | Meta-skill system | ✅ Done 2026-06-24 — `self-improvement` (`/check-improvements` → `SKL-`), `workflow-capture` (`/capture-workflow` → `WFC-`), `memory-hygiene` (`/check-memory`); command-driven + cheap breadcrumb logging in `memory/improvement-backlog.md` (no ambient token cost) |
 | Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
 | Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |

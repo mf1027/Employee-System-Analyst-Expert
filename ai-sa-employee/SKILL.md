@@ -107,7 +107,7 @@ Available at any time, independent of project phase.
 
 ## Skill Chain
 
-Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (32 skills).
+Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (55 skills).
 
 | Phase | Primary skills | Support skills |
 |---|---|---|

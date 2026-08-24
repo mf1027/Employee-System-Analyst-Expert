@@ -389,7 +389,7 @@ Employee System Analyst Expert/
 │   │   └── skill-creator.md           ← How to build new skills
 │   ├── skills/                        ← 55 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [52 individual skill files]
+│   │   └── [55 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready

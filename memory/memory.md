@@ -29,14 +29,9 @@
 
 | Task | Client/Project | Status | Next action | RAG |
 |---|---|---|---|---|
-| User Permissions (RBAC) module | MYPS / myps-system | ✅ Reverted to LOCAL-MYPS as-is shape 2026-07-10 (ADR-031, supersedes ADR-026 + ADR-030) — schema+views+drills green | None — done | 🟢 |
 | LS Wallet (Module 11) | MYPS / myps-system | Design locked (ADR-025); workflow doc completed 2026-07-08; build not started | Resume schema/build session when prioritized | 🟡 |
 | Multi-Year Planning (Module 12) | MYPS / myps-system | **ON HOLD 2026-07-10** — 2 independently-sourced drafts reconciled (REQ-F101–F122 vs. new user-stories file); 1 unresolved mechanism conflict (auto PIP-sync vs. manual AIP-linking) | Dedicated client/operator reconciliation session before any further design | 🟡 |
 | Bulk project import (Excel → background) | MYPS / myps-system | ✅ Core mechanism BUILT 2026-07-16 (ADR-043) — `tImportJob` hard-reject lock + `tProjectIdSequence`/`pReserveProjectIdBlock` atomic ID allocation, drilled 10/10. Hangfire REC (2026-07-15) still the recommended queue layer. | Kafka/SignalR/EF Core backend integration is specified (`project-import-kafka-signalr-flow.md`) but **not yet implemented** — dev/infra lane. Category-range exhaustion deliberately deferred (operator decision). | 🟢 |
-| `vProjectCivilWorkCosts` port | MYPS / myps-system | ✅ **DONE 2026-08-05 (ADR-072)** — ported from LOCAL-MYPS, redesigned approved-only (fixes a double-count bug the source had), `ExportToPCMA`-driven scope (6 types, not just Civil Works — name undersells scope, kept per operator's literal ask). 8/8 drill PASS, 18 active drills green overall. | None — closed. | 🟢 |
-| Admin Area ProvinceId→ProvinceCode migration | MYPS / myps-system | ✅ **DONE 2026-08-04 (ADR-073)** — City/CongDist now key on `ProvinceCode`→`Province.Code` (business key), not surrogate `ProvinceId`. **Surfaced by a LIVE CONCURRENT SSMS schema change mid-session** — watch for more if the operator is actively editing this DB in parallel. 3 issues found+fixed: missing unique constraint on `Province.Code`, a blocking dependent index, and an unrelated dropped index (`IX_..._Code` on City) from the same concurrent session. 17/17 drills green. | None — closed. Data-quality issues (dup/NULL City codes) still pending `admin-area-code-repair-plan.md`. | 🟢 |
-| LS Wallet mock coverage (GAP-2) | MYPS / myps-system | ✅ **DONE 2026-08-04 (ADR-071)** — D2 (the mock's only `ProjectType='LS'` project) now has a real wallet (Amount=50M matching its funding draw), `ParentWalletId` linked, `IsWalletDraw=1` fixed. `tLSWallets` added to mock cleanup (was missing). Uncovered+fixed 2 stale drill asserts that never exercised the wallet-sum formula (35M→85M, verified correct). 13/13 drills green; `drill-component-lifecycle.sql`'s separate wallet-less fixture confirmed unaffected by design. | None — closed. Remaining: `AlternateId` format, Phase B (blocked), backend wiring. | 🟢 |
-| Stage ordering fix (RISK-054) | MYPS / myps-system | ✅ **DONE 2026-08-04 (ADR-070)** — 5 read-model objects now gate on `StageHierarchy` (process order) not `StageId` (surrogate order); `StageHierarchy` made NOT NULL. Guard drill 2 FAIL→4 PASS; equivalence proven 323=323, 0 diffs both ways. Was **latent, not live** (I had wrongly said 12 objects/live defect; actually 5 objects, 0 project rows above stage 7). BOM issue in both SQL files found+fixed same day, both cleanly re-runnable now. Rollback: `_rollback-stage-gate-definitions-20260804.sql`. | None — closed. | 🟢 |
 | Mock lookup integrity + traps | MYPS / myps-system | ✅ **DONE 2026-08-04 (ADR-069)** — all geography/office columns now resolve to REAL lookups AND are internally consistent (was `'10-001'` ×135, in no lookup table). `drill-mock-lookup-integrity.sql` 9/9. `AlternateId` = user free-text, never lookup-bound (CHK8 guards it). | **Mock run order is now 4 STEPS** — seed 1→2→3 then `_mock-lookup-normalization-block.sql`; step 1 self-checks and warns if incomplete. **⚠️ `drill-revision-full.sql` is DESTRUCTIVE but now INTERLOCKED** (defaults to abort). Open: AlternateId format unconfirmed, GAP-2 orphan LS project. | 🟢 |
 | Mock data coverage (GAP-1 overlay) | MYPS / myps-system | ✅ **CLOSED 2026-08-04 (ADR-068)** — `PRG-2026-K001` + K1/K2/K3 make the ADR-062 approved-revision overlay execute in the PERSISTENT mock for the first time (was 0 projects). 14/14 drill PASS + permanent tripwire. GAP-3/GAP-6 closed on the same rows. 3rd leaky drill fixed. | Remaining mock gaps: GAP-2 (1 orphan LS project), Phase B (projects under G/H/I/J — blocked on ProjectPK format for non-BP-starting programs). **⚠️ `drill-revision-full.sql` is DESTRUCTIVE (truncates all projects/programs) — never include in a bulk sweep.** | 🟢 |
 | Program type → stage gating | MYPS / myps-system | ✅ **BUILT 2026-08-03 (ADR-067)**, schema + 15/15 drill PASS. **Mock Q1 also done same day** — 4 new programs (G/H/I/J) proving the rule, incl. J = first data where raw `StageId` order ≠ real process order (RISK-054 made concrete). | **Backend wiring not done** (app-side enforcement). Mock **Phase B (projects) still deferred** — needs ProjectPK format rule for a non-BP-starting program. Also open: `StageId`-vs-`StageHierarchy` ordering ADR; RISK-058/059 logged; **2nd drill-residue leak found** (`drill-full-lifecycle.sql`, joins `drill-component-lifecycle.sql` in the held rebuild plan's P0). | 🟢 |
@@ -45,6 +40,35 @@
 
 ### Last Session
 
+- **2026-08-25 — Full cross-surface memory-conflict + sync-mechanism + unnecessary-files audit**
+  (operator request: "check all conflicts, check real-time sync, check unnecessary files"). 3
+  Explore agents + 1 Plan agent investigated; findings executed same session. **Canonical
+  top-of-stack is now: `decisions.md` → ADR-117 (`Next-ID: ADR-118`), `risks.md` → RISK-095
+  (`Next-ID: RISK-096`).** Preceded by two `ProgramController.cs` Batch-function fixes earlier the
+  same session (RISK-092/093 — a call to a nonexistent stored procedure, and a restore action that
+  set its own "undo" flag backwards — both DB-metadata- and rollback-drill-verified). Work this
+  pass: (1) **new RISK-094** — a live Gmail app-password found exposed in the same git-tracked
+  `appsettings.Development.json` RISK-090 already tracks for its DB credential; rotation is an
+  operator action, flagged, not performed here. (2) **new RISK-095** — the sync mechanism
+  (`session-sync.ps1`/ADR-113) is SessionStart-only, its `memory.md` check is a crude ADR-number
+  heuristic, and its vault check was git-status-only (couldn't see the Obsidian vault's generated
+  ADR/RISK indexes were 5/2 entries stale despite a clean repo) — documented as an accepted
+  limitation, not a build-a-new-mechanism mandate. (3) **new ADR-117** — wired
+  `tools/verify-vault-memory-nodes.py` into `session-sync.ps1` as a read-only check, closing that
+  one specific vault-staleness blind spot; verified live (synthetic-stdin invocation, both before
+  [WARNING, caught the real gap] and after [OK] the vault regeneration). (4) ran
+  `verify-vault-memory-nodes.py` → `generate-vault-memory-nodes.py` → verify again: vault now 0
+  missing nodes (was 6 ADR + 4 RISK missing). (5) fixed `myps.md`'s precedence paragraph, which had
+  been saying the opposite of the current (2026-08-24) Obsidian-first model since 2026-08-21 — the
+  exact class of stale cross-reference this audit exists to catch, found in the file that describes
+  the precedence rule itself. (6) fixed `CODEX_SYNC_STARTUP.md`'s RISK-081/083 status table, stale
+  since 2026-08-21 despite a 2026-08-23 refresh pass touching other parts of the same file; that fix
+  also surfaced that RISK-081 already independently flagged (2026-08-21) the exact SP-name
+  regression RISK-092 refound and refixed 2026-08-24/25 — cross-referenced both entries. (7) pruned
+  the Active Tasks table below per its own stated policy — 5 rows removed whose Next Action
+  literally said "None" (were fully superseded by canonical `decisions.md`); left every row that
+  still lists residual open items, even ones marked done/built. Full detail:
+  `memory/clients/myps/myps-system/decisions.md` (ADR-117), `risks.md` (RISK-092–095).
 - **2026-08-23 — Memory-architecture audit (ADR-110/111). This section had been 10 days and
   17 ADRs stale**, still naming ADR-093 as "the latest decision" while canonical was at ADR-110.
   A staleness check is now step 2 of the session-start gate in `CLAUDE.md` so this is caught

@@ -33,7 +33,8 @@
 param(
     [string]$ProjectMypsPath = "C:\Users\khen\source\repos\mf1027\project_myps",
     [string]$MypsWorkspacePath = "C:\Users\khen\Documents\ChatGPT\MYPS",
-    [string]$VaultPath = "C:\Users\khen\Desktop\Projects\Obsidian\project_obsidian_mem"
+    [string]$VaultPath = "C:\Users\khen\Desktop\Projects\Obsidian\project_obsidian_mem",
+    [string]$PythonExe = "C:\Users\khen\AppData\Local\Python\bin\python.exe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -120,7 +121,28 @@ function Get-SyncText {
         } finally { Pop-Location }
     }
 
-    # 4. Latest ADR / RISK.
+    # 4. Vault node coverage (ADR-117) -- closes the one specific staleness class check #3
+    #    (git status/HEAD-hash only) structurally cannot see: a clean, fully-committed vault repo
+    #    whose generated ADR/RISK index CONTENT is stale. Found 2026-08-25 -- the vault's own
+    #    index files were 5 ADRs / 2 RISKs behind despite 0 uncommitted changes in that repo.
+    #    Read-only against canonical, never mutates anything. See RISK-095 for the other sync-
+    #    mechanism gaps this does NOT close (by design -- no new lock/watcher infrastructure).
+    $verifyScript = Join-Path $MypsWorkspacePath "tools\verify-vault-memory-nodes.py"
+    if ((Test-Path $verifyScript) -and (Test-Path $PythonExe)) {
+        try {
+            $env:PYTHONIOENCODING = "utf-8"
+            $null = & $PythonExe $verifyScript 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $lines.Add("- Vault node coverage: OK.")
+            } else {
+                $lines.Add("- WARNING: vault node coverage check FAILED (exit $LASTEXITCODE) -- run tools/verify-vault-memory-nodes.py for detail.")
+            }
+        } catch {
+            $lines.Add("- Vault node coverage check did not run (non-fatal): $($_.Exception.Message)")
+        }
+    }
+
+    # 5. Latest ADR / RISK.
     $decisionsFile = Join-Path $myps "decisions.md"
     $risksFile = Join-Path $myps "risks.md"
     $latestAdrNum = 0
@@ -138,7 +160,7 @@ function Get-SyncText {
         }
     }
 
-    # 5. memory/memory.md staleness check -- closes ADR-111's Gap 5. It was found 17 ADRs
+    # 6. memory/memory.md staleness check -- closes ADR-111's Gap 5. It was found 17 ADRs
     #    stale before anything checked; this makes that check automatic instead of incidental.
     $memoryMd = Join-Path $MypsWorkspacePath "memory\memory.md"
     if ((Test-Path $memoryMd) -and $latestAdrNum -gt 0) {
@@ -153,7 +175,7 @@ function Get-SyncText {
         }
     }
 
-    # 6. Static DB safety reminder -- always present, never conditional.
+    # 7. Static DB safety reminder -- always present, never conditional.
     $lines.Add("- DB SAFETY: myps_db_revision (local, Windows Auth) is the ONLY approved target. Never myps_db, never 192.168.50.200, never appsettings.Development.json's committed connection string (RISK-090/091). No DB mutation without explicit per-task operator override.")
     $lines.Add("- Read CODEX_SYNC_STARTUP.md before starting MYPS backend/database work. This sync check is a summary, not a substitute.")
 
