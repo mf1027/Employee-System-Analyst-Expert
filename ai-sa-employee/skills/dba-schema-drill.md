@@ -523,6 +523,24 @@ The drill reaches this level if:
 
 **Status after Level 2: `VALIDATED`** — the schema works. This is the real pass.
 
+### Root Cause Analysis on any FAIL (Level 1 or 2) — added 2026-08-24, SKL-050
+
+This skill already has heavy "is the drill itself still accurate" coverage, distributed across
+rules 12 (registry regenerated fresh, not from memory), 31/36 (verify a drill's real behavior,
+don't trust its registry claim), 38 (mechanical classification-token gate), and 49 (foreign-residue
++ full FK-graph checks before cleanup) — that ground is not being re-covered here. What's missing is
+a required structure for reporting *why* a specific run failed. For every FAIL, state:
+
+1. **Mechanism** — the exact table/proc/view/step responsible, not just "step N failed."
+2. **Since when** — `git log -1`/mtime on the object's defining script, or `sys.objects.modify_date`
+   for a live DB object, to date the regression rather than just asserting it.
+3. **New or recurring** — check `memory/improvement-backlog.md` for the same failure shape. This
+   file's own history is dense with exactly this: SKL-036 existed and the same trap recurred 3 times
+   in 4 days anyway (SKL-038); SKL-031 was resolved and recurred the same session (SKL-049). A
+   failure that already has a resolved SKL- number and still recurred is not "log a new RISK," it's
+   "the existing fix's shape doesn't hold at this failure's scale" — the same conclusion SKL-038's
+   own text reached.
+
 ### How to reach Level 2 without a live DB
 
 If no SQL Server is available in the dev environment:
@@ -731,6 +749,7 @@ The drill FAILS if:
 - [ ] Before writing to any shared (non-exclusively-owned) core table, checked for foreign residue outside this drill's own business-ID namespace (SKL-049)
 - [ ] Any hand-written cleanup DELETE cascade is built from a fresh `sys.foreign_keys` query of the full child/grandchild graph, not reconstructed from memory (SKL-049)
 - [ ] Script is syntactically valid T-SQL
+- [ ] Any FAIL (Level 1 or 2) reported with mechanism / since-when / new-or-recurring — not just named (SKL-050); `improvement-backlog.md` checked for a 3rd+ occurrence of the same shape before logging another one-off RISK
 
 ## Failure exit
 

@@ -15,8 +15,8 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-050
-Next-WFC: WFC-015
+Next-ID: SKL-051
+Next-WFC: WFC-016
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
 > dual-lens skill: Lane A (friction → `SKL-`), Lane B (successful workflows → `WFC-`).
@@ -27,6 +27,25 @@ Next-WFC: WFC-015
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
+- 2026-08-24 · recurring-error · A hook command hardcoded `bash` as its interpreter in two places
+  this session — the git pre-commit wrapper (broke under Visual Studio's embedded git, no
+  `bash.exe` on PATH) and `~/.claude/settings.json`'s own `PreToolUse` hook command (found and
+  fixed defensively, not yet proven broken). Both already fixed to `sh` in the same pass they were
+  found. 2nd occurrence, same session — below the 3+ promotion bar, both already resolved. Watch
+  for a 3rd, independent sighting (a hook written fresh, not touched during this pass) before
+  proposing a standing "hook commands use `sh`, never hardcode `bash`" rule. · system
+- 2026-08-24 · post-mortem · A hand-typed Obsidian wikilink to a generated vault node
+  (`MYPS Database Mindmap.md` → the new `Canonical Risks/` folder) used the RISK's full title as
+  the link target; the generator had truncated the filename to 60 chars, so the link silently
+  didn't resolve until checked against the real filename. Self-caught, not operator-caught, single
+  occurrence. Candidate: any hand-authored link INTO a generated folder should be copy-pasted from
+  a real `ls`/generated-index listing, never reconstructed from the source entry's own title. · myps
+- 2026-08-23 · post-mortem · Writing an RCA document that quotes a leaked credential as evidence
+  (RISK-090's `sa` password) created a NEW, 6th copy of the secret — the analysis meant to document
+  the exposure widened it. Caught one entry later (RISK-091) and masked from then on
+  (`@dm*****`), but the first doc shipped with it verbatim. Single occurrence so far. Candidate:
+  any RCA/investigation doc quoting a credential as evidence should mask it in the FIRST draft, not
+  as a later correction — the masking decision should happen before the first write, not after. · myps
 - 2026-08-21 · recurring-error · `[→ SKL-045, applied 2026-08-21]` **SKL-044's applied fix didn't prevent a recurrence one week later,
   because it treated the wrong root cause.** A session did the Obsidian-vault gap analysis and built
   `MYPS-Obsidian-Knowledge-Digest.md` + `AGENTS.md`/`CLAUDE.md` in `project_myps`, entirely blind to
@@ -192,6 +211,23 @@ Next-WFC: WFC-015
   not just the in-repo scan." Promote if recurs.
 ## Workflow candidates (awaiting `/check-improvements` — Lane B)
 
+- 2026-08-24 · `[→ WFC-015, log only]` **Verify an external tool's undocumented capability by
+  reading a real, currently-installed plugin/adapter that already implements the exact integration
+  in question — not by speculating from the tool's own sparse docs, and not by requiring a live
+  test that may not even be triggerable from the current context.** ADR-107 left "does Codex's
+  `SessionStart` hook support `additionalContext` injection" as an open, "recommend a live test"
+  spike for a full day. Resolved definitively by reading `context-mode`'s own installed Codex
+  adapter source (`hooks/codex/sessionstart.mjs` + `src/adapters/codex/hooks.ts`), which already
+  implements exactly that integration, is actively wired via its own `.codex-plugin/hooks.json`,
+  and documented its own version floor (`codex-cli >= 0.141.0`) — checked directly against this
+  machine's installed version (`0.148.0-alpha.15`). Closed the spike with certainty in one read
+  instead of leaving it open pending an unrunnable test. · [system] → n=1, single occurrence. Not
+  yet a pattern to name and reuse deliberately — but the technique ("check whether a real installed
+  plugin already solved this exact question, read ITS source") is cheap, high-value, and
+  plausible to recur any time a "does tool X support capability Y" question comes up for Claude
+  Code, Codex, or any other locally-installed CLI/plugin ecosystem. Log only; promote on a 2nd
+  independent sighting.
+
 - 2026-08-13 · **Test a safety guard's actual failure/success paths in isolation before trusting it, the same discipline WFC-012 already applies to detectors.** RISK-069's `DB_NAME()` guard: first version used `RAISERROR(..., DB_NAME())` directly, which fails `Msg 102` at parse time — a batch-scoped error that would NOT have stopped the destructive batches after it, so an untested guard would have looked deployed while doing nothing. Caught by running deny+allow tests against a throwaway pattern before touching the 5 real files; fixed to `DECLARE @__db sysname = DB_NAME()` then re-verified both paths, THEN ran all 5 real guarded files against live myps_db and confirmed row count unchanged. · [myps] → this is WFC-012 (disposable canary proving a detector detects) applied to a *preventive* guard instead of a *detective* check — same "prove both the pass and fail path, not just that it looks right" discipline, one mechanism removed. Worth folding into WFC-012's eventual write-up as the same pattern, not a separate one.
 - 2026-08-13 · **A destructiveness-tagging sweep (SKL-038) only covered the file-name pattern it was written against (`drill-*.sql`) and missed 4 equally-destructive files (`myps-mock-*.sql` ×3, `reset-transactional.sql`) that don't match that glob.** Found by re-deriving destructiveness mechanically (regex scan for unqualified DELETE/TRUNCATE against core tables) instead of trusting the existing `@DESTRUCTIVE` tag as complete coverage. · [myps] → direct extension of SKL-039's "verify the detector, don't trust it" lesson to a *tagging* pass rather than a query — a header-token gate is only as complete as the sweep that assigned the tokens. Candidate: any future destructiveness/currency tagging pass should scope by content pattern (what the file DOES), not filename convention (what the file is CALLED).
 - 2026-08-12 · `[→ WFC-014, logged/watch 2026-08-21]` **Convert a rotting hand-maintained reference into a generated view, and split "what exists" from "what it means" into two files.** ADR-092: `database.md` carried both mechanical inventory and semantics; the mechanical half rotted invisibly (a whole database replacement went unnoticed) while the interpretive half looked maintained. Fix was not "update the doc" but `generate-db-asbuilt.py` → `myps-db-asbuilt.md` (regenerable, marked do-not-hand-edit) + a re-baseline banner on `database.md`, which keeps semantics/currency only. · [myps] → **3rd sighting of the same root pattern**: `verify-erd-vs-schema.py` (SKL-041) and `verify-column-order.py` (SKL-043) both mechanized a check a human kept getting wrong; this mechanizes the *artifact* rather than the check. Clears the 3-sighting bar — worth promoting to a `WFC-` on the next `/check-improvements` pass, framed as "if a document's facts are derivable from a system, derive them; reserve prose for what can't be derived."
@@ -239,6 +275,8 @@ Next-WFC: WFC-015
 
 | ID | Title | Priority | Recommendation | Status |
 |---|---|---|---|---|
+| SKL-050 | Verification/drill scripts go stale because THEY weren't updated when the system changed, not because what they test broke | 🔴 | **Applied 2026-08-24, all 3 fronts closed.** (1) `system-drill.md` — mandatory Root Cause Analysis (any FAIL: mechanism / since-when / new-or-recurring) + Gap Analysis (every run: steps vs. current `CLAUDE.md`, drift since the skill's own last edit) sections; its own live Step 6 defect fixed in the same pass. (2) `resume-client.md` Step 4.3 — same Tier-0 correction (was asserting live claude-mem sync). (3) `dba-schema-drill.md` — added the RCA-on-FAIL structure; its Gap-Analysis-equivalent coverage was found to **already exist**, more thoroughly than system-drill.md's, distributed across rules 12/31/36/38/49 (registry regeneration, real-behavior verification, classification tokens, foreign-residue checks) — not duplicated. **Audited, correctly excluded:** `tools/verify-vault-memory-nodes.py`, `verify-erd-vs-schema.py`, `verify-column-order.py` all derive their checks from **live state** (current lane-file content or the DB catalog) every run rather than a hardcoded list — structurally immune to this failure class by design. Only `verify-function-sql-mindmap.ps1` had an actual hardcoded, driftable file list, fixed 2026-08-23. Root cause of the pattern itself: a verification script's assumptions need the same "ground in current reality, not memory" discipline (SKL-006 family) applied to *itself*, not just what it tests. | **Resolved** 2026-08-24 |
+| WFC-015 | Verify an external tool's capability by reading a real installed plugin/adapter's own source, not by speculating or requiring an unrunnable live test | 🟢 | **Log only** 2026-08-24 — n=1 (ADR-107's Codex `additionalContext` spike, open a full day, resolved definitively in one read of `context-mode`'s installed Codex adapter). Cheap, high-value, plausibly recurring technique; not yet a named pattern anyone would reliably reach for. Promote on a 2nd independent sighting. | **Log only** 2026-08-24 |
 | SKL-045 | Session-start memory gate needs mechanical enforcement, not a paragraph | 🔴 | Applied: new `.claude/hooks/memory-gate-mark-read.sh` (PostToolUse on `Read`, marks a session-scoped marker file when `memory/memory.md` is read) + `.claude/hooks/memory-gate-check.sh` (PreToolUse on `Write\|Edit\|MultiEdit`, non-blocking one-time-per-session reminder via `additionalContext` if the marker isn't set yet) + `.claude/settings.json` hooks wiring. Session-ID-keyed marker files under `.claude/memory/gate/` (already gitignored) — no `SessionStart` reset needed, a new session simply has no markers yet. Verified live: pipe-tested both scripts against synthetic stdin (match/no-match/already-read cases), validated via `jq -e`, then proved firing in the real running session — a real `<system-reminder>` with the exact reminder text appeared after a live Edit call, confirming `hookSpecificOutput.additionalContext` reaches the model on `PreToolUse` (not just `PostToolUse`). Same root cause as SKL-044 (2026-08-13) recurring 2026-08-21 — SKL-044's fix only covered handoff-time export, not a session that never opens the lane files at all; this mechanizes the precondition itself, the same shape SKL-038 gave the drill-sweep problem. | **Resolved** 2026-08-21 |
 | SKL-049 | Drill/mock sweep safety: 3 prior fixes (SKL-031/036/038) still left 2 named gaps open | 🔴 | Applied: `dba-schema-drill.md` new rules 17–18 + 2 checklist items. Rule 17 closes the cross-mock table-collision gap SKL-031 explicitly named but never closed — before writing to a shared (non-exclusively-owned) core table, query for rows outside this drill's own SKL-032 business-ID prefix; a non-zero foreign-residue count means another mock currently occupies the table and the write must stop and reconcile, not reseed silently on top. Rule 18 extends rule 7's SKL-009 full-graph-enumeration discipline from fixture *seeding* to fixture *cleanup* — any hand-written residue-cleanup DELETE cascade must be built from a fresh `sys.foreign_keys` query of the full child/grandchild graph, never reconstructed from memory. 5 sightings across 3 weeks fed this: 2026-07-16 (full-suite wipe of a delivered mock → SKL-031), 2026-07-17 same-day recurrence in the cross-mock shape SKL-031's own text flagged as unclosed, 2026-07-24 (cleanup cascade missed FK-children on 2 successive passes), 2026-08-04/08-05 (fed SKL-038's mechanical sweep-token gate). SKL-038's header-token gate governs *which files* may enter a sweep; it never covered these 2 specific mechanisms — closing them now. | **Resolved** 2026-08-21 |
 | SKL-046 | SKL-011's preflight must fire at claim-assertion time, not just design-kickoff | 🟡 | **Logged, not built** 2026-08-21 — n=1 (2026-08-13: "three wholly undocumented domains" written into ADR-092, corrected an hour later when a search found a full ERD + design already existed for 2 of the 3). Cheap fix (one added trigger condition on SKL-011's existing wording in `CLAUDE.md` §9 / `dba-schema-ingest.md` §0: any "undocumented"/"no record of"/"new domain" claim triggers the same grep-before-assert check, not just formal design kickoff) — deferred this pass only because SKL-045/049 were the explicit top-priority scope; cheap enough to fold into a future small-batch pass with SKL-047/048. | **Logged, not built** 2026-08-21 |
