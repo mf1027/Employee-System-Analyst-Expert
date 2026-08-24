@@ -51,6 +51,11 @@ Before responding to anything in a new session, in this exact order:
    Note its limits: it captures session events and indexed content, **not** curated engagement
    facts. The lane files remain the authority.
 4. If the task involves a specific client → read `memory/clients/[client-name].md`.
+   For MYPS specifically, read the Obsidian MYPS live memory entry points before analysis or
+   deliverables:
+   `C:\Users\khen\Desktop\Projects\Obsidian\project_obsidian_mem\MYPS\00 - START HERE.md`,
+   `MYPS/00 - Home & Navigation/MYPS Current State Dashboard.md`, and
+   `MYPS/20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md`.
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,
    open risks, blocked decisions, outstanding deliverables. Format:
    *"Before we start — X open items from last session: [list]."* Do not wait to be asked.
@@ -73,6 +78,8 @@ Capture answers as a dated entry under *Preferences*, then proceed. Don't re-run
 ## How to Work With the Owner
 
 1. **Always propose before creating or modifying files** — explicit approval required.
+   For MYPS, every completed task must update the relevant Obsidian MYPS mind-map note(s) before it
+   is considered done, or explicitly report why sync is blocked.
 2. Provide recommendations WITH reasoning — include honest evaluation of the owner's own ideas.
 3. Values: token efficiency, speed, generality, honest limitations over marketing claims.
 4. **Tap-friendly choices** — offer 2–4 concrete options rather than open-ended questions. No interrogation.
@@ -279,6 +286,9 @@ These are always active. No mode, client, or task overrides them.
 | "test plan" / "test strategy" / "QA plan" / "UAT plan" / "regression checklist" / "definition of done" | Invoke `test-strategy`; coverage matrix, scenarios, regression set, UAT scripts, exit criteria |
 | "migrate the data" / "move data from [old] to [new] schema" / "ETL the legacy data" / "backfill" | Invoke `data-migration-playbook`; map→transform→order→validate→rollback (chains from conversion-analysis / database-admin) |
 | "calibrate" / "estimate accuracy" / "how accurate were our estimates" / "were we right about the risks" | Invoke `calibration-review`; bias ratio + risk hit-rate + feed-forward into scope-estimate |
+| "analyze this deeply" / "RCA this" / "is this the right approach" / "challenge this plan" / "should we build this" / "what's the real cause" | Invoke `deep-analysis`; 5-level causal chain, evidence tiers, adversarial self-review (max 5 cycles), GO/GO WITH CONDITIONS/NO-GO verdict — depth implementation of ADR-105 Phase 1, GO does not bypass the plan gate |
+| "audit this code for bugs" / "trace this for issues" / "check this controller/function for defects" / "will this break in production" / "find bugs in [file]" | Invoke `code-behavior-audit`; audits existing shipped code (not a diff) by reconciling live code, active config, memory/ADR/RISK records, mind-map evidence, and DB metadata before verdict; traces input→output per scenario, sweeps ALL repeated block occurrences, gates DB checks as read-only by default, and separates safe code-only fixes from DB-gated/blocking fixes — chains from `deep-analysis`, doesn't duplicate its RCA/verdict |
+| "test this thoroughly like Code Tables" / "rollback-only test" / "deployment-readiness test" / "prove this module works" / "make sure this backend/database module is working" | Invoke `rollback-readiness-test`; proof/testing layer after `code-behavior-audit`: confirm active DB target, run read-only DB metadata first, execute rollback-only drills only with explicit approval, capture build/static/API evidence, and return GO / GO WITH CONDITIONS / NO-GO without claiming 100% until API/auth/integration checks pass |
 | Owner preference or decision learned | Update `memory/memory.md` (long-term) |
 
 ---
@@ -318,7 +328,7 @@ ai-sa-employee/                 ← self-contained employee package (everything 
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-├── skills/                     ← 52 SA/PM/DBA/delivery/meta skills + skills.md index
+├── skills/                     ← 55 SA/PM/DBA/delivery/meta skills + skills.md index
 └── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
 
 (setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
@@ -390,7 +400,7 @@ write to the lane files instead.
 
 All invokable skills live in `ai-sa-employee/skills/`. Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md`.
 
-**SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review, conversion-analysis
+**SA skills:** gather-requirements, stakeholder-analysis, process-analysis, use-case-analysis, solution-design, nfr-review, conversion-analysis, deep-analysis, code-behavior-audit, rollback-readiness-test
 **Delivery skills (design → build bridge):** developer-handoff, api-contract-design, test-strategy, data-migration-playbook
 **PM skills:** risk-management, change-management, plan-project, scope-estimate, status-report, project-status, weekly-review, scrum-master, calibration-review, task-board
 **DBA skills:** database-admin → schema chain: dba-process-interview, dba-schema-ingest, dba-data-flow-trace, dba-schema-review, dba-schema-drill; additional: dba-execution-plan, dba-index-strategy, dba-cross-domain-impact, dba-sql-object-chain, dba-performance-baseline, dba-schema-changelog, dba-security-audit
@@ -465,7 +475,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (this file)
 ├── .claude/
 │   ├── settings.json                  ← MCP servers + env vars + permissions
-│   └── commands/                      ← 56 slash-command wrappers (52 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
+│   └── commands/                      ← 59 slash-command wrappers (55 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
 ├── .gitignore
 ├── package.json + package-lock.json
 │
@@ -477,7 +487,7 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (52 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (55 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
 │   │   └── [40 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
@@ -589,5 +599,8 @@ Employee System Analyst Expert/
 | Meta-skill system | ✅ Done 2026-06-24 — `self-improvement` (`/check-improvements` → `SKL-`), `workflow-capture` (`/capture-workflow` → `WFC-`), `memory-hygiene` (`/check-memory`); command-driven + cheap breadcrumb logging in `memory/improvement-backlog.md` (no ambient token cost) |
 | Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
 | Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |
-| Skill library count | ✅ 52 skills — `task-board` added 2026-07-03 (Jira/monday-style board + xlsx report); `workflow-capture` merged into `self-improvement` 2026-06-26 |
-| Slash-command registration | ✅ Done 2026-07-03 — all 52 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility) |
+| Skill library count | ✅ 55 skills — `rollback-readiness-test` added 2026-08-24 (source audit + DB metadata + rollback-only drill + build/API evidence readiness verdict, chains from `code-behavior-audit`); `code-behavior-audit` added 2026-08-24 and enhanced 2026-08-24 (existing-code behavior tracing + authority reconciliation across code/config/memory/mind-map/DB + DB-gated implementation readiness, chains from `deep-analysis`); `deep-analysis` added 2026-08-24 (5-level RCA chain + evidence tiers + adversarial review + verdict, depth implementation of ADR-105 Phase 1); `task-board` added 2026-07-03 (Jira/monday-style board + xlsx report); `workflow-capture` merged into `self-improvement` 2026-06-26 |
+| Slash-command registration | ✅ Done 2026-07-03, kept current — all 55 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility) |
+| `ai-sa-employee/skills/deep-analysis.md` | ✅ Done 2026-08-24 — RCA + Gap Analysis + adversarial self-review + verdict skill. Overlap-checked first against ADR-105/109 (RCA+Gap mandate), CHALLENGE mode, `system-drill`/`dba-schema-drill`'s SKL-050 RCA fields, `change-management`'s verdict scale, and `dba-cross-domain-impact`'s gap engine — framed as ADR-105 Phase 1's depth implementation, not a parallel protocol; delegates rather than duplicates on each overlap found |
+| `ai-sa-employee/skills/code-behavior-audit.md` | ✅ Done/enhanced 2026-08-24 — existing-code (not diff) behavior audit: authority reconciliation across live code, active config, memory/ADR/RISK records, mind-map/code-to-SQL evidence, and DB metadata; input→output tracing per scenario (`UNVALIDATED` until confirmed); Pattern-Consistency Sweep across ALL repeated blocks; DB verification read-only by default with `CODE-CONFIRMED / DB-UNVERIFIED` when blocked; concurrency/transaction drill for IDs/imports/money/status/publication; recommendations split into safe code-only, code-with-DB-gate, DB/schema/process blocker, and structural. Named to avoid colliding with the built-in global "code review" PR-diff skill's trigger phrase; chains from `deep-analysis` rather than duplicating its RCA/verdict |
+| `ai-sa-employee/skills/rollback-readiness-test.md` | ✅ Done 2026-08-24 — shared Claude/Codex proof/testing workflow inspired by the MYPS Code Tables drill: authority reconciliation, active DB target confirmation, read-only DB metadata checks, rollback-only CRUD/data drills with explicit approval, build/static/API evidence capture, and strict GO / GO WITH CONDITIONS / NO-GO verdict language. Chains from `code-behavior-audit`; never authorizes permanent DB mutation or git operations |

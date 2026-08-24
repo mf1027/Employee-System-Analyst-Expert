@@ -252,6 +252,9 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `end-of-task` | "done", "task complete" |
 | `learn-from-feedback` | "the client said X", "got feedback" |
 | `new-skill` | "create a new skill", "add a skill for X" |
+| `deep-analysis` | "analyze this deeply", "RCA this", "is this the right approach", "challenge this plan" |
+| `code-behavior-audit` | "audit this code for bugs", "trace this for issues", "check this controller for defects" — behavior trace with code/config/memory/mind-map/DB authority reconciliation |
+| `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/API evidence readiness verdict |
 
 **Delivery skills (design → build bridge):**
 
@@ -372,7 +375,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (read at every session start)
 ├── README.md                          ← This file
 ├── .claude/settings.json              ← MCP servers + env vars + permissions
-├── .claude/commands/                  ← 56 slash-command wrappers (52 skills + 4 aliases) → point to ai-sa-employee/skills/
+├── .claude/commands/                  ← 59 slash-command wrappers (55 skills + 4 aliases) → point to ai-sa-employee/skills/
 ├── .gitignore
 ├── package.json
 │
@@ -384,7 +387,7 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 52 SA/PM/DBA/delivery/meta skills (flat)
+│   ├── skills/                        ← 55 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
 │   │   └── [52 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)

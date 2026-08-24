@@ -140,6 +140,7 @@ Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion p
 | A10 | Prototyping & wireframing | Low-fi mockups, clickable flows | Wireframes that validate requirements |
 | A11 | Integration & API analysis | Interface mapping, data contracts | Integration spec + contracts |
 | A13 | Conversion / migration analysis | Dual legacy↔target resource, Parity Matrix (`PAR-`), stack delta, divergence log, equivalence verification, cutover/rollback | Conversion plan with provable parity coverage — via `conversion-analysis` skill |
+| A14 | Rollback readiness testing | Source audit, DB metadata verification, rollback-only drills, build/API evidence | GO/GO WITH CONDITIONS/NO-GO readiness verdict — via `rollback-readiness-test` skill |
 | A12 | Security, privacy & compliance | STRIDE, PII mapping, GDPR/HIPAA/SOX | Security + compliance requirements |
 
 ### B. Project Management
@@ -176,6 +177,8 @@ Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion p
 | C7 | Decision analysis | Weighted scoring, decision matrices | Defensible option selection |
 | C8 | Data analysis, KPIs & dashboards | Metric/OKR definition, reporting | Metrics that show whether we're winning |
 | C9 | AI & automation opportunity analysis | Toil mapping, automation candidate scoring | Where AI/automation removes manual work |
+| C10 | Deep RCA + gap analysis + adversarial review | 5-level causal chain, evidence tiers, self-attack loop (max 5 cycles), verdict | A GO/NO-GO you can trust — depth implementation of ADR-105 Phase 1, not a parallel protocol |
+| C11 | Existing-code behavior audit | Authority reconciliation, input→output tracing, pattern-consistency sweep, DB/runtime verification gate | Latent bugs traced by hand and confirmed, config/memory/mind-map/DB conflicts surfaced before verdict — chains from C10, doesn't duplicate it |
 
 ### D. Database Expert
 
@@ -391,3 +394,6 @@ All invokable skills live in `ai-sa-employee/skills/`.
 | `test-strategy.md` | "test plan", "test strategy", "QA plan", "UAT plan", "definition of done", "regression checklist" — coverage matrix, scenarios, regression set, UAT scripts, exit criteria. Natural chain: follows `developer-handoff` — see WFC-005 there |
 | `data-migration-playbook.md` | "migrate the data", "move data from [old] to [new] schema", "ETL the legacy data", "backfill" — map→transform→order→validate→rollback (data level; below conversion-analysis) |
 | `calibration-review.md` | "calibrate", "estimate accuracy", "how accurate were our estimates", "were we right about the risks" — drives `calibration.md`: bias ratio, risk hit-rate, feed-forward correction into scope-estimate |
+| `deep-analysis.md` | "analyze this deeply", "RCA this", "is this the right approach", "challenge this plan", "should we build this", "what's the real cause" — depth implementation of ADR-105 Phase 1 (not a parallel protocol): 5-level causal chain, evidence tiers (Confirmed/Highly Likely/Possible/Unverified), adversarial self-review capped at 5 cycles, GO/GO WITH CONDITIONS/NO-GO verdict. Delegates to `dba-cross-domain-impact` for schema gaps, chains to CHALLENGE mode for scope attacks — GO does not bypass the Tier 1 plan gate |
+| `code-behavior-audit.md` | "audit this code for bugs", "trace this for issues", "check this controller/function for defects", "will this break in production", "find bugs in [file]" — reviews EXISTING shipped code (not a diff): reconciles live code, active config, memory/ADR/RISK records, mind-map/code-to-SQL evidence, and DB metadata before verdict; traces input→output per realistic scenario (`UNVALIDATED` until confirmed); sweeps ALL repeated block occurrences; gates DB checks as read-only by default and marks blocked checks `CODE-CONFIRMED / DB-UNVERIFIED`; classifies fixes as safe code-only, code-with-DB-gate, DB/schema/process blocker, or structural. Chains from `deep-analysis` for RCA/Gaps/Verdict — does not duplicate it |
+| `rollback-readiness-test.md` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works", "make sure this backend/database module is working" — proof/testing layer that chains from `code-behavior-audit`: reconciles authorities, confirms the active DB target, runs read-only metadata checks before any rollback drill, executes `BEGIN TRAN`/verify/`ROLLBACK` drills only with explicit approval, captures build/static/API evidence, and returns GO / GO WITH CONDITIONS / NO-GO without claiming 100% unless API/auth/integration coverage also passed |
