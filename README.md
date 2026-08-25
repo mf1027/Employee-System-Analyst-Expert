@@ -254,7 +254,8 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `new-skill` | "create a new skill", "add a skill for X" |
 | `deep-analysis` | "analyze this deeply", "RCA this", "is this the right approach", "challenge this plan" |
 | `code-behavior-audit` | "audit this code for bugs", "trace this for issues", "check this controller for defects" — behavior trace with code/config/memory/mind-map/DB authority reconciliation |
-| `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/API evidence readiness verdict |
+| `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict |
+| `codex-behavior-parity` | "make Claude work like Codex", "sync Claude and Codex behavior", "Codex personal behavior" — maps Codex operating discipline to Claude-safe MYPS workflow rules without claiming unsupported runtime features |
 
 **Delivery skills (design → build bridge):**
 
@@ -387,9 +388,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 55 SA/PM/DBA/delivery/meta skills (flat)
+│   ├── skills/                        ← 56 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [55 individual skill files]
+│   │   └── [56 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -474,3 +475,4 @@ The `setup.ps1` / `setup.sh` scripts check and install everything automatically.
 "show the board"                             → per-module progress, status counts, blocked list
 "generate the xlsx report"                   → Dashboard + BE + FE + QA workbook snapshot
 ```
+

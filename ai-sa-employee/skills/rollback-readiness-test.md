@@ -39,6 +39,16 @@ evidence and rollback-readiness layer.
 If the task, config, memory, and mind-map disagree about the DB target, stop and report the
 authority conflict before connecting.
 
+## Readiness tiers and forbidden language
+
+Use these tiers exactly:
+
+- **Internal-ready** — source/build checks, static audit, DB metadata verification, and rollback drills passed. This proves internal backend/database mechanics only; API/auth/runtime middleware is not proven.
+- **API-ready** — authenticated HTTP endpoint tests passed through the normal login/session/token flow. This proves controller binding, `_Session`, authorization, response envelopes, exception handling, and observable DB side effects for the scoped endpoints.
+- **Deployment-ready** — Internal-ready + API-ready + negative/error cases + integration boundary behavior + mind-map sync evidence passed. Only this tier can support “100% working” language.
+
+Never say **100% working**, **fully ready**, or unconditional **GO** when authenticated API tests, negative/error cases, or integration-boundary checks are applicable but missing. If build + DB metadata + rollback drills pass but API/auth is not tested, the verdict is **GO WITH CONDITIONS** at most.
+
 ## Required workflow
 
 1. **Authority reconciliation**
@@ -57,7 +67,7 @@ authority conflict before connecting.
 3. **Rollback-only drills**
    - Ask for or confirm approval for the exact DB target before running.
    - Use a unique run label.
-   - Use `SET XACT_ABORT ON`.
+   - Use required SQL drill SET options before test DML: `SET QUOTED_IDENTIFIER ON; SET ANSI_NULLS ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF; SET XACT_ABORT ON;`.
    - `BEGIN TRAN`.
    - Create/update/delete test rows in dependency order.
    - Verify expected state inside the transaction.
@@ -65,7 +75,14 @@ authority conflict before connecting.
    - Verify surviving test rows are zero.
    - If a failure occurs, prove rollback occurred or report the exact cleanup risk.
 
-4. **Evidence capture**
+4. **Authenticated API/runtime gate**
+   - Required for controller/API readiness claims.
+   - Use the normal login/session/token flow; do not bypass auth, fake `_Session`, or call controller methods directly as a substitute for endpoint testing.
+   - Test every endpoint/action in scope through HTTP.
+   - Verify `_Session`, permissions, request binding, response envelope, exception handler behavior, and DB side effects.
+   - If this layer cannot run, record the blocker and downgrade the verdict; rollback drills prove DB behavior, not controller/middleware behavior.
+
+5. **Evidence capture**
    - Build/test output summary.
    - DB metadata checks.
    - Static sweep counts and divergent lines.
@@ -73,13 +90,12 @@ authority conflict before connecting.
    - Skipped tests and why.
    - Remaining risks and follow-up tests.
 
-5. **Readiness verdict**
-   - `GO`: source, DB metadata, rollback drills, and required API/auth/integration tests pass.
-   - `GO WITH CONDITIONS`: core backend/DB behavior passes but API/auth/integration or a non-critical verification layer remains untested.
+6. **Readiness verdict**
+   - `GO`: deployment-ready evidence exists: source/build, DB metadata, rollback drills, authenticated API tests, required negative/error cases, integration boundaries, and mind-map sync all pass.
+   - `GO WITH CONDITIONS`: internal-ready evidence passes, but API/auth/integration, negative/error, or another non-critical verification layer remains untested.
    - `NO-GO`: build, schema, rollback, data integrity, or confirmed process behavior fails.
 
-Do not claim "100% working" unless all applicable source, DB, rollback, API/auth, integration, and
-negative tests have passed and the remaining caveats are explicitly non-blocking.
+Do not claim "100% working" unless Deployment-ready evidence exists and all applicable source, DB, rollback, authenticated API, integration, negative/error, and mind-map sync checks have passed.
 
 ## MYPS-specific testing pattern
 
@@ -96,6 +112,7 @@ For MYPS backend/database modules:
 
 ```text
 Tier: FULL / ABBREVIATED
+Readiness tier: Internal-ready / API-ready / Deployment-ready / Not-ready
 
 Verdict:
 GO / GO WITH CONDITIONS / NO-GO — one sentence.
@@ -111,7 +128,10 @@ Checks performed:
 - Source/build:
 - DB metadata:
 - Rollback drills:
-- API/auth/integration:
+- Authenticated API/runtime:
+- Negative/error cases:
+- Integration boundaries:
+- Mind-map sync:
 
 Findings:
 - File/object/function:
@@ -136,3 +156,4 @@ High / Medium / Low. Not checked:
 "I cannot give a readiness verdict yet. The missing blocker is: [DB target approval / DB metadata
 access / build result / rollback proof / API auth test / integration fake]. Current confidence:
 [Low/Medium]."
+

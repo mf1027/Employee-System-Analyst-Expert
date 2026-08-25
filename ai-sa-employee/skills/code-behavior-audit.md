@@ -145,6 +145,10 @@ Separate recommendations into:
   authority is resolved.
 - **Out of scope** — real issue, but not required for the requested audit.
 
+### 8.5. Readiness handoff to `rollback-readiness-test`
+
+This skill can identify behavior defects, likely fixes, and implementation-readiness categories, but it must not claim a backend/database module is **100% working** or deployment-ready. For readiness claims, hand off to `rollback-readiness-test`, which requires DB metadata, rollback proof, authenticated HTTP/API tests, negative/error cases, integration boundary evidence, and mind-map sync. If API/auth was not run, say the audit is behavior-only and mark runtime readiness unproven.
+
 ### 9. Verdict — delegate to `deep-analysis` Step 6
 GO / GO WITH CONDITIONS / NO-GO. A GO means the audit is complete enough to present findings or a
 plan. It does **not** authorize code changes, DB changes, commits, pushes, or production access.
@@ -208,9 +212,11 @@ High / Medium / Low. Not checked: [the main thing not verified].
 - [ ] No allocator/publisher/mutating stored procedure executed without explicit authorization
 - [ ] Concurrency/transaction drill completed for IDs/imports/money/status/publication workflows
 - [ ] Recommendations separated by readiness and DB gates
+- [ ] No 100%/deployment-ready claim made; readiness proof is delegated to `rollback-readiness-test` when needed
 - [ ] No application code, DB object, commit, push, reset, checkout, or staging performed by the audit itself
 - [ ] Verdict does not bypass the separate plan/approval gate
 
 ## Failure exit
 "Nothing concrete to audit. Point me at the file, class, function, endpoint, SQL object, or workflow
 — and if DB verification matters, confirm the approved read-only target."
+

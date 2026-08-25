@@ -15,7 +15,7 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-051
+Next-ID: SKL-052
 Next-WFC: WFC-016
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
@@ -24,9 +24,18 @@ Next-WFC: WFC-016
 > *Breadcrumbs* (Lane A) and *Workflow candidates* (Lane B) sections.
 
 ---
+## SKL-051 — Enhance rollback-readiness-test with authenticated API readiness gate
+
+Status: acted-on 2026-08-25
+Source breadcrumb: 2026-08-25 ProjectGroup readiness language gap
+
+Proposal: enhance `rollback-readiness-test` so Internal-ready, API-ready, and Deployment-ready are distinct, and forbid “100% working” or unconditional GO unless authenticated API/runtime tests, negative/error cases, integration boundaries, DB metadata, rollback drills, and mind-map sync evidence have all passed.
+
+Action taken: updated the Claude/MYPS skill, Codex-native mirror, discovery references, and MYPS Obsidian sync/testing notes. This keeps `code-behavior-audit` as the behavior-risk finder while `rollback-readiness-test` owns readiness proof.
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
+- 2026-08-25 · skill-fell-short · rollback-readiness-test allowed a ProjectGroup readiness pass to stop at build + DB metadata + rollback drill while the wording still sounded too close to “100% working”; future readiness claims must require authenticated API/runtime, negative/error, integration-boundary, and mind-map sync evidence before unconditional GO/100% language. · myps
 - 2026-08-24 · recurring-error · A hook command hardcoded `bash` as its interpreter in two places
   this session — the git pre-commit wrapper (broke under Visual Studio's embedded git, no
   `bash.exe` on PATH) and `~/.claude/settings.json`'s own `PreToolUse` hook command (found and
@@ -371,3 +380,5 @@ building — cheaper than any post-hoc drill assertion. See [[verify-against-as-
 - [breadcrumb 2026-08-03] Self-inflicted false risk: ran a bulk regression sweep over every `drill-*.sql` and reported the failures as newly-discovered breakage — logged RISK-059 claiming "2 drills silently broken for 3+ weeks, zero regression coverage." Investigating properly showed **both files were intentionally in that state and said so in their own headers**: one carried `HISTORICAL — SUPERSEDED … Do not run this file`, the other is a *paired* mock+drill that fails with a self-describing "run its mock first" message. Had to withdraw RISK-059 entirely. Candidate rule for `dba-schema-drill.md` / any sweep workflow: **before running a bulk drill sweep, read each file's header first and partition into {active | superseded-do-not-run | dependent-needs-its-own-fixture}; only the ACTIVE set may be reported as regressions.** A failure from a superseded or unfixtured drill is expected output, not a finding — reporting it as one manufactures phantom risks and burns operator trust. Related to SKL-036 (verify the detector before trusting its result) but distinct: this is about verifying the *input set*, not the detector.
 
 - [breadcrumb 2026-08-04] **REPEATED the exact mistake logged one day earlier — and this time it destroyed data.** Yesterday's breadcrumb said: before a bulk drill sweep, read each file's header and partition into {active | superseded-do-not-run | dependent}. Today, during the Phase C (GAP-1) regression sweep, I appended 4 drills to the sweep list that I had never vetted. One of them — `drill-revision-full.sql` — is a **destructive whole-database rebuild** whose header says plainly *"truncate + seed + validate"* and whose body runs unqualified `DELETE FROM dbo.tProjects;` / `tPrograms;` etc. It wiped the entire mock (11 programs / 17 projects → 2 / 4), including the Phase C fixture I had just built and verified. Fully recovered (all 3 seed scripts are idempotent by design, restored in ~3 commands, 14/14 drill green afterwards), so **no permanent loss — but only because the seeds happened to be re-runnable, not because of any safeguard I applied.** Two distinct lessons: (1) the input-set-validation rule needs to be a *mechanical gate*, not a note I remember — a sweep should refuse to run any file whose header contains TRUNCATE/"do not run"/"superseded" unless explicitly named; (2) **destructive drills must be visually distinguishable** — proposal: rename whole-DB-rebuild drills to a `rebuild-*.sql` prefix (or add a mandatory `-- @DESTRUCTIVE` header token that any sweep must check), so a truncating script can never be mistaken for a read-only validator in a file listing. Also worth noting: my ad-hoc PowerShell regex FAIL-detectors produced **five** separate false readings during this same session (matching "0 FAIL" summaries, the word "fails" inside prose, etc.) — stop hand-rolling result parsers; read the drill's own RESULT line or have drills emit a machine-readable status.
+
+
