@@ -162,7 +162,10 @@
       "Bash(bash .claude/hooks/memory-gate-mark-read.sh)",
       "Bash(echo \"exit=$?\")",
       "Bash(bash .claude/hooks/memory-gate-check.sh)",
-      "Bash(echo \"exit=$? \\(blank above = correct\\)\")"
+      "Bash(echo \"exit=$? \\(blank above = correct\\)\")",
+      "PowerShell(& sqlcmd -S 192.168.50.200 -U sa -P '@dmin123' -d myps_db_dev -Q \"SET NOCOUNT ON; SELECT t.name AS TableName, c.column_id AS Ord, c.name AS ColumnName, ty.name AS DataType, c.is_identity FROM sys.columns c JOIN sys.tables t ON t.object_id=c.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id WHERE t.name IN \\('tImportingStatus','tProjectSet','tProjectGroups','tRevisionPCMAComponent','tImportJob','tImportJobResult'\\) ORDER BY t.name, c.column_id;\" -W -s\"|\")",
+      "Bash(iconv -f UTF-16LE -t UTF-8 \"Main/LOCAL-MYPS\\(table-schema\\).sql\")",
+      "PowerShell(& \"C:\\\\Users\\\\khen\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-khen-Documents-ChatGPT-MYPS\\\\de3fac78-284f-42a4-8296-a6c96d22bc3d\\\\scratchpad\\\\gen-alter-transaction-sps.ps1\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\Main",
