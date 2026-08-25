@@ -226,8 +226,8 @@ Use this before changing controller logic. It links public controller actions to
 ## Safety Rules
 
 - Do not run git commit, push, reset, checkout, or staging commands from this workflow.
-- Do not connect to production databases, $($bt)myps_db$($bt), or $($bt)192.168.50.200$($bt).
-- Use $($bt)myps_db_revision$($bt) only for approved read-only metadata checks.
+- Do not connect to production databases or $($bt)myps_db$($bt) (any host).
+- Use $($bt)myps_db_dev$($bt) on $($bt)192.168.50.200$($bt) only for approved read-only metadata checks (standing target as of 2026-08-25 -- see CODEX_SYNC_STARTUP.md's "DB safety rules"; myps_db_revision is retired).
 - Do not scan or modify FE implementation files for this backend map.
 
 ## Current Extraction Result
@@ -286,7 +286,7 @@ tags: [client/myps, database, sql, functions, procedures, views]
 
 This note maps backend-referenced SQL objects for MYPS. It is a navigation surface, not the source of truth.
 
-DB metadata verification should use $($bt)myps_db_revision$($bt) only and must be read-only. During this run, $($bt)sqlcmd$($bt) could not connect because the local client failed at encryption negotiation before query execution, so objects below are **CODE-CONFIRMED; DB-OPEN** unless later verified.
+DB metadata verification should use $($bt)myps_db_dev$($bt) on $($bt)192.168.50.200$($bt) only (standing target as of 2026-08-25; myps_db_revision is retired) and must be read-only. During this run, $($bt)sqlcmd$($bt) could not connect because the local client failed at encryption negotiation before query execution, so objects below are **CODE-CONFIRMED; DB-OPEN** unless later verified.
 
 ## SQL Objects Referenced By Backend Code
 
@@ -304,7 +304,7 @@ $sqlTable
 
 ## Verification Status Rules
 
-- $($bt)DB-CONFIRMED$($bt): verified from $($bt)myps_db_revision$($bt) metadata.
+- $($bt)DB-CONFIRMED$($bt): verified from $($bt)myps_db_dev$($bt) metadata.
 - $($bt)CODE-CONFIRMED$($bt): referenced by current backend code.
 - $($bt)SCRIPT-CONFIRMED$($bt): present only in SQL script evidence.
 - $($bt)CONFLICT$($bt): code, DB, and/or docs disagree.
@@ -518,7 +518,7 @@ Extraction result:
 
 DB verification note:
 
-- $($bt)myps_db_revision$($bt) metadata query was attempted with read-only $($bt)sqlcmd$($bt).
+- $($bt)myps_db_dev$($bt) metadata query was attempted with read-only $($bt)sqlcmd$($bt).
 - Connection failed before query execution because the local SQL client reported an encryption/client negotiation error.
 - Therefore SQL object rows are $($bt)CODE-CONFIRMED; DB-OPEN$($bt) until a working read-only metadata connection is available.
 

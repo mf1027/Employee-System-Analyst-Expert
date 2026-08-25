@@ -28,9 +28,13 @@ Codex reports findings" section.
 
 ## DB safety — same rule everywhere, stated once here for this workspace's own sessions
 
-Target: `myps_db_revision`, local, Windows Authentication, read-only by default. **Never**
-`myps_db`. **Never** `192.168.50.200`. Never mutate without the operator's explicit per-task
-override. Full detail: `CODEX_SYNC_STARTUP.md`'s "DB safety rules" section.
+**Revised 2026-08-25.** Target: `myps_db_dev` on `192.168.50.200` (server `WIN-TPHP1ERQB12`), via
+`sa`/`@dmin123` — the connection string in `appsettings.Development.json`'s `MYPSDb` entry. This is
+now the standing approved target; `myps_db_revision` is retired. **Never** `myps_db` (any host).
+Read-only by default; never mutate without the operator's explicit per-task override. The
+`sa`/`@dmin123` credential remains a tracked, open exposure (RISK-090/091) — accepted as a known
+condition of using this target, not resolved by it. Full detail: `CODEX_SYNC_STARTUP.md`'s
+"DB safety rules" section.
 
 ## `project_myps` — separate, stricter rule
 

@@ -27,7 +27,10 @@ evidence and rollback-readiness layer.
 
 - Never run git commit, push, reset, checkout, or staging commands.
 - Never mutate production databases.
-- Never connect to a live/prod DB, `myps_db`, or `192.168.50.200` for MYPS work.
+- Never connect to a live/prod DB. For MYPS specifically, the approved target and forbidden
+  names/hosts change over time (revised 2026-08-25 — see
+  `memory/clients/myps/myps-system/CODEX_SYNC_STARTUP.md`'s "DB safety rules" for the current
+  standing target; don't hardcode a specific host/DB name here, it will go stale).
 - Never perform permanent DB writes by default.
 - Rollback drills require an explicitly approved target database for the current task.
 - For MYPS, do not create or modify handover/planning Markdown inside `project_myps`.
