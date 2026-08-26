@@ -103,6 +103,32 @@ Before finalizing, run at least two passes:
 Stop only when every behavior is implemented, mapped to an existing skill, marked not portable, or
 left as an explicit operator decision.
 
+### 5b. Auditing an already-shipped counterpart implementation (WFC-016)
+
+When Codex (or the operator, or a prior Claude session) has already built something in this
+workspace and the task is to independently review it — not to design from scratch — run this
+sequence instead of a fresh design pass:
+
+1. **Discover the real artifact set via git/file forensics**, not the other agent's own summary of
+   what it did. A prior session's report can be stale or wrong by the time you check (a file it
+   called untracked may have since been committed elsewhere).
+2. **Enumerate what it got right and commit to preserving it — before naming a single defect.**
+   Skipping this step turns an audit into a rewrite.
+3. **RCA each defect to one root cause**, not a symptom list. One false premise can generate
+   several surface-level findings; fix the premise, not each symptom separately.
+4. **Reverse-gap analysis:** does adopting the counterpart's discipline degrade Claude's own
+   capability? This is the check that catches the specific failure mode this skill exists to avoid
+   — importing a restriction that doesn't actually apply here.
+5. **Verify the counterpart's factual claims about work outside your inspectable tree** rather than
+   trusting them (e.g. a claimed update to the other agent's own config — check it directly).
+6. **Classify what you genuinely cannot observe as `UNOBSERVABLE`**, not guessed.
+7. **Fix in place what's fixable; hand off only what's genuinely out of scope** (global files,
+   another agent's runtime).
+
+4th+ sighting of this shape against the same counterpart agent (ADR-101, ADR-103, ADR-104, and the
+2026-08-25/26 parity-layer audit that corrected this skill's own original hard rule). Steps 4 and 2
+are the genuinely novel bits over a plain RCA — the rest reuses `deep-analysis`.
+
 ### 6. Completion and sync
 
 For MYPS, update or instruct the update of relevant Obsidian notes before the task is complete:

@@ -70,6 +70,11 @@ Before responding to anything in a new session, in this exact order:
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,
    open risks, blocked decisions, outstanding deliverables. Format:
    *"Before we start — X open items from last session: [list]."* Do not wait to be asked.
+   **A `SessionStart` payload `WARNING:` line is itself an open item (SKL-052)** — not ambient
+   text to read and move past. Surface it here, or explicitly clear it (re-run the check it points
+   at, confirm resolved) before treating it as read. Caught live: a vault-node-coverage WARNING was
+   read at session start, then a 4-repo commit sweep ran and reported "all clean" without
+   re-checking it — the operator's "now ok?" is what actually triggered the re-check.
 
 Produce no analysis, recommendation, or deliverable until steps 1–3 are complete. Skipping this
 silently disables the Understanding Check and the memory context — that is a failure mode.
@@ -219,6 +224,17 @@ These are always active. No mode, client, or task overrides them.
    this line itself went stale for exactly that reason before this correction, ADR-121). `myps_db`
    the name stays forbidden regardless of which host is current. `Mock_PCMA` remains the PCMA-side
    target either way.
+   **Substrate-identity check before asserting or editing a schema/object (SKL-047):** before
+   trusting a schema/object fact (a column doesn't exist, a constraint is set to CASCADE, a
+   generated ID format matches a pattern) or shipping an edit built on one, confirm which
+   database/configuration is *currently* the active target — cheap gate: check `CODEX_SYNC_STARTUP.md`
+   or the connection string actually in use. Don't reuse a fact confirmed against a substrate that may
+   since have been replaced or repointed. Caught live: 2026-08-12 answered "ComponentId doesn't exist
+   on tProjectMajorWorkItem" — true of the DB queried for weeks (myps_db_revision), false of the one
+   the application hit (myps_db_dev), rebuilt from scratch that evening; 2026-08-25/26 changed
+   `BatchUndoRestrictPublish` to call `pRecomputeProjectPublishable` because `pAllowProjectPublishing`
+   didn't exist — same premise error, now with shipped C# code, reverted after operator caught the
+   semantic difference (grant-only vs. silent-demotion), RISK-092 reclassified.
    **As-built semantics hard gate (SKL-006/008):** when the target schema derives from an existing
    system, the source DB + operator are ground truth for *semantics* (enum meanings, lookup
    values, process-guaranteed cardinality, **generated-ID formats, and derivation rules**). DDL
