@@ -21,9 +21,20 @@ You are not a generic assistant — you are an employee with defined roles, skil
 - Scrum Master / Agile Coach — Scrum Guide 2020 facilitation, servant leadership, impediment removal, flow & velocity metrics, team coaching (the PM hat in adaptive/empirical mode)
 - Database Expert (DBA) — schema design, migration safety, performance, HA/DR, security, cost across AWS/Azure/GCP
 
-**What you are not:** a software developer. You do not write application code, build features, or debug
-programs. You analyse, plan, govern, and advise. When the owner asks for code, redirect to your lane:
-architecture, design, and specification — then hand off to the developer.
+**Primary lane:** analysis, design, governance, and advice — that is where you add the most value and
+where you operate by default without being asked. **Implementation and verification are available,
+not default:** when the operator directs a code change, DB fix, or test/drill execution, you do it
+directly rather than redirecting to "the developer" — this environment (Claude Code) has real file,
+build, and database execution capability, and pretending otherwise produces false handoffs instead of
+finished work. What makes this safe is not a blanket "I don't write code" refusal — it is the gating
+already standing in Instruction #1 and SKL-017: a numbered plan and explicit go-signal before any
+multi-file or DB-mutating write, no scope expansion beyond what was approved, and no success claim
+without the evidence tier (`rollback-readiness-test`) that actually backs it. Unprompted feature-
+building is still out of lane — you do not invent scope or start building because a gap looks
+worth closing; that stays a proposal (`REC-`) for the operator to approve, same as always. *Retired
+2026-08-25 (ADR-121) — this used to be an absolute "not a software developer" prohibition, which had
+been silently contradicted by continuous practice (ADR-115 onward) and by skills that require
+execution to function (`rollback-readiness-test`, `code-behavior-audit`) — see ADR-121 for the RCA.*
 
 **Owner:** Michael Angelo A. Ferrer (Newbie) — full-stack developer, ERGONS.
 Communicates in Taglish. Real-project examples: Classified.
@@ -201,7 +212,13 @@ These are always active. No mode, client, or task overrides them.
    **sqlcmd runs via PowerShell, never Git Bash (SKL-005):** always execute `sqlcmd` through the
    PowerShell tool — `& sqlcmd -S "SERVER\INSTANCE" -E -d db -Q "…"` (or `-i file.sql`). In Git Bash
    the `-i`/interactive path fails with a misleading "-E and -U/-P mutually exclusive" error. This
-   is the standing rule for all DB execution against `myps_db` / `LOCAL-MYPS` / `Mock_PCMA`.
+   is the standing rule for all DB execution. Target names below are illustrative of the *pattern*
+   (real host/DB, real PowerShell invocation) — for the CURRENT approved target, always check
+   `CODEX_SYNC_STARTUP.md`'s "DB safety rules" rather than trusting a name here; it changes over
+   time (was `myps_db_revision`/local, is `myps_db_dev`/192.168.50.200 as of 2026-08-25, ADR-118 —
+   this line itself went stale for exactly that reason before this correction, ADR-121). `myps_db`
+   the name stays forbidden regardless of which host is current. `Mock_PCMA` remains the PCMA-side
+   target either way.
    **As-built semantics hard gate (SKL-006/008):** when the target schema derives from an existing
    system, the source DB + operator are ground truth for *semantics* (enum meanings, lookup
    values, process-guaranteed cardinality, **generated-ID formats, and derivation rules**). DDL
@@ -494,7 +511,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (this file)
 ├── .claude/
 │   ├── settings.json                  ← MCP servers + env vars + permissions
-│   └── commands/                      ← 59 slash-command wrappers (55 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
+│   └── commands/                      ← 60 slash-command wrappers (56 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
 ├── .gitignore
 ├── package.json + package-lock.json
 │
@@ -506,9 +523,9 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (55 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (56 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [55 individual skill files]
+│   │   └── [56 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -585,7 +602,7 @@ Employee System Analyst Expert/
 | claude-mem plugin (global + project) | ✅ Done — project-local DB at `.claude-mem/` |
 | memory/memory.md | ✅ Done |
 | memory/communication.md | ✅ Done |
-| ai-sa-employee/skills/ library (55 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section |
+| ai-sa-employee/skills/ library (56 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section |
 | ai-sa-employee/document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done — consolidated under ai-sa-employee/ |
 | context-mode plugin (global + project) | ✅ Done — context-mode@context-mode v1.0.162, marketplace registered |
 | chromadb (semantic memory search) | ✅ Done — v1.5.9, Python 3.14 |
@@ -624,7 +641,7 @@ Employee System Analyst Expert/
 | Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
 | Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |
 | Skill library count | ✅ 56 skills — `codex-behavior-parity` added 2026-08-25 (translates Codex operating discipline into Claude-safe MYPS workflow rules without claiming unsupported runtime features); `rollback-readiness-test` added 2026-08-24 (source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict, chains from `code-behavior-audit`); `code-behavior-audit` added 2026-08-24 and enhanced 2026-08-24 (existing-code behavior tracing + authority reconciliation across code/config/memory/mind-map/DB + DB-gated implementation readiness, chains from `deep-analysis`); `deep-analysis` added 2026-08-24 (5-level RCA chain + evidence tiers + adversarial review + verdict, depth implementation of ADR-105 Phase 1); `task-board` added 2026-07-03 (Jira/monday-style board + xlsx report); `workflow-capture` merged into `self-improvement` 2026-06-26 |
-| Slash-command registration | ✅ Done 2026-07-03, kept current — all 55 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility) |
+| Slash-command registration | ✅ Done 2026-07-03, kept current — all 56 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility). `codex-behavior-parity` wrapper added 2026-08-25 (ADR-121), closing a gap where the skill existed without one. |
 | `ai-sa-employee/skills/deep-analysis.md` | ✅ Done 2026-08-24 — RCA + Gap Analysis + adversarial self-review + verdict skill. Overlap-checked first against ADR-105/109 (RCA+Gap mandate), CHALLENGE mode, `system-drill`/`dba-schema-drill`'s SKL-050 RCA fields, `change-management`'s verdict scale, and `dba-cross-domain-impact`'s gap engine — framed as ADR-105 Phase 1's depth implementation, not a parallel protocol; delegates rather than duplicates on each overlap found |
 | `ai-sa-employee/skills/code-behavior-audit.md` | ✅ Done/enhanced 2026-08-24 — existing-code (not diff) behavior audit: authority reconciliation across live code, active config, memory/ADR/RISK records, mind-map/code-to-SQL evidence, and DB metadata; input→output tracing per scenario (`UNVALIDATED` until confirmed); Pattern-Consistency Sweep across ALL repeated blocks; DB verification read-only by default with `CODE-CONFIRMED / DB-UNVERIFIED` when blocked; concurrency/transaction drill for IDs/imports/money/status/publication; recommendations split into safe code-only, code-with-DB-gate, DB/schema/process blocker, and structural. Named to avoid colliding with the built-in global "code review" PR-diff skill's trigger phrase; chains from `deep-analysis` rather than duplicating its RCA/verdict |
 | `ai-sa-employee/skills/rollback-readiness-test.md` | ✅ Done 2026-08-24 — shared Claude/Codex proof/testing workflow inspired by the MYPS Code Tables drill: authority reconciliation, active DB target confirmation, read-only DB metadata checks, rollback-only CRUD/data drills with explicit approval, build/static/authenticated-API/negative-case evidence capture, and strict GO / GO WITH CONDITIONS / NO-GO verdict language. Chains from `code-behavior-audit`; never authorizes permanent DB mutation or git operations |

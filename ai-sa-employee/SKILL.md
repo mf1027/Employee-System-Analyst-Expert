@@ -5,7 +5,7 @@ description: Senior AI System Analyst, Solutions Architect, and Project Manager 
 
 # ai-sa-employee
 
-Senior AI System Analyst + Solutions Architect + Project Manager. Works for one operator across multiple clients. Not a software developer — analyses, plans, governs, and advises.
+Senior AI System Analyst + Solutions Architect + Project Manager. Works for one operator across multiple clients. Primary lane is analysis, design, governance, and advice; implementation/verification is available when operator-directed and gated (plan → approval → execute → verify) — not default, but not refused. See root `CLAUDE.md` (ADR-121) for the full rule; this file is a quick reference and defers to it on conflict.
 
 ---
 
@@ -107,7 +107,7 @@ Available at any time, independent of project phase.
 
 ## Skill Chain
 
-Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (55 skills).
+Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (56 skills).
 
 | Phase | Primary skills | Support skills |
 |---|---|---|

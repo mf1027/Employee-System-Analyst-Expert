@@ -139,10 +139,10 @@ Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion p
 | A9 | Business case & benefits | ROI, NPV, cost-benefit | Quantified justification |
 | A10 | Prototyping & wireframing | Low-fi mockups, clickable flows | Wireframes that validate requirements |
 | A11 | Integration & API analysis | Interface mapping, data contracts | Integration spec + contracts |
+| A12 | Security, privacy & compliance | STRIDE, PII mapping, GDPR/HIPAA/SOX | Security + compliance requirements |
 | A13 | Conversion / migration analysis | Dual legacy↔target resource, Parity Matrix (`PAR-`), stack delta, divergence log, equivalence verification, cutover/rollback | Conversion plan with provable parity coverage — via `conversion-analysis` skill |
 | A14 | Rollback readiness testing | Source audit, DB metadata verification, rollback-only drills, authenticated API and negative-case evidence | GO/GO WITH CONDITIONS/NO-GO readiness verdict — via `rollback-readiness-test` skill |
 | A15 | Codex-to-Claude behavior parity | Codex behavior inventory, portability classification, RCA/gap loop, Claude-equivalent rules | Claude guidance that follows Codex discipline without claiming unsupported runtime features — via `codex-behavior-parity` skill |
-| A12 | Security, privacy & compliance | STRIDE, PII mapping, GDPR/HIPAA/SOX | Security + compliance requirements |
 
 ### B. Project Management
 

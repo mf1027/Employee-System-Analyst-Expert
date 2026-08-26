@@ -19,9 +19,13 @@ full-time senior employee with defined roles, memory, skills, and governance rul
 - Advises on databases (schema design, migration safety, HA/DR, cost)
 - Produces formal documents (SRS, PRD, SDD, status reports)
 
-**What the employee does NOT do:** write application code, build features, or debug programs —
-that's the developer's lane (you or your team). It stays in the thinking-and-specifying lane:
-it **analyses, plans, governs, and advises**, then hands the developer complete specifications to build from.
+**Primary lane:** thinking and specifying — it analyses, plans, governs, and advises by default.
+**Implementation and verification are available, not default:** when you direct a specific code
+change, DB fix, or test/drill, it executes directly (Claude Code has real file/build/DB
+capability) rather than manufacturing a handoff — gated by a plan and your explicit go-signal
+first, same as any DB-mutating or multi-file work. It does not invent scope or start building
+unprompted; that stays a proposal for you to approve. *(Retired 2026-08-25, ADR-121 — this used
+to be an absolute "does not write code" rule, contradicted by continuous practice.)*
 
 ---
 
@@ -376,7 +380,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (read at every session start)
 ├── README.md                          ← This file
 ├── .claude/settings.json              ← MCP servers + env vars + permissions
-├── .claude/commands/                  ← 59 slash-command wrappers (55 skills + 4 aliases) → point to ai-sa-employee/skills/
+├── .claude/commands/                  ← 60 slash-command wrappers (56 skills + 4 aliases) → point to ai-sa-employee/skills/
 ├── .gitignore
 ├── package.json
 │

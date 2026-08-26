@@ -8,8 +8,13 @@ pretending Claude has Codex's exact runtime capabilities.
 Use this skill when the operator asks Claude to work "like Codex", sync with Codex, copy Codex's
 testing/review discipline, or prepare Claude to plan work that Codex or a developer may implement.
 
-This is a parity and coordination skill. It does not authorize code changes, database changes, git
-operations, or frontend work.
+This is a parity and coordination skill, not a blanket implementation authorization or a blanket
+restriction. It classifies which Codex behaviors Claude can execute directly in the current
+environment versus which need a plan, an operator go-signal, or a handoff — it does not itself
+grant or deny any specific code/DB/git action; those stay governed by the workspace's normal
+gating (Instruction #1, SKL-017 plan-gate). *Corrected 2026-08-25, ADR-121 — this originally said
+the skill "does not authorize code changes, database changes, git operations, or frontend work" at
+all, contradicted by continuous practice the same day.*
 
 ## Trigger phrases
 
@@ -72,13 +77,19 @@ Limits / what Claude must not claim:
 Obsidian note to update:
 ```
 
-Hard rule:
+Hard rule *(corrected 2026-08-25, ADR-121 — the original version assumed Claude's capabilities are a
+strict subset of Codex's, which is false in this environment; Claude Code has direct file, build,
+and DB execution capability, and the original wording manufactured unnecessary handoffs for work
+Claude could do directly)*:
 
 ```text
-When a MYPS task asks Claude to behave like Codex, Claude must not claim it can execute Codex runtime
-features directly. Claude must apply Codex-equivalent behavior through planning, evidence
-requirements, handoff instructions, Obsidian updates, and explicit implementation instructions for
-Codex or the developer.
+When a MYPS task asks Claude to behave like Codex, Claude must state plainly, from the CURRENT
+environment's actual capability, what it can and cannot execute directly — never assume parity means
+"less capable than Codex" or "more capable than Codex" by default. Where Claude genuinely can perform
+the behavior (file edits, builds, read-only or approved DB actions, git operations under the normal
+gating), it does so directly rather than fabricating a handoff. Where it genuinely cannot (Codex-only
+runtime, sandboxed tools Claude has no equivalent for), it says so and produces a precise handoff
+instead of pretending. Never fabricate capability in either direction.
 ```
 
 ### 5. Run RCA + gap loop
@@ -135,8 +146,17 @@ Mind-map sync:
 
 ## Guardrails
 
-- Do not create or modify Markdown inside `project_myps`.
-- Do not run git commit, push, reset, checkout, or staging commands.
-- Do not mutate any database unless a separate approved task explicitly authorizes it.
-- Do not convert Claude into a fake Codex runtime. Name capability limits plainly.
-- Do not mark a workflow "100% synced" unless startup, completion, Obsidian, and evidence gates are all represented.
+- Do not create or modify Markdown inside `project_myps` (ADR-107, absolute — not operator-
+  overridable, unlike the rules below).
+- Git operations (commit, push, reset, checkout, staging) are available when the operator directs
+  them, under the workspace's normal safety rules — never run unrequested, never force/destructive
+  without explicit confirmation. *Corrected 2026-08-25, ADR-121 — was an absolute "do not run"
+  ban, contradicted by routine practice.*
+- DB mutation requires the current task's explicit approval and the workspace's active DB-safety
+  target (`CODEX_SYNC_STARTUP.md`) — same rule as every other skill, not a parity-specific
+  restriction.
+- Do not convert Claude into a fake Codex runtime **in either direction** — never claim inability to
+  do something Claude Code can actually do here, and never claim a Codex-only capability Claude
+  does not have.
+- Do not mark a workflow "100% synced" unless startup, completion, Obsidian, and evidence gates are
+  all represented.

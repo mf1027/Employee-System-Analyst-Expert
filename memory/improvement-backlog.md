@@ -31,7 +31,15 @@ Source breadcrumb: 2026-08-25 ProjectGroup readiness language gap
 
 Proposal: enhance `rollback-readiness-test` so Internal-ready, API-ready, and Deployment-ready are distinct, and forbid “100% working” or unconditional GO unless authenticated API/runtime tests, negative/error cases, integration boundaries, DB metadata, rollback drills, and mind-map sync evidence have all passed.
 
-Action taken: updated the Claude/MYPS skill, Codex-native mirror, discovery references, and MYPS Obsidian sync/testing notes. This keeps `code-behavior-audit` as the behavior-risk finder while `rollback-readiness-test` owns readiness proof.
+Action taken: updated the Claude/MYPS skill (`rollback-readiness-test.md`, `code-behavior-audit.md`), the new `codex-behavior-parity` skill, `CODEX_SYNC_STARTUP.md`, and the MYPS Obsidian sync/testing notes. This keeps `code-behavior-audit` as the behavior-risk finder while `rollback-readiness-test` owns readiness proof.
+
+**Correction, 2026-08-25 (parity audit, ADR-121):** the phrase "Codex-native mirror" above was
+inaccurate — no Codex-side artifact was ever written. `~/.codex/skills/` contains only Anthropic's
+bundled `.system/` skills; a grep for this pass's vocabulary (`Internal-ready`, `readiness tier`,
+`codex-behavior-parity`, `authenticated API`) across `~/.codex/skills/`, `~/.codex/rules/`, and
+`~/.codex/AGENTS.md` returns zero hits. Codex does not currently know these rules exist — parity is
+one-directional (Claude-side only). See RISK for this gap; a handoff artifact was produced instead
+of a direct edit (global-file scope decision).
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
