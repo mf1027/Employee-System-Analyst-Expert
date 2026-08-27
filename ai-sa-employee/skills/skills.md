@@ -331,7 +331,11 @@ all risks logged; zero-downtime alternatives evaluated.
 
 ## 6. Skill file index
 
-All invokable skills live in `ai-sa-employee/skills/`.
+All invokable skills live in `ai-sa-employee/skills/`. **The "Invoked by saying..." column below is
+a secondary reference, not authority** — root `CLAUDE.md` → "Trigger Table" is canonical for trigger
+phrases and their tie-breaks (RISK-098 #1/ADR-124, 2026-08-27). This table's own purpose is the file
+listing (skill name → exact filename); if its phrase column ever disagrees with `CLAUDE.md`, fix
+this one toward that one, don't treat this one as a second vote.
 
 > **How to invoke (SKL-012):** these are **employee skills, not registered `Skill()` tools** — calling
 > `Skill(name)` returns *Unknown skill*. To invoke one, **read its `.md` file with the Read tool** and

@@ -77,31 +77,10 @@ Available at any time, independent of project phase.
 
 ## Trigger Table
 
-| Operator says... | Action |
-|---|---|
-| "gather requirements" / "what do they need" | DISCOVER → `gather-requirements` |
-| "analyse the system" / "map the process" | ANALYZE → `process-analysis` |
-| "who are the stakeholders" | `stakeholder-analysis` |
-| "design the solution" / "architecture" / "tech stack" | DESIGN → `solution-design` |
-| "is this realistic?" / "puwede ba to?" / "challenge this" | CHALLENGE → `scope-estimate` + `risk-management` |
-| "build the plan" / "timeline" / "WBS" | PLAN → `plan-project` |
-| "be the scrum master" / "facilitate the sprint" / "daily" / "retro" / "sprint planning/review" / "velocity" / "burndown" / "impediment" / "are we doing scrum right" / "kanban" / "scrumban" | `scrum-master` (adaptive PM mode) |
-| "risks" / "what could go wrong" / "RAID" | `risk-management` |
-| "database" / "schema" / "migration" / "ERD" / "query" | DATABASE → `database-admin` |
-| "status update" / "progress report" | STATUS → `status-report` |
-| "security review" / "threat model" / "STRIDE" / "GDPR" | `security-review` |
-| "research [topic]" / "competitive analysis" / "look up [regulation]" | `web-research` (brightdata MCP) |
-| "meeting notes" / "notes from the call" / "transcript" | `ingest-meeting-notes` |
-| "ingest this" / file dropped in `reference/` | `ingest-reference` |
-| "diagram" / "flowchart" / "ERD" / "Gantt" | `create-diagram` (Mermaid) |
-| "change request" / "nagbago yung requirement" | `change-management` |
-| "scope estimate" / "how long" / "magkano kaya" | `scope-estimate` |
-| "NFR" / "non-functional" / "performance targets" / "SLA" | `nfr-review` |
-| "new client" | `new-client-setup` |
-| "new project" / "bagong project" | `new-project` |
-| "convert / migrate / port / rewrite [app] to [stack]" / "legacy modernization" / "old docs and new docs" / "parity matrix" | `conversion-analysis` (dual legacy/target resource + Parity Matrix) |
-| "advise the client" / "what should we tell them" | `advise-client` |
-| Decision / requirement / risk surfaces mid-conversation | Auto-log with correct ID — no prompt needed |
+**Canonical: root `CLAUDE.md` → "Trigger Table"** (RISK-098 #1/ADR-124, 2026-08-27) — the full,
+current 56-skill table with the tie-break rules for overlapping phrases. This section previously
+carried its own shorter, independently-drifting subset (26 rows); removed rather than restated —
+read the canonical table instead.
 
 ---
 

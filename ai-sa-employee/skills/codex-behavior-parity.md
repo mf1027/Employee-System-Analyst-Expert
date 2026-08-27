@@ -138,7 +138,8 @@ For MYPS, update or instruct the update of relevant Obsidian notes before the ta
 - skill/process notes;
 - backend/testing/change-impact notes when behavior affects implementation work.
 
-Final response must include the MYPS mind-map sync block.
+Final response must include the MYPS mind-map sync block — canonical rule (ADR-124): vault
+`Claude + Codex Real-Time Sync Protocol.md` → "Completion Gate".
 
 ## Output format
 

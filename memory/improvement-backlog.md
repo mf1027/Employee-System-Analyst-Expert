@@ -15,7 +15,7 @@ Patterns: `repeated-manual-work` · `ad-hoc-process` · `skill-fell-short` ·
 
 ---
 
-Next-ID: SKL-055
+Next-ID: SKL-057
 Next-WFC: WFC-017
 
 > **2026-06-26 — `workflow-capture` merged into `self-improvement`.** The two are now one
@@ -43,6 +43,51 @@ of a direct edit (global-file scope decision).
 
 ## Breadcrumbs (awaiting `/check-improvements` — Lane A)
 
+- 2026-08-27 · post-mortem · `[→ SKL-056, applied 2026-08-27]` **Fixed a duplication problem by
+  adding a 10th copy.** SKL-055 (same day, one turn earlier) wired the new
+  `check-related-vault-notes.py` freshness check into the MYPS mind-map completion gate — but into
+  only 2 of the 9 surfaces that independently restate that gate (`CLAUDE.md`, `CODEX_SYNC_STARTUP.md`,
+  `rollback-readiness-test.md`, `codex-behavior-parity.md`, and 4 vault notes each carried their own
+  copy). That left 7 surfaces describing an incomplete gate — the exact shape of RISK-098 item #2
+  ("authority order in 4 places"), which was already logged and already named the operator as owner
+  for exactly this kind of call, unread before the edit. Caught only because the operator asked a
+  narrower question ("should this method go into rollback-readiness-test?") and, in scoping the
+  answer, named the duplication risk explicitly rather than trusting the prior turn's fix was
+  complete. **The lesson: adding a mechanical check to a rule is not the same task as auditing how
+  many places that rule is already stated — the second half needs its own explicit step, not an
+  assumption that "I added it, so it's covered."** Fixed same-turn: vault made canonical
+  (domain-split with `CLAUDE.md`) per operator decision, 8 surfaces collapsed to pointers, full
+  RISK-098 sweep closed item-by-item (ADR-124). · myps
+- 2026-08-27 · recurring-error · `[→ SKL-055, applied 2026-08-27]` **An identical unresolved
+  blocker sat in a hand-authored vault note for 2 days, found only by accident — the same shape as
+  SKL-052 (a mechanical signal existed, nothing consumed it), one layer down.** SKL-052 fixed the
+  case where a *generated* signal (the `SessionStart` vault-coverage WARNING) was read and not
+  acted on. This one has no signal at all: `14 - Testing/Backend Deployment Readiness.md` logged a
+  `PIS:BypassLogin` blocker on 2026-08-25 (a `ProjectGroupController` readiness test); it stayed
+  open through this session's own `RevisionGroupId 13` live drill, which hit and resolved the exact
+  same blocker independently, and was only discovered stale when documenting the fix touched the
+  same note by chance. The auto-generated Canonical ADR/Risk node layer is provably complete
+  (`verify-vault-memory-nodes.py`, 813/813) — it simply doesn't cover hand-authored notes
+  (workflow docs, Function/SQL/Traceability indexes, mindmaps, Testing/Change-Management notes),
+  and nothing else did either. Operator, directly: *"so technically you missed a lot of things
+  that needs to be sync?"* — then, redirecting from a one-time cleanup to a standing fix: *"Create
+  a thorough plan to not miss this kind of issue/problem again. this should be like a hardrule or
+  guard!"* · myps
+
+  Status: acted-on 2026-08-27
+
+  Proposal: mechanize a check for pre-existing hand-authored vault notes going stale, the same way
+  `verify-vault-memory-nodes.py` already mechanizes the generated-node population — per SKL-038's
+  and SKL-045's precedent, "a note to remember" doesn't survive at this failure's actual scale, so
+  the fix is a script wired into an existing hard gate, not a new paragraph.
+
+  Action taken: built `tools/check-related-vault-notes.py` (keyword grep across the vault's
+  hand-authored `.md` population, excluding the two auto-generated Canonical ADR/Risk folders
+  already covered elsewhere) — verified live against this exact case (`BypassLogin`/`PIS` correctly
+  surfaces `Backend Deployment Readiness.md`'s now-resolved entry). Wired a mandatory sub-step into
+  the Standing Task-Execution Protocol's Obsidian-sync gate in both `CODEX_SYNC_STARTUP.md` and
+  root `CLAUDE.md`: before that gate is declared satisfied, run the script against the task's own
+  keywords, and either fix or explicitly note any non-empty result as reviewed-and-not-stale.
 - 2026-08-26 · recurring-error · `[→ SKL-052, applied 2026-08-26]` **A non-blocking warning I read
   at session start was ignored for a full multi-repo commit sweep, and only acted on when the
   operator asked directly.** This session's `SessionStart` payload said plainly

@@ -51,11 +51,16 @@ Never say **100% working**, **fully ready**, or unconditional **GO** when authen
 
 ## Required workflow
 
-1. **Authority reconciliation**
+1. **Authority reconciliation** — read in this order (matches the vault's own Authority Order,
+   MYPS `Claude + Codex Real-Time Sync Protocol.md`: operator instruction → live code/DB →
+   Obsidian → formal lane files → historical docs).
+   - Mind-map/navigation docs first: Function Index, SQL Object Index, Code-to-SQL Traceability,
+     Change Impact Map, and **`14 - Testing/Backend Deployment Readiness.md`** specifically — the
+     readiness verdict's primary written home; read it before writing anything new into it.
    - Live source code: controller/helper/service/model/job/report paths.
    - Active config: `appsettings.*.json`, launch/runtime settings, connection strings.
-   - Memory/docs: ADRs, risks, database notes, handoffs, current task notes.
-   - Mind-map/navigation docs: Function Index, SQL Object Index, Code-to-SQL Traceability, Change Impact Map.
+   - Memory/docs: ADRs, risks, database notes, handoffs, current task notes — the evidence record,
+     not the primary written home.
    - DB metadata: only after the approved target is resolved and read-only access is permitted.
 
 2. **Non-mutating checks first**
@@ -90,8 +95,22 @@ Never say **100% working**, **fully ready**, or unconditional **GO** when authen
    - Skipped tests and why.
    - Remaining risks and follow-up tests.
 
-6. **Readiness verdict**
-   - `GO`: deployment-ready evidence exists: source/build, DB metadata, rollback drills, authenticated API tests, required negative/error cases, integration boundaries, and mind-map sync all pass.
+6. **Prior-verdict reconciliation + vault sync (ADR-124, 2026-08-27).** Full canonical rule:
+   MYPS `Claude + Codex Real-Time Sync Protocol.md` → "Completion Gate". Two sub-steps, both
+   mandatory before writing a verdict:
+   - **6a. Prior-verdict reconciliation.** Search `Backend Deployment Readiness.md` (and any other
+     target note from the completion-gate table) for an existing entry covering the same
+     controller/module/blocker. Resolve it explicitly — resolved (say so, dated), still open (carry
+     it into this verdict's blocker list), or superseded (say why) — never append a fresh verdict
+     beside an unreconciled older one. *Why this exists:* a 2026-08-25 `ProjectGroupController` run
+     logged a `PIS:BypassLogin` blocker in that note and left it open; a 2026-08-27
+     `RevisionGroupId 13` run hit the identical blocker, solved it independently, and never noticed
+     the prior entry — 2 days unresolved, found only by accident. Both wrote to the same note.
+   - **6b. Mechanical freshness check.** Run `tools/check-related-vault-notes.py <keywords for this
+     module>`. Update or explicitly note reviewed-and-not-stale every hit, in the final response.
+
+7. **Readiness verdict**
+   - `GO`: deployment-ready evidence exists: source/build, DB metadata, rollback drills, authenticated API tests, required negative/error cases, integration boundaries, and mind-map sync (step 6) all pass.
    - `GO WITH CONDITIONS`: internal-ready evidence passes, but API/auth/integration, negative/error, or another non-critical verification layer remains untested.
    - `NO-GO`: build, schema, rollback, data integrity, or confirmed process behavior fails.
 
@@ -118,9 +137,9 @@ Verdict:
 GO / GO WITH CONDITIONS / NO-GO — one sentence.
 
 Authority reconciliation:
+- Mind-map (read first):
 - Code/config:
 - Memory/docs:
-- Mind-map:
 - DB target/status:
 - Conflicts:
 
@@ -131,7 +150,8 @@ Checks performed:
 - Authenticated API/runtime:
 - Negative/error cases:
 - Integration boundaries:
-- Mind-map sync:
+- Prior-verdict reconciliation (step 6a):
+- Mind-map freshness check (step 6b):
 
 Findings:
 - File/object/function:

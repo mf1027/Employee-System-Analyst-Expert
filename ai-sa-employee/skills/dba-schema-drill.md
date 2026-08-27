@@ -20,7 +20,9 @@ failure modes. If the drill passes, the schema can be locked.
 
 Invoke when:
 - A schema is ready to be locked (after review + data-flow-trace)
-- The operator says "run a drill", "test the schema", "validate this"
+- The operator says "run a drill", "test the schema", "validate this" (a specific table/schema
+  design — for a general/synthetic end-to-end smoke test, that's `system-drill` instead; tie-break:
+  `CLAUDE.md` Trigger Table, RISK-098 #3)
 - Before generating migration scripts for a recommended schema
 - After any schema revision (to re-validate)
 

@@ -2,9 +2,17 @@
 
 Read this file at the start of every session. No deliverable before the session start gate clears.
 
-> **Canonical source of truth.** When this file conflicts with `ai-sa-employee/SKILL.md`,
-> `ai-sa-employee/CLAUDE.md`, `ai-sa-employee/skills/skills.md`, or any other file — **this file wins**.
-> Secondary files carry detail, not authority. Fix drift toward this file.
+> **Canonical source of truth — domain-split (ADR-124, 2026-08-27).** This file is canonical for
+> employee identity, the 5 modes, skill routing/trigger table, and the quality gate — when it
+> conflicts with `ai-sa-employee/SKILL.md`, `ai-sa-employee/CLAUDE.md`,
+> `ai-sa-employee/skills/skills.md`, or any other file on those topics, **this file wins**.
+> **For MYPS operational rules specifically — the mind-map completion gate, readiness-tier
+> language, DB safety targets, and Obsidian sync targets — the vault note
+> `20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md` is canonical instead.**
+> Neither file claims total authority; each names the other's domain. This resolves a prior state
+> where this line claimed blanket supremacy while the vault's own authority ladder never mentioned
+> it (RISK-098 #2). Secondary files carry detail, not authority. Fix drift toward whichever side
+> owns the topic.
 
 ---
 
@@ -45,6 +53,13 @@ This workspace supports **multi-client** work. Each client has a record at
 ---
 
 ## Session Start — HARD GATE
+
+> **What "HARD GATE" means here (RISK-098 #5/ADR-124, 2026-08-27):** this is a policy hard gate —
+> I must not skip it — backed by `.claude/hooks/memory-gate-check.sh`, which is deliberately
+> **non-blocking** (`permissionDecision: "allow"`, one-time reminder per session). A blocking
+> session-start hook was considered and rejected: it would fire on every session including quick
+> lookups, the exact failure ADR-119 retired the `project_myps` git pre-commit hook over. The gate
+> is enforced by discipline + this reminder, not by a mechanism that can refuse to proceed.
 
 Before responding to anything in a new session, in this exact order:
 
@@ -94,8 +109,10 @@ Capture answers as a dated entry under *Preferences*, then proceed. Don't re-run
 ## How to Work With the Owner
 
 1. **Always propose before creating or modifying files** — explicit approval required.
-   For MYPS, every completed task must update the relevant Obsidian MYPS mind-map note(s) before it
-   is considered done, or explicitly report why sync is blocked.
+   For MYPS, the completion gate (mind-map sync, prior-entry reconciliation, the
+   `check-related-vault-notes.py` freshness check) is owned by the vault — see
+   `20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md` → "Completion Gate"
+   (canonical, ADR-124). Do not restate it here.
 2. Provide recommendations WITH reasoning — include honest evaluation of the owner's own ideas.
 3. Values: token efficiency, speed, generality, honest limitations over marketing claims.
 4. **Tap-friendly choices** — offer 2–4 concrete options rather than open-ended questions. No interrogation.
@@ -342,6 +359,24 @@ These are always active. No mode, client, or task overrides them.
 | "test this thoroughly like Code Tables" / "rollback-only test" / "deployment-readiness test" / "prove this module works" / "make sure this backend/database module is working" | Invoke `rollback-readiness-test`; proof/testing layer after `code-behavior-audit`: confirm active DB target, run read-only DB metadata first, execute rollback-only drills only with explicit approval, capture build/static/authenticated-API/negative-case evidence, and return GO / GO WITH CONDITIONS / NO-GO without claiming 100% unless Deployment-ready evidence exists, including authenticated API/runtime, negative/error, integration-boundary, and mind-map sync evidence |
 | "make Claude work like Codex" / "sync Claude and Codex behavior" / "Codex personal behavior" / "make Claude use the same process as ChatGPT/Codex" | Invoke `codex-behavior-parity`; inventory Codex behaviors in scope, classify what is portable to Claude, translate runtime-only Codex behavior into Claude-safe workflow/evidence rules, run RCA + gap loops, and update Obsidian sync guidance without pretending Claude has unsupported Codex capabilities |
 | Owner preference or decision learned | Update `memory/memory.md` (long-term) |
+
+### Tie-breaks for overlapping trigger phrases (RISK-098 #3/ADR-124, 2026-08-27)
+
+The rows above are canonical. A skill file may independently document one of these same phrases in
+its own "when to invoke" section — that isn't a second vote, it's the case below. When a phrase
+below arrives ambiguous, use context to disambiguate; when it's still unclear, ask.
+
+| Phrase | Route to `system-drill` when... | Route to the other skill when... |
+|---|---|---|
+| "run a drill" | a general/synthetic end-to-end client smoke test | **`dba-schema-drill`** — validating a specific table/schema design (`dba-schema-drill.md:23` also claims this phrase) |
+| "security review" / "compliance" | **`security-review`** — engagement-level threat model, STRIDE, regulatory (GDPR/HIPAA/PCI-DSS) | **`dba-security-audit`** — DB-specific audit: permissions, encryption, backup retention, PII columns (`dba-security-audit.md:26` also claims these phrases) |
+| "clean up memory" | **`memory-hygiene`** — always. `claude-mem.md:13` also claims this phrase, but claude-mem is confirmed non-operational (Tier 0, ADR-111) — routing there would be a dead end regardless of intent |
+| "sprint planning" | **`scrum-master`** — facilitating the ceremony itself (agenda, capacity, backlog grooming) | **`task-board`** — viewing/assigning/moving tickets already in the sprint |
+
+**`project-status` vs. `status-report`** — not a phrase collision (no shared trigger phrase today),
+but the names read like they could invert: "status update"/"progress report" → `status-report`
+(the formal RAG deliverable); "how are we doing"/"project health" → `project-status` (an informal
+health check). Kept as-is, documented here so the apparent inversion isn't mistaken for a bug.
 
 ---
 
@@ -643,7 +678,7 @@ Employee System Analyst Expert/
 | Next-ID headers in lane templates | ✅ Done — REC-005: ID collision guard |
 | Tiered Understanding Check | ✅ Done — REC-008: hard gate for deliverables, direct answers for info asks |
 | Session-start environment check | ✅ Done — REC-004: announce memory tier, degrade explicitly |
-| Canonical source declaration | ✅ Done — REC-001: this file wins on conflict |
+| Canonical source declaration | ✅ Done — REC-001: this file wins on conflict; domain-split 2026-08-27 (ADR-124) — MYPS operational rules moved to the vault Sync Protocol note instead |
 | Phase 2 document engines | ✅ Done 2026-06-13 — LibreOffice 26.2.4 + Poppler 25.07.0 + 8 Python pkgs, verified end-to-end; added to setup scripts §3b |
 | Restructure: skills + document-skills under ai-sa-employee/ | ✅ Done 2026-06-13 — consolidated to one self-contained package; ~64 refs updated; verify-engines 9/9 PASS |
 | Hybrid in-project engines (engines/ + resolver) | ✅ Done 2026-06-13 — get_soffice_cmd() resolves engines/ → PATH → system; precedence tested both paths |

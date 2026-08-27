@@ -40,6 +40,31 @@
 
 ### Last Session
 
+- **2026-08-27 — `RevisionGroupId 13`/`ReasonId 47` continuation fork built, live-drilled, GO;
+  session-wide sync-verification guard added.** **Canonical top-of-stack is now: `decisions.md` →
+  ADR-123 (`Next-ID: ADR-124`), `risks.md` → RISK-099 (`Next-ID: RISK-100`).** Implemented the
+  8-table fork cascade in `RevisionController.ApproveRevision` (literal `{ProjectPK}-A` identity,
+  full funding/cost/work-item/work-location/document copy, operator-confirmed scope) — found/fixed
+  2 real bugs via a live authenticated-HTTP drill (`SaveChangesAsync` FK-ordering; a phantom
+  `tRevisionDocuments` row), then an adversarial re-audit closed both named readiness gaps and
+  revised the verdict to **GO** (ADR-123, closing RISK-078). Found new **RISK-099** (database-wide:
+  every `tRevisionDocuments` row on `myps_db_dev` references a missing file) as a side effect,
+  unrelated to the fork — logged, not fixed, operator decision needed. `RevisionController.cs` is
+  **committed and pushed** — `6ed40cd4` on `project_myps` branch `dp-deployment`
+  (`origin/dp-deployment`), confirmed by direct git-log/diff comparison to match the drilled code
+  exactly (same fixes, same comments); not yet merged into `main`. (This correction is itself the
+  first real catch from the sync-verification guard built this same session — the "uncommitted"
+  claim above was true when first drafted, then went stale within the same turn.) Separately, added
+  3 users
+  (`ferrermaa`/`yabutgj`/`asisjnt`) via a durable SQL script. **Process finding:** closing out this
+  work's documentation surfaced a 2-day-old identical unresolved blocker
+  (`PIS.BypassLogin`) sitting unclosed in a hand-authored vault note (`Backend Deployment
+  Readiness.md`) that no mechanical check ever covers — the existing generated-node verifier
+  (ADR-111/117) only covers auto-mirrored ADR/RISK nodes, not hand-authored ones. Built
+  `tools/check-related-vault-notes.py` + a new Standing Task-Execution Protocol sub-step
+  (`CODEX_SYNC_STARTUP.md`/`CLAUDE.md`) requiring it before any Obsidian-sync gate is declared
+  done — see that ADR/SKL entry for detail. Full detail: `decisions.md` (ADR-118–123),
+  `risks.md` (RISK-096–099), `improvement-backlog.md` (SKL-055).
 - **2026-08-25 — Full cross-surface memory-conflict + sync-mechanism + unnecessary-files audit**
   (operator request: "check all conflicts, check real-time sync, check unnecessary files"). 3
   Explore agents + 1 Plan agent investigated; findings executed same session. **Canonical
