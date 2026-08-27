@@ -106,6 +106,8 @@ Never say **100% working**, **fully ready**, or unconditional **GO** when authen
      logged a `PIS:BypassLogin` blocker in that note and left it open; a 2026-08-27
      `RevisionGroupId 13` run hit the identical blocker, solved it independently, and never noticed
      the prior entry — 2 days unresolved, found only by accident. Both wrote to the same note.
+     If both entries carry an explicit `Scope boundary:` (step 7), diff the two lists first — it's
+     the fast path to seeing whether they actually overlap before re-reading either in full.
    - **6b. Mechanical freshness check.** Run `tools/check-related-vault-notes.py <keywords for this
      module>`. Update or explicitly note reviewed-and-not-stale every hit, in the final response.
 
@@ -115,6 +117,17 @@ Never say **100% working**, **fully ready**, or unconditional **GO** when authen
    - `NO-GO`: build, schema, rollback, data integrity, or confirmed process behavior fails.
 
 Do not claim "100% working" unless Deployment-ready evidence exists and all applicable source, DB, rollback, authenticated API, integration, negative/error, and mind-map sync checks have passed.
+
+**Scope boundary is mandatory on every verdict (ADR-125, 2026-08-27) — `GO`, `GO WITH CONDITIONS`,
+and `NO-GO` alike, whenever anything narrower than the full module/controller was tested.**
+Explicitly enumerate the modules/paths/endpoints/variant-branches (e.g. other `RevisionGroupId`
+values, other HTTP verbs on the same controller, other environments) that were NOT tested or NOT
+in scope — never leave this implicit. *Why this is mandatory, not optional:* ADR-123's GO verdict
+for the `RevisionGroupId 13` continuation fork had no such field; the operator had to ask directly
+whether GO meant the whole revision flow worked (it didn't — only one narrow path was tested), and
+a Scope Boundary section was added to the record only after that question, not before. See
+ADR-123's own "Scope boundary" section for a worked example of the required level of detail — reuse
+that shape, don't invent a new one.
 
 ## MYPS-specific testing pattern
 
@@ -135,6 +148,9 @@ Readiness tier: Internal-ready / API-ready / Deployment-ready / Not-ready
 
 Verdict:
 GO / GO WITH CONDITIONS / NO-GO — one sentence.
+
+Scope boundary:
+- Modules/paths/endpoints/variants NOT tested or NOT in scope (mandatory whenever narrower than the full module was tested; see step 7):
 
 Authority reconciliation:
 - Mind-map (read first):
