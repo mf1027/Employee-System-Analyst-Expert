@@ -5,6 +5,10 @@ same evidence style used for MYPS Code Tables and Revision testing: source audit
 verification, rollback-only CRUD drills, build checks, evidence capture, and a cautious readiness
 verdict.
 
+## Shared Claude/Codex contract
+
+Follow the same readiness tiers, no-auth-bypass rule, DB-target reconciliation, SQL SET-option requirements, rollback proof, prior-verdict reconciliation, scope-boundary requirement, and Obsidian completion gate as `C:\Users\khen\.agents\skills\rollback-readiness-test\SKILL.md`. “100% working” is permitted only with Deployment-ready evidence.
+
 This is a proof/testing skill. It does not authorize code changes, schema changes, git operations,
 or permanent database mutation.
 
@@ -192,4 +196,3 @@ High / Medium / Low. Not checked:
 "I cannot give a readiness verdict yet. The missing blocker is: [DB target approval / DB metadata
 access / build result / rollback proof / API auth test / integration fake]. Current confidence:
 [Low/Medium]."
-

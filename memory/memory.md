@@ -40,6 +40,58 @@
 
 ### Last Session
 
+- **2026-08-28 — Formal Revision Part 2: repeat-cycle drill clean; Group-13 fork found
+  structurally unreachable, calling ADR-123's GO into question.** **Canonical top-of-stack is now:
+  `decisions.md` → ADR-129 (`Next-ID: ADR-130`), `risks.md` → RISK-103 (`Next-ID: RISK-104`).**
+  Operator spotted 2 gaps in the just-reported ADR-128 matrix (re-revising an already-completed
+  project; revising a Group-13 `-A` forked project) and asked to test both — plan-gated (re-entered
+  plan mode), approved, executed. **S13 passed clean**: a real second revision cycle on
+  `P01100001LZ`, PCMA publish confirmed via `PCMARevisionCount` 1→2, no document-numbering
+  collision (one cosmetic double-dot filename artifact noted, not chased). **S14 blocked by a real
+  defect, not a fixture gap**: recreating the Group-13/Reason-47 fork failed at the CO-approval
+  step that should trigger it. Root-caused to source: `RequestRevision` unconditionally deactivates
+  the only prior-active `tRevisionProjects` snapshot the moment ANY new revision is requested
+  (including the fork's own), while the fork's precondition check needs that row still active, and
+  the row that would satisfy it only activates in code downstream of the failing check — a
+  structural deadlock. Confirmed via `git show 6ed40cd4` that this logic predates this session (the
+  exact commit ADR-123 verified as its drilled code) — not a new regression, but not reconciled
+  against how ADR-123's own drill supposedly got a non-null precondition. **This calls ADR-123's
+  "GO, live-drilled twice" verdict on the fork into question** — logged as RISK-103, flagged for
+  operator reconciliation rather than unilaterally overturned. Also fixed, same turn: added
+  `Main/Resources/UploadedFiles/` to `project_myps/.gitignore` per operator request (157
+  pre-existing tracked files unaffected, only stops future runtime uploads from showing as
+  untracked noise — closes the loop on ADR-128's own 17-PDF side-effect finding). Mind-map synced:
+  `Backend Deployment Readiness.md`, `MYPS Current State Dashboard.md`, `MYPS Revision Mindmap.md`,
+  `Risk Register.md` (including a direct cross-reference added to the existing RISK-078 row, not a
+  silent rewrite). Full detail: `decisions.md` (ADR-129), `risks.md` (RISK-103).
+- **2026-08-27/28 — Formal Revision approval state machine: full 12-scenario condition-coverage
+  drill, RO-approver audit-trail defect fixed and proven live.** **Canonical top-of-stack is now:
+  `decisions.md` → ADR-128 (`Next-ID: ADR-129`), `risks.md` → RISK-102 (`Next-ID: RISK-103`).**
+  Operator-directed: exercise every condition in the Revision approval backend (create → RO → CO,
+  for-correction cycles incl. multiple, rejects, resubmits, guards), not just single-path testing.
+  Mapping the machine before planning found one real, previously-invisible defect:
+  `ApproveRevision`'s RO branch committed `Approver`/`ApprovedDate` as NULL (the restore block sat
+  inside the CO-only branch) — fixed and proven live (S1: `Approver='afundardb'`, not NULL). All 12
+  scenarios DB-verified via real authenticated `PIS.BypassLogin` HTTP + a genuinely-validated PDF
+  (no bypass of document validation). **New RISK-102** (significant, not fixed): CO-creator
+  auto-approve in `RequestRevision` can reach `IsFullyApproved=1` without ever calling
+  `PublishRevisionAsync` — MYPS reports "fully approved" while PCMA is never told, silently, no
+  error signal. 3 minor findings also logged, not fixed (no guard against double
+  `ForCorrectionRevision` without resubmit; the in-method permission check is very likely dead code,
+  the real gate is `AuthorizeSessionAttribute`; a cosmetic "corrupted" vs. "required" message gap on
+  a missing approval document). **Unanticipated side effect, honestly reported:** the drill's real
+  document uploads wrote 17 physical PDF files to disk (`Main/Resources/UploadedFiles/Revisions/`)
+  — not covered by the operator's "leave test revisions in the DB" decision (framed around DB rows),
+  left in place under the same retention logic, flagged as a gap against the plan's own stated
+  Verification expectation rather than silently absorbed. 12 test revisions retained live on
+  `myps_db_dev` per the operator's explicit choice (overriding this session's own Recommended
+  cleanup-after-each-scenario option). Verdict: **GO**, Deployment-ready for the approved fix scope
+  — RISK-102 is a new, separate finding awaiting its own operator go/no-go, not a blocker on this
+  pass's GO. Mind-map synced: `Backend Deployment Readiness.md`, `MYPS Current State Dashboard.md`,
+  `MYPS Revision Mindmap.md`, `Risk Register.md`, `MYPS Backend Mindmap.md` — plus 2 pre-existing
+  frontmatter staleness gaps fixed in passing (`Backend Deployment Readiness.md` and
+  `Risk Register.md` were both missing ADR-123/125/126 from `related-adr`). Full detail:
+  `decisions.md` (ADR-128), `risks.md` (RISK-102).
 - **2026-08-27 — `RevisionGroupId 13`/`ReasonId 47` continuation fork built, live-drilled, GO;
   session-wide sync-verification guard added.** **Canonical top-of-stack is now: `decisions.md` →
   ADR-123 (`Next-ID: ADR-124`), `risks.md` → RISK-099 (`Next-ID: RISK-100`).** Implemented the

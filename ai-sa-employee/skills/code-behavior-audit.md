@@ -1,5 +1,11 @@
 # Skill: code-behavior-audit
 
+## Shared Claude/Codex contract
+
+Follow the same authority reconciliation, evidence labels, DB safety gate, pattern sweep, transaction/concurrency questions, prior-verdict reconciliation, and scope-boundary rules as `C:\Users\khen\.agents\skills\code-behavior-audit\SKILL.md`. This skill identifies behavior defects; it does not establish deployment readiness.
+
+Every report must include a scope boundary and identify any prior verdict that remains open.
+
 ## Purpose
 Review **existing, already-shipped application code** for latent behavior bugs by tracing realistic
 inputs through source, config, database contracts, and downstream consumers to a concrete predicted
