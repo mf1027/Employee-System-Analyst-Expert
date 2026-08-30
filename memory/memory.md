@@ -40,6 +40,20 @@
 
 ### Last Session
 
+- **2026-08-30 — `ProjectController.cs` first-ever audit (ADR-130), verdict NO-GO.** Canonical
+  top-of-stack: `decisions.md` → ADR-130 (`Next-ID: ADR-131`), `risks.md` → RISK-106
+  (`Next-ID: RISK-107`). 15 live defects found (static sweep + 2 independently source/DB-verified).
+  Authorized fix applied: `[AllowAnonymous]` removed from 5 of 7 sites, live-verified (401
+  unauthenticated); 2 sites deliberately left anonymous after a pre-flight permission-coverage
+  check caught a real would-be outage (576/579 users lack rows) — RISK-104. 3 confirmed write-path
+  defects not fixed (audit + verify only, operator's choice) — RISK-106. Independently re-confirmed
+  and extended a 2026-08-24 handover RCA on ProjectId generation, superseding RISK-072 with a
+  narrower, live-verified finding — RISK-105. One static finding (F-09) corrected after reading the
+  live proc, not left as originally assessed. Also closed out: the 2026-08-28 Codex-hooks probe —
+  confirmed NO-GO across multiple genuine fresh sessions (not a timing artifact), fully rolled back
+  to exact pre-probe state, RISK-095 updated with the addendum (including correcting its own stale
+  "out of scope" justification against ADR-121). Full detail: `decisions.md` (ADR-130), `risks.md`
+  (RISK-104/105/106, RISK-095 addendum).
 - **2026-08-28 — Formal Revision Part 2: repeat-cycle drill clean; Group-13 fork found
   structurally unreachable, calling ADR-123's GO into question.** **Canonical top-of-stack is now:
   `decisions.md` → ADR-129 (`Next-ID: ADR-130`), `risks.md` → RISK-103 (`Next-ID: RISK-104`).**
