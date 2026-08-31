@@ -40,6 +40,73 @@
 
 ### Last Session
 
+- **2026-08-31 — Ported Codex's `plan-analysis` skill to a global, model-agnostic Claude Code
+  skill (ADR-134).** Canonical top-of-stack: `decisions.md` → ADR-134 (`Next-ID: ADR-135`). Not a
+  MYPS task per se — operator asked for the skill (previously Codex-only) to become usable
+  globally, in Claude or any LLM. Installed at `~/.claude/skills/plan-analysis/` (global to every
+  project on this machine, natively discoverable, no per-project registration). All 6 substantive
+  source files ported (4 verbatim, 2 with light Claude-Code-integration adaptation); the 7th
+  (`agents/openai.yaml`, Codex-only) deliberately not ported — `SKILL.md`'s own frontmatter serves
+  that role in Claude. **Caught and corrected mid-execution, not shipped wrong:** the approved
+  plan's Context section claimed 7 of 9 named review-adapter capabilities were confirmed installed
+  globally, including `gstack-openclaw-office-hours` — a fresh, unfiltered `ls ~/.claude/skills/`
+  during the port showed only 6 actually exist (`gstack-openclaw-office-hours` is not a real,
+  separate skill on this machine); corrected in `review-adapters.md` before shipping, spot-checked
+  twice. Verified with real evidence, not just written: `validate-artifacts.py` run standalone
+  against a hand-built bundle — PASS on valid, specific errors on a broken heading and a missing
+  file; ported files grepped for MYPS-coupling (found none functional, only comparative notes),
+  confirming genuine global scope. Cross-referenced against this employee's own `deep-analysis.md`
+  (distinct, narrower, both stay) in both `SKILL.md` and this project's own `CLAUDE.md` trigger
+  table. Also fixed in passing: the SessionStart vault-coverage WARNING — regenerated vault nodes
+  after ADR-134 (ADR side now 130/130); the residual RISK-index mismatch traced to a deliberate,
+  pre-existing intentional duplicate (`RISK-069`'s superseded original kept "for the trail") — a
+  verifier false-positive, not a new defect, left as-is (not this task's scope to restructure
+  `risks.md`). Full detail: `decisions.md` (ADR-134).
+- **2026-08-31 — RISK-108 fixed and verified (ADR-133): Program cost now recomputes correctly on
+  Formal Revision CO approval.** Canonical top-of-stack: `decisions.md` → ADR-133
+  (`Next-ID: ADR-134`), `risks.md` → RISK-110 (`Next-ID: RISK-111`). Fixed both defects: ALTERed
+  `pRecomputeProgramCost` to read through the effective-revision overlay
+  (`fProjectFundingProfile`), added the missing call in `ApproveRevision` (order-independent,
+  gated on `IsFullyApproved` after the save). **Proven via a real rollback-only drill** — injected
+  a revision-only funding override on live data, confirmed the recompute used the revision's value
+  not the stale base, rolled back to exact original state. 2 new regression tests added, all 6 in
+  the file pass. **Live HTTP end-to-end proof was blocked by a separate, newly-found defect
+  (RISK-110)** — `RequestRevision` stamps a wrong Program link on 2 of 2 projects tried, invisible
+  until this fix made anything finally validate it. Operator explicitly chose strict-fail over
+  swallowing that error. RISK-109 (CO-before-RO not server-enforced) also found and deferred, same
+  as RISK-102 (explicitly put on hold by the operator). Code changes uncommitted
+  (`RevisionController.cs` +18, `RecomputeProgramCostTests.cs` +127/-7) — no commit requested.
+  Full detail: `decisions.md` (ADR-133), `risks.md` (RISK-108 resolved, RISK-109/110 opened).
+- **2026-08-31 — `ProjectController`/`RevisionController`: Program cost never recomputes on
+  Formal Revision approval, two-layer defect confirmed live (ADR-132/RISK-108).** Canonical
+  top-of-stack: `decisions.md` → ADR-132 (`Next-ID: ADR-133`), `risks.md` → RISK-108
+  (`Next-ID: RISK-109`). Operator asked to compare
+  `UpdateProjectDetails`'s `pRecomputeProgramCost` call against `ApproveRevision`'s CO branch.
+  Confirmed: `pRecomputeProgramCost` has exactly one call site in the whole repo
+  (`ProjectController.cs:4190`) — zero in `RevisionController.cs`, so a CO-approved revision that
+  changes funding leaves the Program's cached total stale. Deeper: pulled the proc's live
+  definition via `OBJECT_DEFINITION` — it joins directly to the base `tProjectFundingProfile`
+  table, never through `fProjectFundingProfile`/`fProjectEffectiveRevision` (the revision-aware
+  overlay the rest of the app correctly uses for reads) — so even adding the call would compute
+  against the wrong data. No compensating trigger exists. Live data (5 approved revisions) doesn't
+  show the symptom only by coincidence — all 5 are this session's own test drills where funding
+  wasn't deliberately changed. Secondary: `RecomputeProgramCostTests.cs` tests an embedded copy of
+  the proc already drifted from the live version, with no Formal-Revision fixture — wouldn't catch
+  this if it tried. Audit + verify only, per the operator's request — not fixed. Full detail:
+  `risks.md` (RISK-108).
+- **2026-08-31 — Claude↔Codex sync investigation: root cause found, ON HOLD before a fix
+  (ADR-131).** Canonical top-of-stack: `decisions.md` → ADR-131 (`Next-ID: ADR-132`), `risks.md` →
+  RISK-107 (`Next-ID: RISK-108`). The 08-28 hook NO-GO was real but mis-diagnosed — actual cause is
+  a per-hook trust gate separate from the feature flag; confirmed live via
+  `codex exec --dangerously-bypass-hook-trust`'s own acknowledgment message, after `codex features
+  list` showed `hooks` defaults on regardless of config. Unresolved: hooks still didn't fire in
+  `exec` mode with trust bypassed; stopped by a real Codex usage-limit error before the TUI/Desktop
+  path could be tried. Operator directed: hold, document fully — this entry is that. Also found:
+  a live BrightData token in `~/.claude/settings.json`'s permission allow-list (RISK-107, reported
+  not fixed). Rule-comparison findings locked for resume: port Codex's honesty/readiness rule to
+  Claude globally (tiers stay MYPS-scoped); `plan-analysis` skill is a candidate import. Nothing
+  changed on disk — all test edits reverted and diffed clean. Full detail: `decisions.md` (ADR-131),
+  `risks.md` (RISK-095 2nd addendum, RISK-107).
 - **2026-08-30 — `ProjectController.cs` first-ever audit (ADR-130), verdict NO-GO.** Canonical
   top-of-stack: `decisions.md` → ADR-130 (`Next-ID: ADR-131`), `risks.md` → RISK-106
   (`Next-ID: RISK-107`). 15 live defects found (static sweep + 2 independently source/DB-verified).

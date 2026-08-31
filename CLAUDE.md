@@ -378,6 +378,19 @@ but the names read like they could invert: "status update"/"progress report" →
 (the formal RAG deliverable); "how are we doing"/"project health" → `project-status` (an informal
 health check). Kept as-is, documented here so the apparent inversion isn't mistaken for a bug.
 
+**`deep-analysis` vs. `plan-analysis`** (ADR-134, 2026-08-31) — not the same skill, both live and
+neither supersedes the other. `deep-analysis` (`ai-sa-employee/skills/deep-analysis.md`) is this
+employee's own MYPS-flavored RCA + gap analysis + adversarial review + verdict skill — narrower, no
+review-adapter orchestration, no `run.json`/artifact-bundle contract, no explicit cycle cap. Use it
+for MYPS-scoped work when its own trigger phrases in this table apply. `plan-analysis`
+(`~/.claude/skills/plan-analysis/`) is a separate, global-machine skill ported from Codex — fuller
+6-phase workflow, multi-perspective review-adapter orchestration (gstack-family skills where
+installed), a `docs/plans/<slug>/` evidence bundle with a stdlib-only validator, and an explicit
+3-default/5-max re-audit cycle cap. It is not MYPS-specific and is available in any project on this
+machine, not just this one. Invoke it directly by name (`/plan-analysis` or asking for it) when the
+fuller artifact-bundle-backed version is wanted; it has no trigger phrase of its own in this table
+since it is not part of this employee's own skill library.
+
 ---
 
 ## Communication Defaults
