@@ -200,8 +200,25 @@ Mind-map sync:
 
 ## Guardrails
 
-- Do not create or modify Markdown inside `project_myps` (ADR-107, absolute — not operator-
-  overridable, unlike the rules below).
+- **Zero AI-tooling footprint in `project_myps` (ADR-107, absolute — not operator-overridable,
+  unlike the rules below).** Two halves, both required, restated here self-contained so this rule
+  travels with a clone of this repo rather than depending on the operator's personal global config:
+  (1) no new/modified Markdown files in `project_myps`'s source tree; (2) no new AI-coordination-
+  tooling files either — a fresh `AGENTS.md`, a fresh `.claude/hooks/` directory, a fresh
+  `.claude/settings.json` hooks block, etc. **Documented exceptions:** `documents\plans\<slug>.md`
+  (the repo's own pre-existing `/create-plan` output, unrelated to this rule) and the pre-existing
+  `project_myps/.claude/skills/` dev pipeline + its `.claude/settings.json` `permissions.allow`
+  array (confirmed pre-existing, not something to delete/"clean up" under this rule).
+- **No AI-committed changes to `Main/appsettings.Development.json` without asking, every time
+  (2026-08-25).** Never `git commit` (or stage for commit) a change to that file inside
+  `project_myps` without the operator's explicit go-ahead **for that specific commit** — it carries
+  a known-exposed credential (RISK-090/091). Applies to Claude and Codex alike, regardless of which
+  agent is doing the committing. The operator's own manual commits to this file are unrestricted;
+  this rule binds the AI, not the human.
+- **A `SessionStart` (or equivalent automated context-injection) hook is a reminder, not a
+  substitute.** If a hook auto-injects a summary of MYPS state at session start, treat it as a
+  prompt to go read the real sources (Obsidian entry points, `decisions.md`/`risks.md`,
+  `CODEX_SYNC_STARTUP.md`) — never as a replacement for actually reading them.
 - Git operations (commit, push, reset, checkout, staging) are available when the operator directs
   them, under the workspace's normal safety rules — never run unrequested, never force/destructive
   without explicit confirmation. *Corrected 2026-08-25, ADR-121 — was an absolute "do not run"

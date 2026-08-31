@@ -389,7 +389,12 @@ installed), a `docs/plans/<slug>/` evidence bundle with a stdlib-only validator,
 3-default/5-max re-audit cycle cap. It is not MYPS-specific and is available in any project on this
 machine, not just this one. Invoke it directly by name (`/plan-analysis` or asking for it) when the
 fuller artifact-bundle-backed version is wanted; it has no trigger phrase of its own in this table
-since it is not part of this employee's own skill library.
+since it is not part of this employee's own skill library. **Also vendored into this repo**
+(`.claude/skills/plan-analysis/`, ADR-136, 2026-09-01) — a git-tracked, byte-identical copy so a
+fresh clone of this repo has it auto-discoverable with no separate global-install step. The global
+copy stays too (still needed for use in other, non-MYPS projects); if the methodology ever changes,
+update both — there is no symlink tying them together, so drift between the two is a real, manual
+risk, not something git or Claude Code prevents automatically.
 
 ---
 
@@ -575,7 +580,9 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (this file)
 ├── .claude/
 │   ├── settings.json                  ← MCP servers + env vars + permissions
-│   └── commands/                      ← 60 slash-command wrappers (56 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
+│   ├── commands/                      ← 60 slash-command wrappers (56 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
+│   └── skills/
+│       └── plan-analysis/             ← Vendored global skill (ADR-136) — ported from Codex, not MYPS-specific; also lives at ~/.claude/skills/plan-analysis/
 ├── .gitignore
 ├── package.json + package-lock.json
 │
@@ -709,5 +716,6 @@ Employee System Analyst Expert/
 | `ai-sa-employee/skills/deep-analysis.md` | ✅ Done 2026-08-24 — RCA + Gap Analysis + adversarial self-review + verdict skill. Overlap-checked first against ADR-105/109 (RCA+Gap mandate), CHALLENGE mode, `system-drill`/`dba-schema-drill`'s SKL-050 RCA fields, `change-management`'s verdict scale, and `dba-cross-domain-impact`'s gap engine — framed as ADR-105 Phase 1's depth implementation, not a parallel protocol; delegates rather than duplicates on each overlap found |
 | `ai-sa-employee/skills/code-behavior-audit.md` | ✅ Done/enhanced 2026-08-24 — existing-code (not diff) behavior audit: authority reconciliation across live code, active config, memory/ADR/RISK records, mind-map/code-to-SQL evidence, and DB metadata; input→output tracing per scenario (`UNVALIDATED` until confirmed); Pattern-Consistency Sweep across ALL repeated blocks; DB verification read-only by default with `CODE-CONFIRMED / DB-UNVERIFIED` when blocked; concurrency/transaction drill for IDs/imports/money/status/publication; recommendations split into safe code-only, code-with-DB-gate, DB/schema/process blocker, and structural. Named to avoid colliding with the built-in global "code review" PR-diff skill's trigger phrase; chains from `deep-analysis` rather than duplicating its RCA/verdict |
 | `ai-sa-employee/skills/rollback-readiness-test.md` | ✅ Done 2026-08-24 — shared Claude/Codex proof/testing workflow inspired by the MYPS Code Tables drill: authority reconciliation, active DB target confirmation, read-only DB metadata checks, rollback-only CRUD/data drills with explicit approval, build/static/authenticated-API/negative-case evidence capture, and strict GO / GO WITH CONDITIONS / NO-GO verdict language. Chains from `code-behavior-audit`; never authorizes permanent DB mutation or git operations |
+| `.claude/skills/plan-analysis/` vendored (ADR-136) | ✅ Done 2026-09-01 — investigated via `/plan-analysis` what "necessary global skills" this repo needs for clone-portability. Found the scope narrower than it sounds: only `plan-analysis` itself was referenced-but-missing (now vendored, byte-identical to the global copy). gstack and its ~50-skill family deliberately excluded — the tool's own `plan-eng-review` skill actively warns against being vendored into a project. Codex's 6 `.system/` skills (imagegen, openai-docs, plugin-creator, review-agent, skill-creator, skill-installer) evaluated individually — none portable or all already superseded by existing Claude/MYPS equivalents. `codex-behavior-parity.md` gained 3 guardrail refinements (the `appsettings.Development.json` commit-gate rule and the widened ADR-107 footprint rule, both previously only self-contained in the operator's personal global config, not this repo; the SessionStart-hook-is-a-reminder caveat). `~/.codex/config.toml`/`hooks.json`/`rules/` explicitly NOT audited this pass (deferred, secret-bearing-file caution) — do not claim full Codex-behavior inheritance without that follow-up |
 
 

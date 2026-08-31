@@ -40,6 +40,23 @@
 
 ### Last Session
 
+- **2026-09-01 — Vendored `plan-analysis` into this repo + 3 `codex-behavior-parity.md` guardrail
+  refinements (ADR-136).** Canonical top-of-stack: `decisions.md` → ADR-136 (`Next-ID: ADR-137`).
+  Operator asked for "all necessary global skills" embedded so a clone of this repo is
+  self-sufficient, then expanded to "fully inherit all the chatgpt skills and behavior if possible."
+  5-pass research found the honest scope narrow: `plan-analysis` was the only skill referenced but
+  missing (now vendored at `.claude/skills/plan-analysis/`, byte-identical, git-tracked — auto-
+  discoverable on clone, no global-install step). gstack + its ~50-skill family deliberately
+  excluded — the tool itself warns against being vendored into a project. Codex's 6 `.system/`
+  skills evaluated individually, all skip (4 OpenAI-runtime-hardwired with no Claude equivalent, 2
+  already superseded by Claude's native `/code-review` and this repo's own `new-skill.md`). Closed 2
+  real behavior gaps in `codex-behavior-parity.md` (the `appsettings.Development.json` commit-gate
+  rule and the widened ADR-107 footprint rule — both previously self-contained only in the
+  operator's personal global config, not this repo, so a fresh clone wouldn't have inherited them).
+  **Deferred, explicit:** `~/.codex/config.toml`/`hooks.json`/`rules/` not audited — secret-bearing-
+  file caution. Status COMPLETE_WITH_RESIDUAL_RISKS. Not synced to Obsidian — agent-infrastructure,
+  not MYPS domain knowledge, out of that vault's scope by design. Full detail: `decisions.md`
+  (ADR-136).
 - **2026-08-31 — RISK-111 found and fixed (ADR-135), RISK-105 resolved by the same fix: Program-
   stage BP-to-first-stage ProjectId swap had no cross-project collision check.** Canonical
   top-of-stack: `decisions.md` → ADR-135 (`Next-ID: ADR-136`), `risks.md` → RISK-111
