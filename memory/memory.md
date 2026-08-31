@@ -40,9 +40,33 @@
 
 ### Last Session
 
+- **2026-08-31 — RISK-111 found and fixed (ADR-135), RISK-105 resolved by the same fix: Program-
+  stage BP-to-first-stage ProjectId swap had no cross-project collision check.** Canonical
+  top-of-stack: `decisions.md` → ADR-135 (`Next-ID: ADR-136`), `risks.md` → RISK-111
+  (`Next-ID: RISK-112`). Operator asked for a thorough `/plan-analysis` on "conflict imported
+  projectid with the created projectid on the system itself." 3-agent research confirmed RISK-105/
+  ADR-130 had already found the concurrency-race half; a fresh live DB check (the plan's own Step 0)
+  found the other half was still open: `ProgramController.cs:859`'s `ReplaceFirst("BP", ...)` swap
+  reuses existing digits with zero collision check, and both allocators (`pGenerateThirdSegment` and
+  ADR-043's `pReserveProjectIdBlock`) key buckets by `Suffix` independently — proven live via 3 real
+  colliding project pairs on `myps_db_dev` (`P01100001LZ`/`2LZ`/`3LZ`, each a manually-created
+  project's post-swap value colliding with a separately-imported project's own directly-issued
+  `ProjectPK`). Chained `/plan-analysis` → `/code-behavior-audit` → `/rollback-readiness-test` per
+  the operator's own explicit request, with two `AskUserQuestion` decision points along the way
+  (fix scope: explicit swap-site check vs. unifying the counters — operator chose the smaller,
+  URD-format-safe option; go-ahead to implement). Fixed: `GenerateProjectID` rewired onto
+  `pReserveProjectIdBlock` (closes RISK-105 too, restores validation deleted by the operator's own
+  commit `446d6318`), fail-closed collision check added at the swap site. Verified: 7 new regression
+  tests (full suite 13/13 green) + a live rollback-only drill against `myps_db_dev`. Readiness tier:
+  Internal-ready, verdict GO WITH CONDITIONS (authenticated API test not yet run). **The 3 existing
+  live collisions are NOT retroactively repaired** — flagged for an explicit operator remediation
+  decision, not actioned. Code changes uncommitted (`Helpers/ProjectHelper.cs`,
+  `WebAPI/Controllers/Programs/ProgramController.cs` +29, `MYPS.DatabaseTests/
+  ProjectIdGenerationTests.cs` new). Full detail: `decisions.md` (ADR-135), `risks.md` (RISK-105
+  resolved, RISK-111 opened/mitigated).
 - **2026-08-31 — Ported Codex's `plan-analysis` skill to a global, model-agnostic Claude Code
-  skill (ADR-134).** Canonical top-of-stack: `decisions.md` → ADR-134 (`Next-ID: ADR-135`). Not a
-  MYPS task per se — operator asked for the skill (previously Codex-only) to become usable
+  skill (ADR-134).** Canonical top-of-stack: `decisions.md` → ADR-134 (superseded above by ADR-135).
+  Not a MYPS task per se — operator asked for the skill (previously Codex-only) to become usable
   globally, in Claude or any LLM. Installed at `~/.claude/skills/plan-analysis/` (global to every
   project on this machine, natively discoverable, no per-project registration). All 6 substantive
   source files ported (4 verbatim, 2 with light Claude-Code-integration adaptation); the 7th
