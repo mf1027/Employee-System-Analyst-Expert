@@ -16,6 +16,24 @@ gating (Instruction #1, SKL-017 plan-gate). *Corrected 2026-08-25, ADR-121 — t
 the skill "does not authorize code changes, database changes, git operations, or frontend work" at
 all, contradicted by continuous practice the same day.*
 
+## Canonical shared behavior layer (2026-08-31)
+
+Portable observable behavior is now authored once at:
+
+`C:\Users\khen\.agents\skills\gstack\model-overlays\shared.md`
+
+Its stable `BHV-001`–`BHV-016` invariants cover authority classification, evidence-first
+exploration, clarification thresholds, decision quality, Plan Mode separation, capability honesty,
+workspace/destructive safety, tool and skill discipline, bounded persistence, communication,
+verification, current-information integrity, privacy, and truthful failure reporting. Claude and GPT
+model overlays inherit that contract and retain only runtime-specific adaptations.
+
+Do not copy or independently rewrite the full contract in this MYPS skill. This file owns the
+MYPS-specific portability workflow and readiness/memory requirements. Validate the shared layer
+with `bun run behavior:check` from the gstack source; the command reports invariant provenance,
+Claude/Codex generated targets, and freshness without storing user conversations or private
+reasoning.
+
 ## Trigger phrases
 
 - "make Claude work like Codex"
@@ -140,6 +158,15 @@ For MYPS, update or instruct the update of relevant Obsidian notes before the ta
 
 Final response must include the MYPS mind-map sync block — canonical rule (ADR-124): vault
 `Claude + Codex Real-Time Sync Protocol.md` → "Completion Gate".
+
+For a behavior-parity implementation, completion additionally requires:
+
+- `bun run behavior:check` passes;
+- deterministic behavior-contract tests pass;
+- Claude and Codex generated host outputs are fresh and use the correct model overlay chain;
+- global Claude rules contain the bounded generated contract block;
+- Codex can discover the MYPS-only readiness vocabulary through `~/.codex/AGENTS.md`;
+- any unavailable model-dependent E2E check is named as an unverified boundary.
 
 ## Output format
 
