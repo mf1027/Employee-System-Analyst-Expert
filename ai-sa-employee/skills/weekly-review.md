@@ -48,6 +48,11 @@ For EVERY active project under `memory/clients/[client]/[project]/`:
    matching IDs in the lane files? Flag any chat-only items.
 4. Backup age: when was the last `employee-client-data_*.zip` created?
    (Check the backup folder; if > 7 days or never → recommend `scripts/backup.ps1`.)
+5. **Proposal-decay check (SKL-052).** Re-read `memory/improvement-backlog.md`'s Proposals table.
+   Any row still "Logged, not built" from more than one weekly-review cycle ago gets an explicit
+   decision this pass — build it, decline it, or re-defer it with a fresh reason. A silent "still
+   logged" is not a valid outcome; that's how SKL-047 sat unbuilt long enough to recur with a worse
+   blast radius (a wrong answer, then a shipped code edit built on the same wrong premise).
 
 ### Part C — Digest
 

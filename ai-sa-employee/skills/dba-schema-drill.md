@@ -20,7 +20,9 @@ failure modes. If the drill passes, the schema can be locked.
 
 Invoke when:
 - A schema is ready to be locked (after review + data-flow-trace)
-- The operator says "run a drill", "test the schema", "validate this"
+- The operator says "run a drill", "test the schema", "validate this" (a specific table/schema
+  design — for a general/synthetic end-to-end smoke test, that's `system-drill` instead; tie-break:
+  `CLAUDE.md` Trigger Table, RISK-098 #3)
 - Before generating migration scripts for a recommended schema
 - After any schema revision (to re-validate)
 
@@ -523,6 +525,24 @@ The drill reaches this level if:
 
 **Status after Level 2: `VALIDATED`** — the schema works. This is the real pass.
 
+### Root Cause Analysis on any FAIL (Level 1 or 2) — added 2026-08-24, SKL-050
+
+This skill already has heavy "is the drill itself still accurate" coverage, distributed across
+rules 12 (registry regenerated fresh, not from memory), 31/36 (verify a drill's real behavior,
+don't trust its registry claim), 38 (mechanical classification-token gate), and 49 (foreign-residue
++ full FK-graph checks before cleanup) — that ground is not being re-covered here. What's missing is
+a required structure for reporting *why* a specific run failed. For every FAIL, state:
+
+1. **Mechanism** — the exact table/proc/view/step responsible, not just "step N failed."
+2. **Since when** — `git log -1`/mtime on the object's defining script, or `sys.objects.modify_date`
+   for a live DB object, to date the regression rather than just asserting it.
+3. **New or recurring** — check `memory/improvement-backlog.md` for the same failure shape. This
+   file's own history is dense with exactly this: SKL-036 existed and the same trap recurred 3 times
+   in 4 days anyway (SKL-038); SKL-031 was resolved and recurred the same session (SKL-049). A
+   failure that already has a resolved SKL- number and still recurred is not "log a new RISK," it's
+   "the existing fix's shape doesn't hold at this failure's scale" — the same conclusion SKL-038's
+   own text reached.
+
 ### How to reach Level 2 without a live DB
 
 If no SQL Server is available in the dev environment:
@@ -660,6 +680,45 @@ The drill FAILS if:
     with no token is an ordinary self-cleaning drill, one with `@DESTRUCTIVE`/`@HISTORICAL` is
     excluded unless named explicitly, one with `@NEEDS-FIXTURE` runs in its own reseed-first pass.
     Do not rely on remembering which files are which — grep the tokens every time.
+17. **Cross-mock table-collision guard — check for another mock's residue before writing to a
+    shared core table (SKL-049, closes a gap SKL-031 named but never closed).** Rule 3's own-FK-
+    parent seeding and rule 13's self-cleaning/persistent-validator routing both assume a drill owns
+    its fixture in isolation — but two drills can share a core table (`tPrograms`, `tProjects`, a
+    shared lookup) without either one truncating the other, and a reseed by one can silently
+    invalidate an assumption the other was relying on, with no error raised anywhere. Before any
+    script writes to a table it does not exclusively own, query for rows OUTSIDE its own business-ID
+    namespace (the SKL-032 prefix from rule 2):
+    ```sql
+    SELECT COUNT(*) AS ForeignResidue FROM dbo.tPrograms
+    WHERE ProgramKey NOT LIKE 'yourprefix%' AND ProgramKey NOT LIKE 'expectedsibling%';
+    ```
+    A non-zero, unexpected count means another mock currently occupies that table — stop and
+    reconcile (coordinate a reset, or scope the drill's own assertions to just its own prefix)
+    instead of reseeding on top of it silently. Caught live 2026-07-17, the SAME DAY SKL-031 shipped
+    to fix the adjacent full-suite-wipe problem: a different, unrelated script sharing core tables
+    invalidated a reseed with no error — SKL-031's own text named this exact gap ("no cross-mock
+    collision guard") without closing it.
+18. **Enumerate the FULL FK-child graph before hand-writing a cleanup DELETE cascade — never
+    reconstruct it from memory (SKL-049).** Rule 7's "enumerate the full graph, don't hand-pick a
+    subset" (SKL-009) applies to fixture *seeding*; this is the same discipline applied to fixture
+    *cleanup*. When residue is discovered and a DELETE cascade has to be hand-written to remove it,
+    query `sys.foreign_keys` for every child (and grandchild) of every table in scope — the same
+    query already required in rule 7 and echoed in the Phase 1 dependency map of a schema rebuild —
+    before writing the cascade, rather than listing tables from memory:
+    ```sql
+    ;WITH children AS (
+      SELECT fk.name, OBJECT_NAME(fk.parent_object_id) AS ChildTable,
+             OBJECT_NAME(fk.referenced_object_id) AS ParentTable
+      FROM sys.foreign_keys fk
+      WHERE fk.referenced_object_id IN (OBJECT_ID('dbo.tYourRootTable') /* , ...every table in scope */)
+    )
+    SELECT * FROM children;  -- re-run against each ChildTable found until no new rows appear
+    ```
+    A cascade assembled from memory under-counts silently — the DB won't complain about rows you
+    forgot to delete, only about rows you tried to delete out of order. Caught live 2026-07-24:
+    a residue-cleanup cascade missed the revision-mirror detail tables + `tRevisionDocuments` on the
+    first pass, then missed `tTransactionLog` on a second pass — two rounds of "I think that's
+    everything," neither one grounded in the actual FK graph.
 
 ---
 
@@ -689,7 +748,10 @@ The drill FAILS if:
 - [ ] Loop table-type variables declared once outside the loop + cleared (`DELETE FROM @t;`) each iteration; a needed sibling's Id captured into its own variable right after its INSERT (SKL-037)
 - [ ] This drill declares its classification token (`@DESTRUCTIVE` / `@HISTORICAL` / `@NEEDS-FIXTURE` / none = ordinary) in its header (SKL-038)
 - [ ] Before assembling ANY sweep list, header tokens grepped fresh — `@DESTRUCTIVE`/`@HISTORICAL` excluded by default, `@NEEDS-FIXTURE` routed to its own reseed-first pass (SKL-038)
+- [ ] Before writing to any shared (non-exclusively-owned) core table, checked for foreign residue outside this drill's own business-ID namespace (SKL-049)
+- [ ] Any hand-written cleanup DELETE cascade is built from a fresh `sys.foreign_keys` query of the full child/grandchild graph, not reconstructed from memory (SKL-049)
 - [ ] Script is syntactically valid T-SQL
+- [ ] Any FAIL (Level 1 or 2) reported with mechanism / since-when / new-or-recurring — not just named (SKL-050); `improvement-backlog.md` checked for a 3rd+ occurrence of the same shape before logging another one-off RISK
 
 ## Failure exit
 

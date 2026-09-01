@@ -65,9 +65,17 @@ Run the resume-client flow against `_drill` as if freshly copied.
 **Verify:** status card shows the project, the open RISK-001, TASK-001,
 and the next milestone; no crash on the synthetic data.
 
-### Step 6 — Memory sync
-**Verify:** claude-mem contains the drill entries (search `client:_drill`);
-if claude-mem is unavailable, record the degraded tier as a finding — not a failure.
+### Step 6 — Memory sync (Tier 0, corrected 2026-08-24 — see Gap Analysis below)
+This system runs at **Tier 0 — file memory only** (`CLAUDE.md` Memory Tiers, ADR-111,
+2026-08-23). claude-mem is confirmed dead — its store has not been written since 2026-07-02, and
+its MCP tools do not connect. This is a **structural fact**, not a per-run degradation, so it is no
+longer something this step "checks for" each time.
+
+**Verify instead:** the drill's entries actually landed in file memory — `memory/memory.md`'s
+Client Index has the `_drill` row (already checked in Step 1) and the lane files written in Step 3
+are the durable record. If context-mode (`ctx_search`) is available, optionally confirm it indexed
+this session's `_drill` activity — but its absence is not a drill failure either; it is not the
+system of record.
 
 ### Step 7 — Cleanup (always runs, even after failures)
 1. Delete `memory/clients/_drill/` entirely — use an **absolute path from the repo root**
@@ -85,6 +93,47 @@ if claude-mem is unavailable, record the degraded tier as a finding — not a fa
 
 ---
 
+## Root Cause Analysis (added 2026-08-24) — required whenever any step is FAIL
+
+A one-line "identify the broken skill/file, propose the fix" was the entire failure-handling
+instruction before this pass — that asks for thought but doesn't structure it, and doesn't
+distinguish a genuine new defect from a drill that's stale on its own assumptions. **Both classes
+have already happened in this engagement**: `tools/verify-function-sql-mindmap.ps1` went 47/52 for
+a week because 5 of its checks required files that had been deliberately deleted (ADR-107/108) —
+the drill was wrong, not the thing it tested (fixed 2026-08-23, ADR-111). Don't repeat that here
+silently; the Gap Analysis below exists specifically to catch that class before it hides for a week.
+
+For **every** FAIL, report all three fields — do not skip any, even if the answer is "unknown":
+
+1. **Mechanism** — the specific skill/file/config responsible, not just "step N failed." Point at
+   the exact line or setting, the way this drill's own Step 6 fix (above) names `CLAUDE.md`'s
+   Memory Tiers section rather than saying "memory is broken."
+2. **Since when** — `git log -1 --format=%cd -- <file>` (or the file's mtime if untracked) on the
+   responsible file. Dates the regression instead of just asserting it exists.
+3. **New or recurring** — search `memory/improvement-backlog.md` for the same failure pattern
+   (breadcrumbs are timestamped one-liners, cheap to scan). If this is the **3rd+** occurrence of
+   the same root cause, that already crosses `self-improvement.md`'s own threshold for a `SKL-`
+   proposal — log it as one, don't just re-add another one-off `RISK-SYS` entry for a pattern
+   that's already recurring.
+
+## Gap Analysis (added 2026-08-24) — required every run, PASS or FAIL
+
+**A green drill on a stale assumption is worse than a red one** — nothing else prompts a second
+look. Run this checklist every time, independent of the PASS/FAIL result above:
+
+- [ ] Does each of the 7 steps still test what it claims to, against `CLAUDE.md`'s **current**
+      content — not what was true when `system-drill.md` was last edited? (Re-read the relevant
+      `CLAUDE.md` section for any step whose claim depends on system state, e.g. Step 6's memory
+      tier.)
+- [ ] Has anything been added to the system since `system-drill.md`'s own last-modified date
+      (`git log -1 -- ai-sa-employee/skills/system-drill.md`) that isn't exercised by any step — a
+      new lane-file type, a new memory tier or mechanism, a new hook, a new ID prefix?
+- [ ] Report drift as a finding even when all 7 steps PASS. "Gap Analysis: clean, no drift found"
+      is itself the expected, positive result of running this checklist — silence is not the same
+      as having checked.
+
+---
+
 ## Output format
 
 ```
@@ -95,14 +144,26 @@ SYSTEM DRILL — [YYYY-MM-DD]
 3. Mode write lanes    PASS/FAIL
 4. Calibration         PASS/FAIL
 5. Resume-client       PASS/FAIL
-6. Memory sync         PASS/FAIL/DEGRADED
+6. Memory sync (Tier 0) PASS/FAIL
 7. Cleanup             PASS/FAIL
 ═══════════════════════════════
 Result: [N/7 PASS] — [system healthy / fix X before next client work]
+
+ROOT CAUSE ANALYSIS — [present only if any step FAILed; omit this block entirely on a clean pass]
+  Step [N] — Mechanism: [exact file/skill/setting]
+             Since when: [date, from git log/mtime]
+             New or recurring: [new | recurring, Nth time — see improvement-backlog.md]
+
+GAP ANALYSIS — [always present, every run]
+  [ ] All 7 steps still match current CLAUDE.md content
+  [ ] No system additions since system-drill.md's last edit are unexercised
+  Result: [clean, no drift found | drift found: <what, and where logged>]
 ```
 
-If any step fails: identify the broken skill/file, propose the fix, and
-log a `RISK-SYS` entry — a failing drill means real client work is at risk.
+If any step fails: identify the broken skill/file, propose the fix, log a
+`RISK-SYS` entry (or a `SKL-` proposal if Root Cause Analysis found this is
+the 3rd+ occurrence of the same pattern) — a failing drill means real client
+work is at risk.
 
 ---
 
@@ -113,6 +174,10 @@ log a `RISK-SYS` entry — a failing drill means real client work is at risk.
 - [ ] No drill `.md` data residue in memory/clients/ (`*.md` count = 0); Client Index row removed
 - [ ] Any locked nested `.claude-mem` reported as residue-not-failure, with its exact path
 - [ ] Failures traced to the specific skill/file responsible
+- [ ] Root Cause Analysis present and structured (mechanism / since-when / new-or-recurring) for
+      every FAIL — not just named in prose
+- [ ] Gap Analysis run and its result stated even on a fully clean pass — "clean, no drift found"
+      is a required line, not an implied default
 
 ## Failure exit
 "Drill aborted at step [N] — cleanup completed. Broken: [component]. Fix before onboarding real clients."

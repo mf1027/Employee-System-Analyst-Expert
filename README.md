@@ -19,9 +19,13 @@ full-time senior employee with defined roles, memory, skills, and governance rul
 - Advises on databases (schema design, migration safety, HA/DR, cost)
 - Produces formal documents (SRS, PRD, SDD, status reports)
 
-**What the employee does NOT do:** write application code, build features, or debug programs —
-that's the developer's lane (you or your team). It stays in the thinking-and-specifying lane:
-it **analyses, plans, governs, and advises**, then hands the developer complete specifications to build from.
+**Primary lane:** thinking and specifying — it analyses, plans, governs, and advises by default.
+**Implementation and verification are available, not default:** when you direct a specific code
+change, DB fix, or test/drill, it executes directly (Claude Code has real file/build/DB
+capability) rather than manufacturing a handoff — gated by a plan and your explicit go-signal
+first, same as any DB-mutating or multi-file work. It does not invent scope or start building
+unprompted; that stays a proposal for you to approve. *(Retired 2026-08-25, ADR-121 — this used
+to be an absolute "does not write code" rule, contradicted by continuous practice.)*
 
 ---
 
@@ -252,6 +256,16 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `end-of-task` | "done", "task complete" |
 | `learn-from-feedback` | "the client said X", "got feedback" |
 | `new-skill` | "create a new skill", "add a skill for X" |
+| `deep-analysis` | "analyze this deeply", "RCA this", "is this the right approach", "challenge this plan" |
+| `code-behavior-audit` | "audit this code for bugs", "trace this for issues", "check this controller for defects" — behavior trace with code/config/memory/mind-map/DB authority reconciliation |
+| `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict |
+| `codex-behavior-parity` | "make Claude work like Codex", "sync Claude and Codex behavior", "Codex personal behavior" — maps Codex operating discipline to Claude-safe MYPS workflow rules without claiming unsupported runtime features |
+
+**Not in the table above:** `plan-analysis` is a separate, vendored global skill
+(`.claude/skills/plan-analysis/`, ADR-136) — a fuller, artifact-bundle-backed RCA/gap-analysis/plan
+workflow ported from Codex, usable in any project on this machine, not one of the 56 skills in this
+employee's own library, and invoked directly by name (`/plan-analysis`) rather than a trigger phrase
+here. See `CLAUDE.md`'s Tie-breaks section for how it relates to `deep-analysis`.
 
 **Delivery skills (design → build bridge):**
 
@@ -372,7 +386,8 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (read at every session start)
 ├── README.md                          ← This file
 ├── .claude/settings.json              ← MCP servers + env vars + permissions
-├── .claude/commands/                  ← 56 slash-command wrappers (52 skills + 4 aliases) → point to ai-sa-employee/skills/
+├── .claude/commands/                  ← 60 slash-command wrappers (56 skills + 4 aliases) → point to ai-sa-employee/skills/
+├── .claude/skills/plan-analysis/      ← Vendored global skill (ADR-136) — ported from Codex, not MYPS-specific; also lives at ~/.claude/skills/plan-analysis/
 ├── .gitignore
 ├── package.json
 │
@@ -384,9 +399,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 52 SA/PM/DBA/delivery/meta skills (flat)
+│   ├── skills/                        ← 56 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [52 individual skill files]
+│   │   └── [56 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready
@@ -471,3 +486,4 @@ The `setup.ps1` / `setup.sh` scripts check and install everything automatically.
 "show the board"                             → per-module progress, status counts, blocked list
 "generate the xlsx report"                   → Dashboard + BE + FE + QA workbook snapshot
 ```
+

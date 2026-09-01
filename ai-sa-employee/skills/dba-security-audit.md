@@ -24,6 +24,9 @@ security), MySQL (mysql.user, GRANT), cloud-managed (IAM, VPC, encryption option
 
 Invoke when:
 - The operator mentions "security review", "PII", "encryption", "permissions", "compliance"
+  (DB-specific: permissions, encryption, backup retention, PII columns — for engagement-level
+  threat modeling/STRIDE/GDPR-HIPAA, that's `security-review` instead; tie-break: `CLAUDE.md`
+  Trigger Table, RISK-098 #3)
 - Onboarding a new client with regulatory requirements
 - Before a production deployment
 - After a schema change that adds columns storing personal or sensitive data

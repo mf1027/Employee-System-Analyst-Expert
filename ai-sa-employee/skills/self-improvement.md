@@ -95,7 +95,13 @@ active work to raise a proposal — that is the failure mode this design exists 
 6. Present proposals ranked by priority (both lanes). Recommend the top actions. **STOP** — building
    any skill or codifying any workflow is a Tier 1 deliverable and needs its own confirmation.
 7. Move acted-on / rejected items to *Resolved* with the outcome; increment `Next-ID` / `Next-WFC`
-   for every ID minted.
+   for every ID minted. **An "Action taken" write-up must state verified scope, not intended scope
+   (SKL-054):** every file it names must have been opened or grepped in the same pass. A file
+   outside this workspace — another agent's config tree, a system you don't control — gets recorded
+   as *"handoff written, not verified applied"* unless directly checked. Caught live: SKL-051's
+   "Action taken" claimed a "Codex-native mirror" was updated; it wasn't — zero hits anywhere under
+   `~/.codex/`. SKL-010/016's consumer checklists don't reach outside this workspace, so nothing else
+   catches this.
 
 ---
 

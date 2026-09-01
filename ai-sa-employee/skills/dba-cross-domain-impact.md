@@ -276,6 +276,24 @@ ESTIMATED EFFORT: [quick estimate — trivial/small/medium/large]
    `OldSourceId` appended last on both a view and a brand-new TVF in the same pass, 2 weeks after
    an identical operator complaint (ADR-060) had already forced a 4-table rebuild to fix the same
    pattern on live tables.
+9. **The DB-object scan is structurally blind to two disjoint populations — flat `.sql` files and
+   application code (SKL-048/SKL-053).** `sys.sql_modules`/`sys.dm_sql_referenced_entities` only see
+   live views/functions/procs; they cannot see a standalone drill/mock `.sql` file's text, and they
+   cannot see a C#/app-repo entity, DTO, or validation attribute. Both are real consumers that break
+   silently on a rename, width change, nullability change, or type change:
+   - **On any rename:** grep the drill/mock `.sql` directory as flat text for the old name,
+     alongside the `sys.sql_modules` scan. Caught live: ADR-057's rename fixed 2 broken views via
+     the catalog scan, but 3 historical drills still referenced the old name in a seed line —
+     invisible to that scan, caught hours later by an unrelated sweep.
+   - **On any width/nullability/type/rename change to a table mirrored or consumed by application
+     code** (a `tRevisionProject*` mirror table, or a table an external controller writes to): grep
+     the connected app repo's entity/model/DTO layer for the same column, **in both directions**.
+     DB→app: a junction-table refactor (ADR-026) broke the external `UpdateUser` controller, which
+     still wrote against a column that no longer existed — caught only when the operator hit it
+     directly. App→DB: a C# `[MaxLength]` guard was widened to 20 without the mirrored DB column
+     following (`tRevisionProjectMajorWorkItem.ComponentId` still `nvarchar(10)`) — the compile-time
+     backstop is gone and only a runtime `String or binary data would be truncated` (Msg 2628)
+     remains.
 
 ---
 
@@ -335,6 +353,11 @@ Generalizability: universal — any change to any DB object with consumers.
 - [ ] **If the change adds a column, its placement was decided per ADR-060 and verified via
       `scripts/verify-column-order.py --object <name>` (SKL-043)** — not appended last by default
       → untouched neighbours included in the capture → scratch tables torn down in the same pass
+- [ ] **On a rename, grepped the drill/mock `.sql` directory as flat text for the old name, not just
+      the `sys.sql_modules` scan (SKL-048).** On a width/nullability/type/rename touching a table
+      mirrored or consumed by application code, grepped the connected app repo's entity/model/DTO
+      layer in both directions (SKL-053) — a DB change unreflected in app code, and an app-side type
+      widening unreflected in the DB, are both live-tracked failure modes, not hypothetical ones.
 
 ## Failure exit
 

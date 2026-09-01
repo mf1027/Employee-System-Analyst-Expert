@@ -18,6 +18,9 @@ $root = Split-Path -Parent $PSScriptRoot
 $stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
 
 # Folders that hold data which exists nowhere else (all gitignored)
+# NOTE: the Obsidian MYPS mind-map (Desktop\Projects\Obsidian\project_obsidian_mem) is
+# deliberately NOT here - it's its own independent git repo with its own GitHub remote,
+# outside this repo's tree entirely, and is already durable on its own.
 $targets = @(
     @{ Path = Join-Path $root "memory\clients"; Label = "memory/clients" },
     @{ Path = Join-Path $root ".claude-mem";    Label = ".claude-mem" },

@@ -10,7 +10,9 @@ Invoke when the operator says:
 - "update memory", "remember this", "log this"
 - "what do we know about [topic/client/project]?"
 - "summarise clients / risks / tasks"
-- "clean up memory", "is anything stale?"
+- "clean up memory", "is anything stale?" — **route to `memory-hygiene` instead.** claude-mem is
+  confirmed non-operational (Tier 0, ADR-111); this phrase pointing here is a dead end regardless
+  of intent (tie-break: `CLAUDE.md` Trigger Table, RISK-098 #3)
 - "add this to [memory file]"
 
 ---

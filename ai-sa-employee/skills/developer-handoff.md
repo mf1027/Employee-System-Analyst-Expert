@@ -125,3 +125,47 @@ Close with **Decisions needed / Open questions / Next steps**.
 "Source isn't locked yet — [requirements still open / design has no ADRs]. A handoff built on a
 moving target just moves the rework downstream. Let's close [the open items] first, then I'll
 package the tickets."
+
+---
+
+## External-agent export (SKL-044, 2026-08-13)
+
+When the operator hands work to a different coding agent (Codex, another Claude Code session
+working directly in the app repo, etc.) that needs a self-contained doc bundle rather than a
+ticket list — **generate that bundle from the canonical `memory/clients/[client]/[project]/`
+files at export time**. Do not let the operator (or another session) hand-build a parallel
+`docs/`+`sources/`+`memory/` tree that lives outside the standard lanes; it has no update path
+back into `requirements.md`/`risks.md`/`decisions.md` and will silently drift from the moment it's
+created.
+
+**Caught live:** a separate session investigating `RevisionController.cs` directly in the app repo
+produced a full `docs/`+`sources/`+`memory/` tree (ERDs, knowledge-base, test strategy, a
+hand-maintained master-context doc, 3 investigation logs) parked in `reference/codex/` — 8 real
+defects and 1 schema-authority conflict sat there undiscovered by `risks.md`/`decisions.md` for
+the same day they were found, while `risks.md` was independently logging unrelated findings
+(RISK-070–072) from the *same* day. Two authorities, no cross-reference, until a manual migration
+pass (RISK-073–080, ADR-094) reconciled them.
+
+**Export checklist, when producing a package for an external agent:**
+1. Pull findings from `risks.md`/`decisions.md`/`requirements.md` — don't re-derive from scratch.
+2. If the external session finds new defects, they come back as `RISK-`/`ADR-` entries in the
+   same pass they're found, not accumulated in agent-local files for a later cleanup.
+3. Evidence snapshots (schema dumps, SQL query output) go to
+   `memory/clients/[client]/reference/`, matching the existing per-client reference convention —
+   not a new top-level `sources/` tree.
+4. Planning/spec docs go to `deliverables/documents/`; ERDs to `deliverables/diagrams/` — same
+   target as every other deliverable this skill produces, so there is exactly one place to look.
+5. A hand-maintained "master context" doc for the external agent is a smell: if it duplicates
+   `database.md`/`decisions.md` in a different shape, it will drift the first time either side is
+   updated alone. Prefer generating it from the canonical files (see `myps-db-asbuilt.md` /
+   `scripts/generate-db-asbuilt.py` for the existing generated-not-hand-maintained pattern) over
+   maintaining it by hand.
+
+**Concrete implementation (MYPS, 2026-08-13):**
+`memory/clients/myps/myps-system/CODEX_SYNC_STARTUP.md` — role split, startup checklist, canonical
+file list, DB safety rules, current Revision authority, and a report-back protocol, meant to be
+read at the start of every Codex/MYPS implementation chat. Paired with a read-only
+`scripts/codex-sync-startup.ps1` in the same folder (prints branch/dirty-file state for both
+repos, latest ADR/RISK headers, a DB-target warning; never writes, never connects to a database
+unless `-CheckDb` is passed, and even then the target is hardcoded, not parameterizable). Use this
+pair as the template when another client needs the same external-agent protocol.

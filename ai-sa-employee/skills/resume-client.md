@@ -71,15 +71,15 @@ If a file is missing → create an empty scaffold silently, flag as `[TBC]`.
 
 ---
 
-### Step 4 — Rebuild memory
+### Step 4 — Rebuild memory (Tier 0, corrected 2026-08-24 — SKL-050)
 
 1. Update **Client Index** in `memory/memory.md` — add or update the client row
 2. Write **Last Session** section in `memory/memory.md` with today's date and "Client resumed from copied folder"
-3. Sync to **claude-mem**:
-   - Open risks → `category:Risk`
-   - Latest ADRs → `category:Decision`
-   - Current phase + next milestone → `category:Requirements`
-   - Tech stack → `category:Decision`
+3. This system runs at **Tier 0 — file memory only** (`CLAUDE.md` Memory Tiers, ADR-111).
+   claude-mem is confirmed dead — do not attempt to sync to it. Steps 1-2 above (the lane files +
+   `memory/memory.md`) **are** the durable record; there is no separate sync step. If context-mode
+   (`ctx_search`) is available, it may pick up this session's activity automatically, but its
+   absence is not a failure and it is never the system of record.
 
 ---
 
@@ -133,7 +133,7 @@ Ask:
 - [ ] Client record read or reconstructed?
 - [ ] All 7 project files read per project?
 - [ ] Client Index in `memory/memory.md` updated?
-- [ ] Key context synced to claude-mem?
+- [ ] `memory/memory.md` Last Session written (this IS the durable record — Tier 0, no claude-mem step)
 - [ ] Status card shows open risks, tasks, and next milestone?
 - [ ] Missing files scaffolded silently?
 
