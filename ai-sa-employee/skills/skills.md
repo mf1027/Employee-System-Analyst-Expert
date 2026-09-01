@@ -340,10 +340,13 @@ this one toward that one, don't treat this one as a second vote.
 > **How to invoke (SKL-012):** these are **employee skills, not registered `Skill()` tools** — calling
 > `Skill(name)` returns *Unknown skill*. To invoke one, **read its `.md` file with the Read tool** and
 > follow it. "Invoke X" / "Invoke by saying…" below means *read that skill file and apply it*, not call a tool.
-> **Slash menu (added 2026-07-03):** every skill also has a thin wrapper in `.claude/commands/<name>.md`
-> (+ aliases `/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`), so `/gather-requirements`
-> etc. appear in Claude Code's slash-command menu. Wrappers are entry points ONLY — they redirect here;
-> never put skill content in a wrapper. New skill → also generate its wrapper (see `new-skill`).
+> **Slash menu (added 2026-07-03):** every skill in this index also has a thin wrapper in
+> `.claude/commands/<name>.md` (+ aliases `/check-improvements`, `/capture-workflow`, `/check-memory`,
+> `/board`), so `/gather-requirements` etc. appear in Claude Code's slash-command menu. Wrappers are
+> entry points ONLY — they redirect here; never put skill content in a wrapper. New skill → also
+> generate its wrapper (see `new-skill`). **Not this index's rule:** a skill vendored directly under
+> `.claude/skills/<name>/` (e.g. `plan-analysis`, ADR-136) is natively discoverable by Claude Code
+> with no wrapper at all — a different mechanism, not an exception to this one.
 
 | File | Invoked by saying... |
 |---|---|

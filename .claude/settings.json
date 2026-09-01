@@ -84,6 +84,7 @@
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('version:', d.get\\('version'\\)\\); print\\('description:', d.get\\('description'\\)\\); print\\('bin:', d.get\\('bin'\\)\\); print\\('main:', d.get\\('main'\\)\\)\")",
       "Bash(curl -s \"https://registry.npmjs.org/@opendataloader/pdf/2.4.7\")",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('readme',''\\)[:3000]\\)\")",
+      "Bash(python .claude/skills/plan-analysis/scripts/validate-artifacts.py *)",
       "Bash(npx --yes @opendataloader/pdf --help)",
       "Bash(node_modules\\\\.bin\\\\opendataloader-pdf --version)",
       "Bash(Remove-Item \"c:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\ai-sa-employee\\\\references\\\\gstack-reference.md\" -Force)",

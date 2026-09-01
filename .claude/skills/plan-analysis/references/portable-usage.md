@@ -49,3 +49,11 @@ explicitly usable in *any* project on this machine, not just MYPS. If you edit t
 methodology, update both copies in the same pass — there is no symlink or single-source mechanism
 tying them together (Windows/git-clone portability made that impractical), so drift is a real,
 manual risk to watch for, not an automatically-prevented one.
+
+**Artifact-bundle commit discipline, MYPS-specific:** if a `docs/plans/<slug>/` bundle (the
+`## Artifacts` section above) is ever created against this repo, commit it to git as part of
+completing the run. It's small, git-trackable text — the same pattern this repo already uses for
+every other vendored/authored skill file — not something `scripts/backup.ps1` covers (that script
+only backs up gitignored, irreplaceable local data; `docs/plans/` isn't gitignored) and not
+something git protects on its own until it's actually committed. Left uncommitted, a bundle is
+invisible to both.

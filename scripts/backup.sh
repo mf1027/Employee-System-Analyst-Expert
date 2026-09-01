@@ -20,6 +20,9 @@ STAMP="$(date +%Y-%m-%d_%H%M%S)"
 GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; GRAY='\033[0;90m'; NC='\033[0m'
 
 # Folders that hold data which exists nowhere else (all gitignored)
+# NOTE: the Obsidian MYPS mind-map (Desktop\Projects\Obsidian\project_obsidian_mem) is
+# deliberately NOT here - it's its own independent git repo with its own GitHub remote,
+# outside this repo's tree entirely, and is already durable on its own.
 TARGETS=()
 for dir in "memory/clients" ".claude-mem" "reference" "deliverables"; do
     [ -d "$ROOT/$dir" ] && TARGETS+=("$dir")
