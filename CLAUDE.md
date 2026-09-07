@@ -13,6 +13,17 @@ Read this file at the start of every session. No deliverable before the session 
 > where this line claimed blanket supremacy while the vault's own authority ladder never mentioned
 > it (RISK-098 #2). Secondary files carry detail, not authority. Fix drift toward whichever side
 > owns the topic.
+>
+> **Ledger cutover (2026-09-01) — MYPS ADR/RISK numbering specifically.** The generic
+> per-client `Memory Lanes` table below (mode → `decisions.md`/`risks.md`) still describes how
+> *other* clients work and where MYPS's own historical record through ADR-093/RISK-073 lives —
+> it is not being rewritten. But for **MYPS specifically**, going forward: do not mint new
+> `ADR-`/`RISK-`/`ASS-` IDs into `memory/clients/myps/myps-system/decisions.md`/`risks.md`. The
+> Obsidian vault (`MYPS_Obsidian_Vault\MYPS\` — its Technical Decisions and Risks & Tech Debt
+> notes) is now the sole live MYPS ADR/RISK ledger; those two repo files are frozen historical
+> records. Found via a context-resync plan-analysis after the repo's copy drifted ~40 ADRs / ~37
+> RISKs behind the vault, undetected because nothing was writing to the repo copy to reveal the
+> gap. See the cutover notes at the top of `decisions.md`/`risks.md` themselves for detail.
 
 ---
 
@@ -79,7 +90,7 @@ Before responding to anything in a new session, in this exact order:
 4. If the task involves a specific client → read `memory/clients/[client-name].md`.
    For MYPS specifically, read the Obsidian MYPS live memory entry points before analysis or
    deliverables:
-   `C:\Users\khen\Desktop\Projects\Obsidian\project_obsidian_mem\MYPS\00 - START HERE.md`,
+   `C:\Users\Msi\Desktop\LLM\Obsidian\MYPS_Obsidian_Vault\MYPS\00 - START HERE.md`,
    `MYPS/00 - Home & Navigation/MYPS Current State Dashboard.md`, and
    `MYPS/20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md`.
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,

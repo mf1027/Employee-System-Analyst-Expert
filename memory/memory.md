@@ -37,9 +37,131 @@
 | Program type → stage gating | MYPS / myps-system | ✅ **BUILT 2026-08-03 (ADR-067)**, schema + 15/15 drill PASS. **Mock Q1 also done same day** — 4 new programs (G/H/I/J) proving the rule, incl. J = first data where raw `StageId` order ≠ real process order (RISK-054 made concrete). | **Backend wiring not done** (app-side enforcement). Mock **Phase B (projects) still deferred** — needs ProjectPK format rule for a non-BP-starting program. Also open: `StageId`-vs-`StageHierarchy` ordering ADR; RISK-058/059 logged; **2nd drill-residue leak found** (`drill-full-lifecycle.sql`, joins `drill-component-lifecycle.sql` in the held rebuild plan's P0). | 🟢 |
 | ~~Program type → stage gating (plan)~~ | MYPS / myps-system | ⏸️ ~~ON HOLD 2026-08-03~~ — superseded by the row above — full plan written + grounded against live legacy DB, **zero DDL executed** (`program-type-stage-gating-plan.md`). Design settled: new `tProgramTypeStages` junction + `tOptionProgramType.Code` + `tOptionProgramStage.ProgramGroup` + missing `FK_tPrograms_Type` + 2 views mirroring the `vAPIPermissions` pattern. **Key finding that stands regardless: this ANSWERS RISK-054 — program stages are (B) parallel tracks, not linear** (`T`→`TF`/`TF-R` only; `E`/`A`→`GAA`/`GAA-R` only; only `R` walks the full pipeline). | Answer the 5 questions in plan §8 — **Q5 is the blocker**: confirm with operator/client whether External & Automatic Appropriation really skip `BP`→`HGAB`. Rule comes only from retired-system data, never human-confirmed. Then execute P1–P8. | 🟡 |
 | Data-access filtering (`ApplyFilter`, program + project level) | MYPS / myps-system | ⏸️ **UNBLOCKED 2026-07-17** — was on hold (RISK-046) pending the admin-area lock, which is now done (ADR-047). The region resolver (`vAdminOfficeRegion`) this depends on already exists. | Resume via the DBA interview chain (operator's chosen path) when prioritized — open questions + deliverable shape in `data-access-filtering-onhold.md` | 🟡 |
+| ProjectExceptionReport (`IsPublishable` gap explainer) | MYPS / myps-system | 🔴 **REVERTED 2026-09-03** — built + audited + drilled (Internal-ready) 2026-09-02, then operator reverted the working-tree changes before frontend wiring. `git status` on `project_myps` (`dev-trunk`) confirmed clean; none of this code currently exists. | Re-apply from the preserved reference implementation in MYPS vault `14 - Testing/Backend Deployment Readiness.md` when resumed — design/DB rule set/drill evidence don't need re-deriving. | 🔴 |
 
 ### Last Session
 
+- **2026-09-03 — `fRevisionQueue`, 4th same-day pass: `CurrentStage` always resolves to a real
+  group now, `project_myps`.** After Pass 3 shipped, operator repeatedly re-ran
+  `SELECT * FROM fRevisionQueue('caldokp', 0, 0)` reporting it still looked unfixed — turned out to
+  be correct output each time (none of that user's real revisions were in an RPC/PS-Admin-pending
+  state), confirmed via `sp_helptext` re-checks and rollback-only proof queries each round, until
+  the operator made the actual ask explicit: `CurrentStage` should NEVER show `OWNER`/`REJECTED`/
+  `DONE` — every branch should resolve to a real group. Grep confirmed no submitter-group check
+  exists anywhere in this workflow. **Critical dependency caught before deploying**: the `WHERE`
+  clause keyed visibility off `CurrentStage`'s string value (Pass 3's design) — collapsing it to
+  just 2 values would have silently broken Pass 1's visibility fix. Fixed with an internal-only
+  `StageBucket` column carrying Pass 3's exact classification under renamed literals, freeing
+  `CurrentStage` for pure display. Mid-build, operator refined further: "For Correction" should
+  show the **requestor's** group, not a reviewer's. This led to discovering `dbo.tUserGroups.
+  GroupIds` (JSON array of Group IDs per user) → `dbo.tGroups` — a real, general-purpose
+  user-to-group resolution mechanism neither I nor the earlier passes had found (confirmed live:
+  `caldokp` resolves to group `DPC`). Final confirmed design (after one more clarifying round):
+  `Rejected`/`Done` stay reviewer-based, `For Correction` uses the requestor's real group. Also
+  independently caught: the repo's tracked `.sql` file had already drifted from what was actually
+  deployed (missed applying Pass 3's own `StageBucket` rename to the `WHERE` clause) — corrected
+  before layering this pass on. Proven via 2 rollback-only drills, deployed live with approval,
+  `dotnet build` clean (SQL-only pass, no C# changes needed). Full detail: Obsidian vault
+  `MYPS/14 - Testing/Backend Deployment Readiness.md` → "Revision readiness" 2026-09-03 entry,
+  4th same-day pass.
+- **2026-09-03 — `fRevisionQueue`, 3rd same-day pass: `CurrentStage` relabeled to real group
+  identity + "Endorsement" terminology, `project_myps`.** Operator asked what the `CurrentStage`
+  CASE was for; after explaining it, operator requested: display `RPC` instead of `RO`, `PS Admin`
+  instead of `CO`, and `For Endorsement` instead of `For Approval` when `ROStatus=0`. A live,
+  read-only `tGroups` query resolved the key ambiguity: `RPC`/`AUC` are real `GroupName` rows
+  ("Regional Planning Coordinator"/"Application User Coordinator"), but **no "PS Admin" row exists
+  anywhere** — it's purely a UserManual documentation term (60+ occurrences), so displaying it
+  requires a hardcoded label, not a table lookup. 2 Explore agents confirmed `CurrentStage` is
+  never shown in the frontend (safe to relabel) and that "Endorse" (vs. "Approve") is already an
+  established FE-only term for RPC's action specifically because RPC only forwards to PS Admin,
+  it doesn't finalize. Found a genuine conflict: "For Endorsement" doesn't match the frontend's
+  fixed badge-color keyword list, so that state would render gray instead of yellow — surfaced via
+  `AskUserQuestion` rather than resolved unilaterally. **Operator's explicit call: no frontend
+  changes, ship the correct text, accept the color trade-off.** Implemented, drilled
+  (`DRILL_REVQUEUE3_20260903`), deployed live with approval, re-verified, UserManual updated again
+  in both copies (added a Terminology callout + a note documenting the accepted gray-badge
+  trade-off). Full detail: Obsidian vault `MYPS/14 - Testing/Backend Deployment Readiness.md` →
+  "Revision readiness" 2026-09-03 entry, 3rd same-day pass.
+- **2026-09-03 — `fRevisionQueue` status/filtering, 2nd pass: correction + extension, `project_myps`.**
+  Operator re-flagged the same UserManual quote from the pass below and pointed out "the display
+  logic is not implemented" — investigation (plus one `AskUserQuestion` round to pin down which of
+  3 plausible gaps they meant) confirmed: last pass's collapse of RO-pending and CO-pending to
+  identical `For Approval` text made the RO→CO hand-off invisible, even though the underlying CASE
+  logic already picked the correct value. Then operator asked for "a thorough analysis to see other
+  gaps as well" — 2 more Explore agents exhaustively swept every `ROStatus`/`COStatus`-combining
+  site in the backend (found nothing else broken; confirmed `fRevisionDetail()` was already correct
+  despite a stale FE code comment claiming otherwise) and every other revision-status text
+  producer/consumer including the frontend (read-only check, not modified — found a 3rd,
+  independent, FE-side hand-maintained status mapping that currently happens to agree with the
+  backend vocabulary by coincidence, flagged not touched). Fixed: CO-pending now reads `For
+  Approval of Central Office` (distinct from RO-pending's plain `For Approval`, both still satisfy
+  the frontend's yellow-badge keyword match). Same pass also completed the separately-requested
+  Program Name filter + Revision Status dropdown work: `fRevisionQueue` gained
+  `ProgramName`/`ProgramId`/`ProgramFK` via `LEFT JOIN vProjectLatest`, wired through
+  `RevisionRequestsFilter`/`RevisionController.RevisionRequests` (partial-match filter), plus a new
+  `ShowRevisionStatusDropdown` endpoint (static 5-value list — a `SELECT DISTINCT` would wrongly
+  omit any status with zero current rows). Proven via a 2nd rollback-only drill against all 4 real
+  revisions, deployed live with explicit approval, re-verified, `dotnet build` clean. UserManual
+  updated again in both copies. Full detail: Obsidian vault `MYPS/14 - Testing/Backend Deployment
+  Readiness.md` → "Revision readiness" 2026-09-03 entry (same-day 2nd-pass addendum).
+- **2026-09-03 — `fRevisionQueue` status/visibility fixed, drilled, and deployed live to
+  `myps_db_dev` for `project_myps`.** Operator flagged the UserManual's Revision List status-badge
+  legend and RO/CO visibility rules didn't match reality. `/plan-analysis /code-behavior-audit
+  /rollback-readiness-test` requested together; 3 Explore agents + live DB reads confirmed: the
+  repo's checked-in `Revision.Queue.sql` had drifted completely from the live DB (wrong parameter
+  signature, wrong status numbering, wrong text — redeploying it would have regressed the
+  database); CO users could see zero Rejected/For-Correction/Approved revisions and RO couldn't see
+  Approved ones (exactly matching the operator's mid-investigation report); and live status text
+  didn't satisfy the frontend's fixed keyword-matching badge logic (yellow/dark-red unreachable in
+  production). **Operator explicit constraint: backend-only, no frontend file touched.** Fixed
+  `fRevisionQueue`'s `WHERE` clause (visibility) and 4 status strings (renamed to the UserManual's
+  exact legend names, collapsed role-agnostic per operator confirmation), removed a dead `@IsRO=2`
+  branch. Proved via a rollback-only drill against all 4 real revisions in `myps_db_dev`
+  (2 states synthesized via temporary in-transaction UPDATEs), then **deployed for real**
+  (operator-approved) and re-verified live — identical results. UserManual corrected in both
+  near-duplicate copies (`FE/UserManual.md`, `documents/UserManual.md`) to describe the actual,
+  now-fixed behavior. Verdict: GO WITH CONDITIONS — DB-level fix proven and live; authenticated
+  HTTP test deferred because unrelated, pre-existing, uncommitted changes already sit in the same
+  controller (not made this session — an `[AllowAnonymous]` addition, a null-guard reorder, a
+  `pRecomputeProgramCost` argument fix — left untouched). Full detail: Obsidian vault
+  `MYPS/14 - Testing/Backend Deployment Readiness.md` → "Revision readiness" 2026-09-03 entry.
+- **2026-09-03 — ProjectExceptionReport (2026-09-02 build) reverted by the operator; documentation
+  updated to reflect it.** Operator reverted all 4 changed files in `project_myps` (`Helpers/
+  ProjectHelper.cs`, `WebAPI/Controllers/Programs/ProgramController.cs`,
+  `WebAPI/Controllers/Programs/DTOProgram.cs`, `WebAPI/Controllers/Projects/ProjectController.cs`)
+  — confirmed via `git status` on `dev-trunk`: fully clean, nothing was ever committed so no
+  code-level revert was needed beyond discarding the working-tree edit. None of the built logic
+  exists in the codebase as of this session. Per the operator's explicit "make sure this is well
+  documented" instruction, updated the vault (`Backend Deployment Readiness.md`'s
+  "ProjectExceptionReport Readiness" section, the Dashboard) to mark every prior "Built:"/status
+  claim as historical, and added a full copy-paste-ready reference implementation (all 4 files,
+  reconstructed from the session transcript) so a future re-implementation doesn't need to re-run
+  the `sp_helptext`/rollback-drill DB investigation. The design finding itself remains valid and
+  unaffected by the revert: `pAllowProjectPublishing`'s own "Detailed project validation" result
+  set was (and still is, in the current unreverted code) being silently discarded by
+  `ExecuteSqlInterpolatedAsync` in `BatchAllowPublish` — that gap is unchanged, only this session's
+  fix for it was undone.
+- **2026-09-02 — ProjectExceptionReport built for `project_myps` (real app repo, not this one),
+  audited, drilled, put on hold pending frontend.** `/plan-analysis` requested to build a report
+  validating projects against `ProjectController.UpdateProjectDetails`'s `#region Validations`;
+  operator reframed mid-plan to its real purpose — for a selected project, explain what's still
+  missing before `IsPublishable` can become true, because `ProgramController.BatchAllowPublish`
+  lets a user force-allow publishing for a restricted project with zero visibility into why.
+  Investigation found `pAllowProjectPublishing`'s own already-computed "Detailed project
+  validation" result set was being silently discarded by `ExecuteSqlInterpolatedAsync`. Built
+  read-only `GetProjectExceptionReport` in `Helpers/ProjectHelper.cs` (reuses the same 5 read-only
+  TVFs both publishability procs already call — zero rule-drift risk, zero new writes); rewired
+  `BatchAllowPublish` to capture the proc's own detail result set via Dapper; added 2 new read-only
+  endpoints. `code-behavior-audit` (GO WITH CONDITIONS, 2 safe fixes applied) and
+  `rollback-readiness-test` (Internal-ready — live rollback-only drill against `myps_db_dev`
+  confirmed the new code's message wording matches the real proc's output word-for-word) both run
+  per operator's explicit request. **On hold before frontend wiring** — the backend now computes
+  the "why," but nothing displays it yet, so the operator's actual reported problem isn't visibly
+  fixed. This is a **MYPS engagement task, not an advisory-repo decision** — per the 2026-09-01
+  ledger cutover, no new ADR/RISK ID was minted here or in `decisions.md`/`risks.md`; full detail
+  lives in the Obsidian vault: `MYPS/14 - Testing/Backend Deployment Readiness.md` →
+  "ProjectExceptionReport Readiness - 2026-09-02", cross-referenced from the Current State
+  Dashboard. Code changes uncommitted in `project_myps`.
 - **2026-09-01 — Vendored `plan-analysis` into this repo + 3 `codex-behavior-parity.md` guardrail
   refinements (ADR-136).** Canonical top-of-stack: `decisions.md` → ADR-136 (`Next-ID: ADR-137`).
   Operator asked for "all necessary global skills" embedded so a clone of this repo is
