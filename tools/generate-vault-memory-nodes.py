@@ -23,9 +23,9 @@ import sys
 from datetime import date
 from pathlib import Path
 
-WORKSPACE = Path(r"C:\Users\khen\Documents\ChatGPT\MYPS")
+WORKSPACE = Path(r"c:\Users\Msi\Desktop\LLM\Employee-System-Analyst-Expert")
 LANE_DIR = WORKSPACE / "memory" / "clients" / "myps" / "myps-system"
-VAULT_MYPS = Path(r"C:\Users\khen\Desktop\Projects\Obsidian\project_obsidian_mem\MYPS")
+VAULT_MYPS = Path(r"C:\Users\Msi\Desktop\LLM\Obsidian\MYPS_Obsidian_Vault\MYPS")
 
 # Generated nodes live in their own subfolders so they are never confused with, and can never
 # overwrite, the vault's hand-authored notes (notably ADR-0001..0003 in the parent folder).
