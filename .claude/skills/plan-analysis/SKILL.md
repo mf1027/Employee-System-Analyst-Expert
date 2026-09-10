@@ -23,6 +23,7 @@ Use this skill when a user needs a plan that is thorough, exhaustive, independen
 ## Non-negotiable quality contract
 
 - Read all relevant code, configuration, documentation, tests, history, memory, and operational evidence before making a conclusion.
+- **Documentation, comments, and prior write-ups describe the source; they are not the source.** Before citing "this is the correct/working pattern," "this file already does X," "undocumented," or "no record of" as evidence for a plan's recommendation or root-cause claim, re-read the actual current file/line the claim is about — do not rely on a doc's paraphrase of it, your own earlier paraphrase of it, or a comment that may have gone stale since it was written. This applies at the moment the claim is written into the plan, not only at intake. A claim that turns out to be false after the plan is approved is a defect in the plan itself, not a detail to fix later — treat re-verification of every cited "known-correct" reference as part of Phase 6's re-audit, not optional polish.
 - Analyze every applicable workflow and failure path. Never replace a required pass with "looks good."
 - Separate symptoms, confirmed root causes, probable causes, contributing factors, assumptions, and external blockers.
 - Require evidence for every closed finding and a testable control for every proposed fix.

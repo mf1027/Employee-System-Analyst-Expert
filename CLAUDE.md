@@ -224,6 +224,16 @@ These are always active. No mode, client, or task overrides them.
    and `decisions.md` for confirmed prior design of that module. If it exists, start from it and
    reconcile deltas (operator wins on conflict) — never re-derive from scratch. A status label like
    "interview pending" is not proof no design exists; open the artifacts, don't trust the label.
+   **Claim-assertion-time preflight, any domain (SKL-046):** SKL-011's grep-before-assert
+   discipline must fire at the moment a factual claim is written into a plan/decision record —
+   "this is the correct/working pattern," "undocumented," "no record of" — not just at formal
+   design kickoff, and not just for database schema. Caught live twice: 2026-08-13, "three wholly
+   undocumented domains" written into ADR-092 when 2 of the 3 already had confirmed designs;
+   2026-09-10, a plan cited a doc comment as evidence a frontend code path used one field, without
+   re-reading the actual current line — the real code used a different field entirely. The 2nd
+   occurrence was caught only because an unrelated operator redirect forced a full re-trace; had
+   the plan been approved as originally written, it would have shipped a fix scoped to one symptom
+   while leaving the primary broken entry point untouched, under a "resolved" label.
    **Mechanism-level preflight (SKL-035):** the same discipline extends past table shapes to
    procedural logic. Before writing any non-trivial procedural logic in a mock/drill/proc — ID
    construction, stage-advance/copy-forward loops, state-machine transitions, any multi-step sequence
