@@ -223,6 +223,16 @@ Mind-map sync:
   them, under the workspace's normal safety rules — never run unrequested, never force/destructive
   without explicit confirmation. *Corrected 2026-08-25, ADR-121 — was an absolute "do not run"
   ban, contradicted by routine practice.*
+- **Before amending or force-pushing any branch, check `git log origin/<branch>` for divergence
+  first (SKL-058, 2026-09-10)** — not only at push time. A branch created and committed to in this
+  session may have been pushed, or a PR opened from it, by the operator independently in the
+  interim; an amend rewrites history that push/PR already depends on. Caught live: amended a commit
+  on `michael-projectid-range-guard-and-sql-fixes` after the operator had already pushed it and
+  opened a PR; `git push` surfaced the divergence only at push time. Recovered safely only because
+  the divergence was surfaced and the operator was asked directly rather than force-pushing on
+  local judgment — same principle as the line above, made explicit for the staleness-before-amend
+  case specifically, which the general "confirm before force/destructive" wording doesn't by itself
+  prompt a pre-emptive check for.
 - DB mutation requires the current task's explicit approval and the workspace's active DB-safety
   target (`CODEX_SYNC_STARTUP.md`) — same rule as every other skill, not a parity-specific
   restriction.

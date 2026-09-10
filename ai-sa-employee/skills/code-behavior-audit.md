@@ -122,6 +122,16 @@ Upgrade evidence only when warranted:
 | `DB-UNVERIFIED` | DB check needed but not reachable/authorized. |
 | `CONFLICT` | Two authoritative sources disagree. |
 
+**Quantify blast radius before setting a finding's priority (WFC-017):** once a defect is
+`DB-CONFIRMED`, query real affected-row counts before recommending on-hold vs. critical — a symptom
+report alone reads as a narrow edge case just as often as it reads as systemic, and the difference
+changes the recommendation. Proven decisive 3× in one 2026-09-10 session: an OperatingUnit
+validation bug read as one narrow "Central Office" case from the report; a live count found 35% of
+all projects blocked, flipping the call from "on hold" to "GO — high priority." A separate proposed
+predicate removal, by the same discipline, was shown to affect only 0.004% of rows — confirming it
+was *not* worth its tradeoff. The measurement runs both directions; it is not a bias toward
+escalating every finding.
+
 ### 6. Concurrency / transaction drill for high-risk workflows
 For IDs, imports, money, publishability, approval status, documents, and external publication,
 answer these before recommending a fix:

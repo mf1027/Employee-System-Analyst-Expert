@@ -41,6 +41,49 @@ Use this skill when a user needs a plan that is thorough, exhaustive, independen
 4. Default to plan-only behavior. Do not edit target-project source, apply migrations, deploy, send external messages, or mutate production data. **Claude Code integration:** this is the same rule as Claude Code's own plan-gate. Use `EnterPlanMode` to run Phases 1–5 below, and `ExitPlanMode` to request approval before any write — don't run a second, separate plan-only gate on top of it.
 5. If project writes are unavailable, return the same structured artifacts in chat and mark the run non-persistent.
 
+## Modes (added 2026-09-10, SKL-059)
+
+Self-audited a live Claude Code session that invoked this skill by name roughly six times in one
+night: zero of those runs produced the `docs/plans/<slug>/` artifact bundle, zero ran Phase 4's
+review adapters (or recorded the required degradation when skipping them), zero ran a formal Phase 6
+cycle — the skill's *substance* (evidenced RCA, a decision-complete plan, a real human approve/reject
+gate) was consistently delivered, but under a silent, undeclared simplification of its *mechanism*.
+Two costs were real, not hypothetical, in that same session: the missing independent-review pass
+(Phase 4's purpose) is exactly the control that would have caught a mis-mapped SQL result before it
+was reported to the operator as a finding, and the one time an equivalent re-audit *did* happen —
+because the operator pushed back with a sharper question — it caught that error immediately. Rather
+than let this drift continue unlabeled, or over-correct into full bundles for every fast-moving live
+question, name the two calibrations explicitly:
+
+**Live/interactive mode** — a session with a real human reviewing and approving each step as it
+happens (e.g. Claude Code's own `EnterPlanMode`/`ExitPlanMode`, or any workflow where the plan is
+presented and confirmed before every write). Run Phases 1, 2, and 5 in full. Skip the
+`docs/plans/<slug>/` bundle — the host's own native plan artifact (or the chat transcript, if none
+exists) is the record. **Phases 4 and 6 collapse into one mandatory, non-skippable lightweight
+self-challenge pass before presenting any plan**: re-read every stated conclusion against the
+evidence that supposedly backs it, specifically checking that a value is attributed to the *correct*
+label/field/column, not just that *some* value backs the claim — that exact failure (a number
+correctly computed but mapped to the wrong metric in a multi-column result) is what cost a session
+its P4 skip. State that this pass ran and what it checked; a plan presented without it is incomplete
+under this mode, the same way skipping Phase 4/6 is incomplete under full mode.
+
+**Full/bundle mode** — standalone, high-stakes, asynchronous, or multi-session engagements without a
+human reviewing each intermediate step. Unchanged from the rest of this document: all 6 phases in
+full, the `docs/plans/<slug>/` artifact bundle, `scripts/validate-artifacts.py`, the full `P0`–`P3`
+gap registry.
+
+**State which mode a run used.** Don't leave it implicit — a reader (including a future instance of
+this skill self-auditing again) should be able to tell from the final response alone.
+
+**Verdict-vocabulary note.** This skill's completion gate uses `COMPLETE` /
+`COMPLETE_WITH_RESIDUAL_RISKS` / `NEEDS_INPUT` / `BLOCKED` (below). `deep-analysis` and
+`rollback-readiness-test` use `GO` / `GO WITH CONDITIONS` / `NO-GO` instead — a different scale, not
+interchangeable synonyms, even though both frequently get invoked together in the same request (e.g.
+"do a thorough /plan-analysis /code-behavior-audit"). A live-mode run may use the `GO` scale when
+it's operating alongside those skills, provided it says which scale it's using — silently mixing the
+two, as happened across this pass's own self-audited session, is how the two skills' identities blur
+in practice.
+
 ## Workflow
 
 ### Phase 1 — Intake and context

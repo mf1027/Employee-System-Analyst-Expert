@@ -41,6 +41,30 @@
 
 ### Last Session
 
+- **2026-09-10 — MYPS marathon session: 5 fixes shipped, 1 PR opened off `dev-trunk`,
+  `project_myps`.** (1) `ProjectHelper.ProjectIdRangeExhaustedException` added — thrown when
+  `pReserveProjectIdBlock`'s Maximum-exhaustion guard (RISK-072 follow-up) fires; caught in
+  `ProjectController.AddProject` and per-row in `ImportProjectJobService`'s import loop. (2) Category
+  dropdown regression fixed — `ShowProjectDropdowns` was silently hiding an existing project's own
+  (now-expired) category; removed the filter from that generic listing endpoint, real enforcement
+  stays at `ValidateProjectDetailsLookups` (save-time). (3) **`vProgramLatest`/`vProjectLatest`
+  split-brain view defect fixed** — "latest revision" and "latest stage" were picked via two
+  uncorrelated queries that could resolve to different revisions; affected 4/28 programs, verified
+  0 regression on the other 24 via `CHECKSUM_AGG` before/after diff. (4) **Critical OperatingUnit
+  validation fix** — `ValidateProjectDetailsLookups`'s DEO/ImplementingOffice/OperatingUnit checks
+  required an exact `RegionParticipantId` match, which a NULL-region org-wide entity (Central Office
+  + 6 others) can never satisfy; blocked saving **35% of all projects (41,496/118,438)** and all new
+  Central-Office project creation. Fixed by matching the dropdown query's own already-correct
+  null-region allowance. (5) `a1_usp_AIP2`'s `UACS IS NOT NULL` predicate commented out
+  (operator-directed, temporary, quantified as only 0.004% of rows). All 5 committed to
+  `michael-projectid-range-guard-and-sql-fixes` (branched off `dev-trunk`), PR already opened by the
+  operator, later force-pushed (with lease, explicit authorization) after an amend added fix #4.
+  Also: new `Main/Resources/Internal/SQLScripts/whats-live.ps1` helper (diffs a live DB object
+  against its most recent backup file). **Gap this session's own self-improvement pass found**: none
+  of this reached `memory.md` until distilled after the fact — see `improvement-backlog.md`
+  SKL-057/058/059, WFC-017 for the process findings mined from the session itself. Full detail in
+  the Obsidian vault `17 - Risks & Technical Debt/Risk Register.md` (3 entries logged live during
+  the session) and this repo's own `improvement-backlog.md`.
 - **2026-09-03 — `fRevisionQueue`, 4th same-day pass: `CurrentStage` always resolves to a real
   group now, `project_myps`.** After Pass 3 shipped, operator repeatedly re-ran
   `SELECT * FROM fRevisionQueue('caldokp', 0, 0)` reporting it still looked unfixed — turned out to

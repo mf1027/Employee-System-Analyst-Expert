@@ -263,6 +263,15 @@ These are always active. No mode, client, or task overrides them.
    `BatchUndoRestrictPublish` to call `pRecomputeProjectPublishable` because `pAllowProjectPublishing`
    didn't exist — same premise error, now with shipped C# code, reverted after operator caught the
    semantic difference (grant-only vs. silent-demotion), RISK-092 reclassified.
+   **Label every metric in a multi-metric verification query (SKL-057):** an ad-hoc diagnostic
+   query checking several counts at once (`SELECT COUNT(*) AS A, SUM(CASE...) AS B, SUM(CASE...) AS
+   C ...`) must give each metric its own labeled output row —
+   `SELECT 'A' AS Metric, value AS Value FROM ... UNION ALL SELECT 'B', ...` — never a single flat
+   row of positional columns via `sqlcmd`, where a value can silently get mapped to the wrong
+   label. Caught live: 2026-09-10 misreported "Component_Cost NULL on 43%" to the operator during
+   an `a1_usp_AIP2` audit; the real 43%-null column was `Type_Of_Work` — caught only via the
+   operator's own follow-up question, not self-caught, after the wrong finding had already been
+   delivered.
    **As-built semantics hard gate (SKL-006/008):** when the target schema derives from an existing
    system, the source DB + operator are ground truth for *semantics* (enum meanings, lookup
    values, process-guaranteed cardinality, **generated-ID formats, and derivation rules**). DDL
