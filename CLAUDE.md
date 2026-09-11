@@ -388,6 +388,7 @@ These are always active. No mode, client, or task overrides them.
 | "audit this code for bugs" / "trace this for issues" / "check this controller/function for defects" / "will this break in production" / "find bugs in [file]" | Invoke `code-behavior-audit`; audits existing shipped code (not a diff) by reconciling live code, active config, memory/ADR/RISK records, mind-map evidence, and DB metadata before verdict; traces input→output per scenario, sweeps ALL repeated block occurrences, gates DB checks as read-only by default, and separates safe code-only fixes from DB-gated/blocking fixes — chains from `deep-analysis`, doesn't duplicate its RCA/verdict |
 | "test this thoroughly like Code Tables" / "rollback-only test" / "deployment-readiness test" / "prove this module works" / "make sure this backend/database module is working" | Invoke `rollback-readiness-test`; proof/testing layer after `code-behavior-audit`: confirm active DB target, run read-only DB metadata first, execute rollback-only drills only with explicit approval, capture build/static/authenticated-API/negative-case evidence, and return GO / GO WITH CONDITIONS / NO-GO without claiming 100% unless Deployment-ready evidence exists, including authenticated API/runtime, negative/error, integration-boundary, and mind-map sync evidence |
 | "make Claude work like Codex" / "sync Claude and Codex behavior" / "Codex personal behavior" / "make Claude use the same process as ChatGPT/Codex" | Invoke `codex-behavior-parity`; inventory Codex behaviors in scope, classify what is portable to Claude, translate runtime-only Codex behavior into Claude-safe workflow/evidence rules, run RCA + gap loops, and update Obsidian sync guidance without pretending Claude has unsupported Codex capabilities |
+| "PR title and body" / "create a manual PR" / "give me the PR body" / "timesheet entry" / "PR + timesheet" | Invoke `create-pr-timesheet`; read-only git diff/log against the base branch → copy-ready title + single fenced PR body with an embedded, hidden timesheet one-liner — never a Claude Code footer, never a git mutation or `gh pr create` |
 | Owner preference or decision learned | Update `memory/memory.md` (long-term) |
 
 ### Tie-breaks for overlapping trigger phrases (RISK-098 #3/ADR-124, 2026-08-27)
@@ -463,7 +464,7 @@ ai-sa-employee/                 ← self-contained employee package (everything 
 │   ├── modes.md                ← per-mode playbooks
 │   ├── deliverables.md         ← SRS/architecture/project plan templates + Mermaid patterns
 │   └── integrations.md         ← memory lanes, DB-skill hook, opendataloader usage
-├── skills/                     ← 55 SA/PM/DBA/delivery/meta skills + skills.md index
+├── skills/                     ← 57 SA/PM/DBA/delivery/meta skills + skills.md index
 └── document-skills/            ← 6 doc engines (file-reading, pdf-reading, pdf, docx, pptx, xlsx)
 
 (setup/pdf2md/backup/verify/fetch scripts live in the repo-root scripts/ folder)
@@ -543,7 +544,7 @@ All invokable skills live in `ai-sa-employee/skills/`. Full inventory and intera
 **Memory/capture skills:** claude-mem, context-mode, ingest-reference, ingest-meeting-notes, end-of-task, learn-from-feedback
 **Meta skills (agent self-improvement):** self-improvement (`/check-improvements`, alias `/capture-workflow`) — dual-lens: Lane A friction → `SKL-`, Lane B successful workflows → `WFC-`; memory-hygiene (`/check-memory` → claude-mem lifecycle)
 **Security/research skills:** security-review, web-research
-**Utility skills:** create-diagram, new-skill, system-drill, document-specialist-skill
+**Utility skills:** create-diagram, new-skill, system-drill, document-specialist-skill, create-pr-timesheet
 
 ---
 
@@ -610,7 +611,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (this file)
 ├── .claude/
 │   ├── settings.json                  ← MCP servers + env vars + permissions
-│   ├── commands/                      ← 60 slash-command wrappers (56 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
+│   ├── commands/                      ← 61 slash-command wrappers (57 skills + 4 aliases) → thin pointers to ai-sa-employee/skills/
 │   └── skills/
 │       └── plan-analysis/             ← Vendored global skill (ADR-136) — ported from Codex, not MYPS-specific; also lives at ~/.claude/skills/plan-analysis/
 ├── .gitignore
@@ -624,7 +625,7 @@ Employee System Analyst Expert/
 │   │   ├── modes.md                   ← ✅ Per-mode playbooks (DISCOVER/ANALYZE/DESIGN/CHALLENGE/PLAN)
 │   │   ├── deliverables.md            ← ✅ SRS/architecture/project plan templates + Mermaid patterns
 │   │   └── integrations.md            ← ✅ Memory lanes, DB-skill hook, PDF ingestion, MCP usage
-│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (56 skills, flat)
+│   ├── skills/                        ← SA/PM/DBA/delivery/meta skill library (57 skills, flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
 │   │   └── [56 individual skill files]
 │   └── document-skills/               ← Document generation engines (Anthropic official, Windows-patched)
@@ -703,7 +704,7 @@ Employee System Analyst Expert/
 | claude-mem plugin (global + project) | ✅ Done — project-local DB at `.claude-mem/` |
 | memory/memory.md | ✅ Done |
 | memory/communication.md | ✅ Done |
-| ai-sa-employee/skills/ library (56 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section |
+| ai-sa-employee/skills/ library (57 skills) | ✅ Done + enhanced — 8 DBA sub-skills added 2026-06-23 (execution-plan, index-strategy, cross-domain-impact, sql-object-chain, performance-baseline, schema-changelog, security-audit); drill enhanced with auto-seed + EP section; `create-pr-timesheet` wired 2026-09-11 (was a standalone draft, now has trigger-table entry + `.claude/commands/` wrapper + skills.md index entry) |
 | ai-sa-employee/document-skills/ (6 Anthropic skills, Windows-patched) | ✅ Done — consolidated under ai-sa-employee/ |
 | context-mode plugin (global + project) | ✅ Done — context-mode@context-mode v1.0.162, marketplace registered |
 | chromadb (semantic memory search) | ✅ Done — v1.5.9, Python 3.14 |
@@ -742,7 +743,7 @@ Employee System Analyst Expert/
 | Delivery skills (design→build bridge) | ✅ Done 2026-06-24 — `developer-handoff` (`DEV-` tickets), `api-contract-design`, `test-strategy`, `data-migration-playbook` (SKL-001) |
 | Existing-skill enhancements | ✅ Done 2026-06-24 — create-diagram (C4 Context/Container + DFD templates, SKL-003), scrum-master (velocity trend + sprint-health diagnostic), ingest-reference (document-type routing + REQ- cross-reference), dba-cross-domain-impact (cascade-rename paired-list trap, SKL-004); new `calibration-review` skill drives `calibration.md` |
 | Skill library count | ✅ 56 skills — `codex-behavior-parity` added 2026-08-25 (translates Codex operating discipline into Claude-safe MYPS workflow rules without claiming unsupported runtime features); `rollback-readiness-test` added 2026-08-24 (source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict, chains from `code-behavior-audit`); `code-behavior-audit` added 2026-08-24 and enhanced 2026-08-24 (existing-code behavior tracing + authority reconciliation across code/config/memory/mind-map/DB + DB-gated implementation readiness, chains from `deep-analysis`); `deep-analysis` added 2026-08-24 (5-level RCA chain + evidence tiers + adversarial review + verdict, depth implementation of ADR-105 Phase 1); `task-board` added 2026-07-03 (Jira/monday-style board + xlsx report); `workflow-capture` merged into `self-improvement` 2026-06-26 |
-| Slash-command registration | ✅ Done 2026-07-03, kept current — all 56 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility). `codex-behavior-parity` wrapper added 2026-08-25 (ADR-121), closing a gap where the skill existed without one. |
+| Slash-command registration | ✅ Done 2026-07-03, kept current — all 57 skills + 4 aliases (`/check-improvements`, `/capture-workflow`, `/check-memory`, `/board`) registered as thin wrappers in `.claude/commands/` (menu entry points only; the skill `.md` files remain the single source of truth — resolves SKL-012 visibility). `codex-behavior-parity` wrapper added 2026-08-25 (ADR-121), closing a gap where the skill existed without one. `create-pr-timesheet` wrapper added 2026-09-11, closing the same gap for that skill. |
 | `ai-sa-employee/skills/deep-analysis.md` | ✅ Done 2026-08-24 — RCA + Gap Analysis + adversarial self-review + verdict skill. Overlap-checked first against ADR-105/109 (RCA+Gap mandate), CHALLENGE mode, `system-drill`/`dba-schema-drill`'s SKL-050 RCA fields, `change-management`'s verdict scale, and `dba-cross-domain-impact`'s gap engine — framed as ADR-105 Phase 1's depth implementation, not a parallel protocol; delegates rather than duplicates on each overlap found |
 | `ai-sa-employee/skills/code-behavior-audit.md` | ✅ Done/enhanced 2026-08-24 — existing-code (not diff) behavior audit: authority reconciliation across live code, active config, memory/ADR/RISK records, mind-map/code-to-SQL evidence, and DB metadata; input→output tracing per scenario (`UNVALIDATED` until confirmed); Pattern-Consistency Sweep across ALL repeated blocks; DB verification read-only by default with `CODE-CONFIRMED / DB-UNVERIFIED` when blocked; concurrency/transaction drill for IDs/imports/money/status/publication; recommendations split into safe code-only, code-with-DB-gate, DB/schema/process blocker, and structural. Named to avoid colliding with the built-in global "code review" PR-diff skill's trigger phrase; chains from `deep-analysis` rather than duplicating its RCA/verdict |
 | `ai-sa-employee/skills/rollback-readiness-test.md` | ✅ Done 2026-08-24 — shared Claude/Codex proof/testing workflow inspired by the MYPS Code Tables drill: authority reconciliation, active DB target confirmation, read-only DB metadata checks, rollback-only CRUD/data drills with explicit approval, build/static/authenticated-API/negative-case evidence capture, and strict GO / GO WITH CONDITIONS / NO-GO verdict language. Chains from `code-behavior-audit`; never authorizes permanent DB mutation or git operations |
