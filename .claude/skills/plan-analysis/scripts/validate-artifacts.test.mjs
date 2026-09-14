@@ -10,22 +10,22 @@ import { validateBundle } from "./validate-artifacts.mjs";
 
 const REQUIRED_MARKDOWN = {
   "plan.md": [
-    "## Problem",
-    "## Recommended Approach",
-    "## Acceptance Criteria",
-    "## Rollout and Monitoring",
-    "## Rollback",
-    "## Explicit Non-Scope",
+    "## Problem\nProblem evidence.",
+    "## Recommended Approach\nPlan evidence.",
+    "## Acceptance Criteria\nAcceptance evidence.",
+    "## Rollout and Monitoring\nRollout evidence.",
+    "## Rollback\nRollback evidence.",
+    "## Explicit Non-Scope\nScope evidence.",
   ].join("\n"),
-  "rca.md": ["## Evidence Register", "## Root Cause Register"].join("\n"),
-  "gap-analysis.md": "## Gap Register",
+  "rca.md": ["## Evidence Register\nEvidence recorded.", "## Root Cause Register\nCause recorded."].join("\n"),
+  "gap-analysis.md": "## Gap Register\nGap evidence.\n## GAP-001\nFinding evidence.",
   "review-ledger.md": [
-    "## Review Coverage",
-    "## Adapter Runs",
-    "## Degradation Register",
-    "## Decision Audit Trail",
+    "## Review Coverage\nReview evidence.",
+    "## Adapter Runs\nAdapter evidence.",
+    "## Degradation Register\nDegradation evidence.",
+    "## Decision Audit Trail\nAudit evidence.",
   ].join("\n"),
-  "test-rollout.md": ["## Test Matrix", "## Release Gates"].join("\n"),
+  "test-rollout.md": ["## Test Matrix\nTest evidence.", "## Release Gates\nGate evidence."].join("\n"),
 };
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const validatorPath = path.join(scriptDirectory, "validate-artifacts.mjs");
@@ -263,6 +263,27 @@ test("rejects incomplete cycle phase coverage", (t) => {
     delete run.cycles[0].phases.reAudit;
   });
   expectError(validateFixture(fixture), "phase reAudit must be an object");
+});
+
+test("rejects evidence references that do not resolve to a Markdown heading", (t) => {
+  const fixture = writeBundle(t, ({ run }) => {
+    run.cycles[0].phases.rca.evidenceRefs = ["rca.md#missing-evidence"];
+  });
+  expectError(validateFixture(fixture), "does not resolve to a Markdown heading");
+});
+
+test("rejects evidence references that resolve to an empty Markdown heading", (t) => {
+  const fixture = writeBundle(t, ({ markdown }) => {
+    markdown["rca.md"] = "## Evidence Register\n\n## Root Cause Register\nCause recorded.";
+  });
+  expectError(validateFixture(fixture), "resolves to an empty Markdown heading");
+});
+
+test("rejects a persisted bundle that claims chat-only persistence", (t) => {
+  const fixture = writeBundle(t, ({ run }) => {
+    run.persistence = "CHAT_ONLY";
+  });
+  expectError(validateFixture(fixture), "a persisted BUNDLE must use CLIENT_BUNDLE persistence");
 });
 
 test("requires the default three complete cycles for a completed run", (t) => {

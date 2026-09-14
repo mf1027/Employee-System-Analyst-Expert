@@ -2,7 +2,11 @@
 
 ## Shared Claude/Codex contract
 
-Follow the same authority reconciliation, evidence labels, DB safety gate, pattern sweep, transaction/concurrency questions, prior-verdict reconciliation, and scope-boundary rules as `C:\Users\khen\.agents\skills\code-behavior-audit\SKILL.md`. This skill identifies behavior defects; it does not establish deployment readiness.
+This agent-local contract owns the authority reconciliation, evidence labels, DB safety gate,
+pattern sweep, transaction/concurrency questions, prior-verdict reconciliation, and scope-boundary
+rules for this employee repository. Do not depend on legacy external paths or a machine-global
+copy. This skill identifies behavior defects; it does not establish
+deployment readiness.
 
 Every report must include a scope boundary and identify any prior verdict that remains open.
 

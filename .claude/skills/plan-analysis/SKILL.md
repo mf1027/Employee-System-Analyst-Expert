@@ -14,7 +14,7 @@ allowed-tools:
 
 # Plan Analysis
 
-Use this agent-local skill from the Employee System Analyst Expert workspace. It analyzes and plans work for any client project managed under `memory/clients/`; it does not install itself globally, copy itself into a client repository, or modify application code.
+Use this agent-local skill from the Employee System Analyst Expert workspace. It analyzes and plans work for any client project managed under `memory/clients/`; it does not install or copy the canonical skill globally, copy itself into a client repository, or modify application code. The only allowed Codex-facing global surface is the thin bridge at `C:\Users\Msi\.codex\skills\plan-analysis`, which loads this canonical source at runtime and is not the source of truth.
 
 ## Scope and invocation
 
@@ -24,6 +24,11 @@ Use this agent-local skill from the Employee System Analyst Expert workspace. It
 - For `bundle` mode, resolve `memory/clients/<client>/<project>/` before any write. If it cannot be derived from the active task, ask one question and do not create a fallback directory.
 
 Read [agent usage](references/agent-usage.md) for the client-resolution and persistence contract.
+
+For an explicitly requested `/code-behavior-audit` or `/rollback-readiness-test`, or when the
+analysis is MYPS-scoped and that evidence layer applies, read the agent-local companion contracts
+listed in [review adapters](references/review-adapters.md). Do not treat those companions as
+automatic global Codex skills.
 
 ## Quality contract
 

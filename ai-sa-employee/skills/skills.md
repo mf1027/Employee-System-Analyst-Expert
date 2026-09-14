@@ -347,6 +347,8 @@ this one toward that one, don't treat this one as a second vote.
 > generate its wrapper (see `new-skill`). **Not this index's rule:** the agent-local
 > `.claude/skills/plan-analysis/` skill is natively discoverable when this employee workspace is
 > active; it dispatches client work from here and does not add wrappers to client repositories.
+> Codex exposes only the thin bridge at `C:\Users\Msi\.codex\skills\plan-analysis`, which loads the
+> canonical source at runtime and is not a second maintained copy.
 
 | File | Invoked by saying... |
 |---|---|

@@ -263,9 +263,11 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 
 **Not in the table above:** `plan-analysis` is an agent-local, client-scoped planning skill at
 `.claude/skills/plan-analysis/`. Run it from this employee-agent workspace for any managed
-client/project; it is not globally installed or copied into client application repositories. It
-defaults to live evidence-backed planning and supports an explicit, client-deliverables evidence
-bundle. See `CLAUDE.md`'s Tie-breaks section for how it relates to `deep-analysis`.
+client/project. Codex exposes only a thin runtime bridge at
+`C:\Users\Msi\.codex\skills\plan-analysis`; the canonical skill is not copied into client
+application repositories. It defaults to live evidence-backed planning and supports an explicit,
+client-deliverables evidence bundle. See `CLAUDE.md`'s Tie-breaks section for how it relates to
+`deep-analysis`.
 
 **Delivery skills (design → build bridge):**
 

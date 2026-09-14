@@ -7,7 +7,11 @@ verdict.
 
 ## Shared Claude/Codex contract
 
-Follow the same readiness tiers, no-auth-bypass rule, DB-target reconciliation, SQL SET-option requirements, rollback proof, prior-verdict reconciliation, scope-boundary requirement, and Obsidian completion gate as `C:\Users\khen\.agents\skills\rollback-readiness-test\SKILL.md`. “100% working” is permitted only with Deployment-ready evidence.
+This agent-local contract owns the readiness tiers, no-auth-bypass rule, DB-target reconciliation,
+SQL SET-option requirements, rollback proof, prior-verdict reconciliation, scope-boundary
+requirement, and Obsidian completion gate for this employee repository. Do not depend on legacy
+external paths or a machine-global copy. “100% working” is permitted only with Deployment-ready
+evidence.
 
 This is a proof/testing skill. It does not authorize code changes, schema changes, git operations,
 or permanent database mutation.

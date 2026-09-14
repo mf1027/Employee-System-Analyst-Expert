@@ -76,6 +76,7 @@ const SECRET_PATTERNS = [
   /["']?(?:api[_-]?key|access[_-]?token|client[_-]?secret|password|private[_-]?key)["']?\s*[:=]\s*["']?[A-Za-z0-9+/=_-]{12,}/i,
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
 ];
+const EVIDENCE_REF = /^([a-z0-9]+(?:-[a-z0-9]+)*\.md)#([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 const SCRIPT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_AGENT_ROOT = path.resolve(SCRIPT_DIRECTORY, "../../../..");
 
@@ -126,6 +127,87 @@ function requireIsoTimestamp(value, label, errors, { allowNull = false } = {}) {
     return null;
   }
   return value;
+}
+
+function markdownAnchor(heading) {
+  return heading
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+#+\s*$/, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function markdownSections(content) {
+  const sections = new Map();
+  const headings = [...content.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)];
+  headings.forEach((match, index) => {
+    const anchor = markdownAnchor(match[1]);
+    if (!anchor) {
+      return;
+    }
+    const bodyStart = match.index + match[0].length;
+    const bodyEnd = headings[index + 1]?.index ?? content.length;
+    sections.set(anchor, content.slice(bodyStart, bodyEnd).trim().length > 0);
+  });
+  return sections;
+}
+
+function validateEvidenceReferences(run, artifacts, errors) {
+  if (!isObject(run)) {
+    return;
+  }
+  const sectionsByArtifact = new Map(
+    [...artifacts.entries()]
+      .filter(([name]) => name.endsWith(".md"))
+      .map(([name, content]) => [name, markdownSections(content)]),
+  );
+
+  const checkReferences = (references, label) => {
+    if (!Array.isArray(references)) {
+      return;
+    }
+    references.forEach((reference, index) => {
+      if (typeof reference !== "string" || reference.trim() === "") {
+        return;
+      }
+      const match = reference.match(EVIDENCE_REF);
+      if (!match) {
+        errors.push(`${label} evidenceRefs[${index}] must reference a Markdown artifact heading`);
+        return;
+      }
+      const sections = sectionsByArtifact.get(match[1]);
+      if (!sections) {
+        errors.push(`${label} evidenceRefs[${index}] references an unknown artifact`);
+      } else if (!sections.has(match[2])) {
+        errors.push(`${label} evidenceRefs[${index}] does not resolve to a Markdown heading`);
+      } else if (!sections.get(match[2])) {
+        errors.push(`${label} evidenceRefs[${index}] resolves to an empty Markdown heading`);
+      }
+    });
+  };
+
+  for (const cycle of Array.isArray(run.cycles) ? run.cycles : []) {
+    if (!isObject(cycle) || !isObject(cycle.phases)) {
+      continue;
+    }
+    for (const phaseName of PHASE_NAMES) {
+      checkReferences(cycle.phases[phaseName]?.evidenceRefs, `cycle ${cycle.number} phase ${phaseName}`);
+    }
+  }
+  for (const finding of Array.isArray(run.findings) ? run.findings : []) {
+    if (isObject(finding)) {
+      checkReferences(finding.evidenceRefs, `finding ${finding.id ?? "?"}`);
+    }
+  }
+  for (const review of Array.isArray(run.reviews) ? run.reviews : []) {
+    if (isObject(review)) {
+      checkReferences(review.evidenceRefs, `review ${review.id ?? "?"}`);
+    }
+  }
 }
 
 function validateCycles(run, errors) {
@@ -545,6 +627,9 @@ function validateRun(run, bundleRoot, agentRoot, errors) {
   if (run.mode === "LIVE" && run.persistence !== "CHAT_ONLY") {
     errors.push("LIVE mode must use CHAT_ONLY persistence");
   }
+  if (run.mode === "BUNDLE" && run.persistence === "CHAT_ONLY") {
+    errors.push("a persisted BUNDLE must use CLIENT_BUNDLE persistence");
+  }
   if (run.persistence === "CLIENT_BUNDLE") {
     if (run.mode !== "BUNDLE") {
       errors.push("CLIENT_BUNDLE persistence requires BUNDLE mode");
@@ -567,7 +652,9 @@ function validateRun(run, bundleRoot, agentRoot, errors) {
           errors.push("client artifactPath must use the approved client-deliverables location");
         }
         const expectedBundleRoot = path.resolve(agentRoot, ...expectedPath.split("/"));
-        if (path.resolve(bundleRoot) !== expectedBundleRoot) {
+        const expectedRealBundleRoot = path.resolve(fs.realpathSync(agentRoot), ...expectedPath.split("/"));
+        const actualRealBundleRoot = fs.realpathSync(bundleRoot);
+        if (path.resolve(bundleRoot) !== expectedBundleRoot || actualRealBundleRoot !== expectedRealBundleRoot) {
           errors.push("bundle directory must match the recorded client artifactPath under the agent root");
         }
       }
@@ -627,9 +714,15 @@ export function validateBundle(bundleDirectory, { agentRoot = DEFAULT_AGENT_ROOT
 
   for (const [name, headings] of Object.entries(REQUIRED_HEADINGS)) {
     const content = artifacts.get(name);
+    const sections = markdownSections(content);
     for (const heading of headings) {
       if (!content.includes(heading)) {
         errors.push(`${name} is missing required heading: ${heading}`);
+        continue;
+      }
+      const anchor = markdownAnchor(heading.replace(/^#{1,6}\s+/, ""));
+      if (!sections.get(anchor)) {
+        errors.push(`${name} required heading must contain substantive content: ${heading}`);
       }
     }
   }
@@ -642,6 +735,7 @@ export function validateBundle(bundleDirectory, { agentRoot = DEFAULT_AGENT_ROOT
   }
   if (run !== null) {
     validateRun(run, root, agentRoot, errors);
+    validateEvidenceReferences(run, artifacts, errors);
   }
   return errors;
 }

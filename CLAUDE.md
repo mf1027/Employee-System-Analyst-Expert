@@ -415,8 +415,9 @@ employee's MYPS-flavored RCA + gap analysis + adversarial review + verdict skill
 (`.claude/skills/plan-analysis/`) is this agent's client-scoped, six-phase planning skill: it
 defaults to an interactive self-challenge, and its explicit bundle mode records v2 evidence under
 the active client's `deliverables/documents/plan-analysis/` path. Run it from this employee-agent
-workspace for any managed client/project; it is not globally installed and is never copied into a
-client application repository. Optional gstack review adapters require explicit operator opt-in.
+workspace for any managed client/project. Codex exposes only a thin runtime bridge at
+`C:\Users\Msi\.codex\skills\plan-analysis`; the canonical skill is never copied into a client
+application repository. Optional gstack review adapters require explicit operator opt-in.
 
 ---
 
@@ -738,6 +739,6 @@ Employee System Analyst Expert/
 | `ai-sa-employee/skills/deep-analysis.md` | ✅ Done 2026-08-24 — RCA + Gap Analysis + adversarial self-review + verdict skill. Overlap-checked first against ADR-105/109 (RCA+Gap mandate), CHALLENGE mode, `system-drill`/`dba-schema-drill`'s SKL-050 RCA fields, `change-management`'s verdict scale, and `dba-cross-domain-impact`'s gap engine — framed as ADR-105 Phase 1's depth implementation, not a parallel protocol; delegates rather than duplicates on each overlap found |
 | `ai-sa-employee/skills/code-behavior-audit.md` | ✅ Done/enhanced 2026-08-24 — existing-code (not diff) behavior audit: authority reconciliation across live code, active config, memory/ADR/RISK records, mind-map/code-to-SQL evidence, and DB metadata; input→output tracing per scenario (`UNVALIDATED` until confirmed); Pattern-Consistency Sweep across ALL repeated blocks; DB verification read-only by default with `CODE-CONFIRMED / DB-UNVERIFIED` when blocked; concurrency/transaction drill for IDs/imports/money/status/publication; recommendations split into safe code-only, code-with-DB-gate, DB/schema/process blocker, and structural. Named to avoid colliding with the built-in global "code review" PR-diff skill's trigger phrase; chains from `deep-analysis` rather than duplicating its RCA/verdict |
 | `ai-sa-employee/skills/rollback-readiness-test.md` | ✅ Done 2026-08-24 — shared Claude/Codex proof/testing workflow inspired by the MYPS Code Tables drill: authority reconciliation, active DB target confirmation, read-only DB metadata checks, rollback-only CRUD/data drills with explicit approval, build/static/authenticated-API/negative-case evidence capture, and strict GO / GO WITH CONDITIONS / NO-GO verdict language. Chains from `code-behavior-audit`; never authorizes permanent DB mutation or git operations |
-| `.claude/skills/plan-analysis/` agent-local (ADR-136) | ✅ Enhanced 2026-09-14 — centralizes evidence-backed planning in this employee agent for any client/project. Live mode is chat-only; explicit bundle mode writes only under the resolved client deliverables path and validates a v2 contract with Node 20+. Internal product/design/engineering/DX reviews run by default; gstack adapters use corrected `gstack-*` identifiers only after opt-in. No global mirror, client wrapper, or application-repository copy is maintained. |
+| `.claude/skills/plan-analysis/` agent-local (ADR-136) | ✅ Enhanced 2026-09-14 — centralizes evidence-backed planning in this employee agent for any client/project. Live mode is chat-only; explicit bundle mode writes only under the resolved client deliverables path and validates a v2 contract with Node 20+. Internal product/design/engineering/DX reviews run by default; gstack adapters use corrected `gstack-*` identifiers only after opt-in. The Codex global surface is a thin runtime bridge only; no canonical global mirror, client wrapper, or application-repository copy is maintained. |
 
 

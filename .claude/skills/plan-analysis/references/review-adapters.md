@@ -21,3 +21,17 @@ Every run performs the internal review lenses below. Optional adapters add an in
 4. Record the adapter name, method (`INTERNAL` or `GSTACK`), operator opt-in, side-effect-warning acknowledgement, outcome, findings, and any degradation in `review-ledger.md` and `run.json`. Use `INTERNAL_CHECKLIST` for an internal lens and the exact installed `gstack-*` identifier for an optional adapter.
 5. When an opted-in adapter is unavailable or unsuitable, complete the corresponding internal lens and record `DEGRADED` with the capability, reason, impact, and mitigation.
 6. Preserve disagreement between internal and optional reviews. Ask the operator before changing a material premise.
+
+## Agent-local companion audits
+
+When the operator explicitly requests `/code-behavior-audit` or `/rollback-readiness-test`, or when
+the scoped work is MYPS-specific and the corresponding evidence layer is applicable, read the
+companion contract maintained in this repository at:
+
+- `ai-sa-employee/skills/code-behavior-audit.md`
+- `ai-sa-employee/skills/rollback-readiness-test.md`
+
+Use `code-behavior-audit` for existing-code input-to-output tracing and authority reconciliation;
+use `rollback-readiness-test` for proof of DB, rollback, authenticated API, negative-case, and
+integration readiness. These are conditional MYPS companion workflows, not default review adapters,
+and any legacy external-path references are not runtime dependencies.
