@@ -261,11 +261,11 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict |
 | `codex-behavior-parity` | "make Claude work like Codex", "sync Claude and Codex behavior", "Codex personal behavior" — maps Codex operating discipline to Claude-safe MYPS workflow rules without claiming unsupported runtime features |
 
-**Not in the table above:** `plan-analysis` is a separate, vendored global skill
-(`.claude/skills/plan-analysis/`, ADR-136) — a fuller, artifact-bundle-backed RCA/gap-analysis/plan
-workflow ported from Codex, usable in any project on this machine, not one of the 56 skills in this
-employee's own library, and invoked directly by name (`/plan-analysis`) rather than a trigger phrase
-here. See `CLAUDE.md`'s Tie-breaks section for how it relates to `deep-analysis`.
+**Not in the table above:** `plan-analysis` is an agent-local, client-scoped planning skill at
+`.claude/skills/plan-analysis/`. Run it from this employee-agent workspace for any managed
+client/project; it is not globally installed or copied into client application repositories. It
+defaults to live evidence-backed planning and supports an explicit, client-deliverables evidence
+bundle. See `CLAUDE.md`'s Tie-breaks section for how it relates to `deep-analysis`.
 
 **Delivery skills (design → build bridge):**
 
@@ -387,7 +387,7 @@ Employee System Analyst Expert/
 ├── README.md                          ← This file
 ├── .claude/settings.json              ← MCP servers + env vars + permissions
 ├── .claude/commands/                  ← 60 slash-command wrappers (56 skills + 4 aliases) → point to ai-sa-employee/skills/
-├── .claude/skills/plan-analysis/      ← Vendored global skill (ADR-136) — ported from Codex, not MYPS-specific; also lives at ~/.claude/skills/plan-analysis/
+├── .claude/skills/plan-analysis/      ← Agent-local, client-scoped evidence planning skill
 ├── .gitignore
 ├── package.json
 │

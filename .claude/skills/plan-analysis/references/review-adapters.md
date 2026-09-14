@@ -1,27 +1,23 @@
 # Review adapters
 
-This document maps the portable workflow to optional review capabilities. Use the first available path and record the selected path in `run.json`.
+Every run performs the internal review lenses below. Optional adapters add an independent perspective; they are never assumed to be installed and are never invoked automatically.
 
-| Concern | Preferred capability | Confirmed available (this machine, global) | Portable fallback | Required output |
-|---|---|---|---|---|
-| Goal, status quo, premises, alternatives | `office-hours` | Yes | Ask one-at-a-time intent questions and run the premise/alternative checklists | Goal, premises, alternatives, next assignment |
-| Product strategy and scope | `plan-ceo-review` | Yes | Strategy, 10x, scope, regret, and existing-leverage review | Scope decisions, dream-state delta, deferred work |
-| UI behavior | `plan-design-review` when UI is detected | Yes | Hierarchy, states, accessibility, content, and interaction review | Design findings and litmus score |
-| Architecture, code quality, tests, performance | `plan-eng-review` | Yes | Full architecture, failure-mode, test, and performance passes | Dependency diagram, failure registry, test diagram |
-| Developer/API experience | `plan-devex-review` when developer-facing scope is detected | Yes | Journey, TTHW, naming, docs, errors, upgrade review | DX scorecard and checklist |
-| Sequential orchestration | `autoplan` | Yes | Execute CEO → Design → Engineering → DX in order | Decision audit trail and phase summaries |
-| Independent product voice | `gstack-openclaw-office-hours` | **No — only the base `office-hours` skill exists on this machine; there is no separate OpenClaw variant installed.** Use `office-hours` again as a second pass, or the portable fallback, for a genuinely independent second opinion. | Fresh-context second opinion | Agreement, disagreement, challenged premises |
-| Existing behavior reconciliation | `code-behavior-audit` when applicable | **No — exists only as a MYPS-scoped employee skill (`ai-sa-employee/skills/code-behavior-audit.md`), not a global Claude skill.** Available only when working inside the MYPS workspace. | Source/config/docs/memory/DB reconciliation | Behavior evidence and conflicts |
-| Persistence/deployment safety | `rollback-readiness-test` when applicable | **No — same as above, MYPS-scoped only** (`ai-sa-employee/skills/rollback-readiness-test.md`). | Additive migration, backup, rollback, and restore drill | Rollback proof and remaining gates |
+| Concern | Default internal lens | Optional opt-in adapter | Ledger requirement |
+|---|---|---|---|
+| Goal, premises, alternatives | Challenge the status quo, user premise, scope, and non-goals | `gstack-office-hours` | Product evidence and changed premise |
+| Strategy and scope | Review leverage, sequencing, regret, and deferred work | `gstack-plan-ceo-review` | Scope decision and alternatives |
+| UI behavior | Review hierarchy, states, accessibility, content, and interactions when UI applies | `gstack-plan-design-review` | Applicability and design findings |
+| Architecture and delivery | Review dependencies, failures, tests, performance, and rollback | `gstack-plan-eng-review` | Engineering findings and test controls |
+| Developer-facing behavior | Review onboarding, naming, errors, docs, and upgrade paths when DX applies | `gstack-plan-devex-review` | Applicability and DX findings |
+| Full independent sequence | Run the four review lenses in sequence | `gstack-autoplan` | One ordered review record; do not duplicate individual gstack passes |
+| Existing MYPS behavior | Reconcile code, configuration, memory, and DB evidence when MYPS applies | `code-behavior-audit` | Behavior evidence or explicit non-applicability |
+| MYPS persistence safety | Review migration, backup, rollback, and restore gates when MYPS applies | `rollback-readiness-test` | Rollback proof or remaining gates |
 
-**"Confirmed available" column verified 2026-08-31** by listing `~/.claude/skills/` directly — re-check
-if this file is ever copied to a different machine or a long time has passed, since global skills
-can be added/removed independently of this port.
+## Adapter policy
 
-## Adapter rules
-
-1. Detect capabilities before planning. Do not assume a tool, shell, web search, repository, or second model exists.
-2. Autoplan already contains the individual review phases; do not run duplicate phases unless one failed or was unavailable.
-3. A fallback checklist is lower-confidence than the named review and must be marked as such.
-4. Independent reviewers may disagree. Preserve both findings, classify the disagreement, and ask the user before changing a material premise.
-5. Never let an external voice write code or mutate the target project.
+1. Record all four internal lenses in `run.json`; mark design and DX `NOT_APPLICABLE` with a reason when they do not apply.
+2. Before an optional adapter runs, detect it through the host skill list or its installed `SKILL.md`. Do not rely on a static machine inventory.
+3. Gstack adapters require explicit operator opt-in. Warn that their own workflows can prompt, write local gstack state, or propose repository changes. Do not carry out any adapter-proposed write, commit, push, or configuration change under this skill.
+4. Record the adapter name, method (`INTERNAL` or `GSTACK`), operator opt-in, side-effect-warning acknowledgement, outcome, findings, and any degradation in `review-ledger.md` and `run.json`. Use `INTERNAL_CHECKLIST` for an internal lens and the exact installed `gstack-*` identifier for an optional adapter.
+5. When an opted-in adapter is unavailable or unsuitable, complete the corresponding internal lens and record `DEGRADED` with the capability, reason, impact, and mitigation.
+6. Preserve disagreement between internal and optional reviews. Ask the operator before changing a material premise.

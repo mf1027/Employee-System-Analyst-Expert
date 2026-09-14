@@ -6,7 +6,7 @@
 intake → evidence inventory → RCA → gap analysis → applicable reviews → plan → plan re-audit
 ```
 
-The first cycle establishes baseline truth. Each later cycle compares the new plan and findings with the prior cycle, checks for regressions, and records what changed.
+The first cycle establishes baseline truth. Each later cycle compares the new plan and findings with the prior cycle, checks for regressions, and records what changed. In `run.json`, one cycle contains all six phase records; a phase is never counted as a separate cycle.
 
 ## Severity
 
@@ -17,7 +17,7 @@ The first cycle establishes baseline truth. Each later cycle compares the new pl
 
 ## Stop conditions
 
-Return `COMPLETE` only when no P0/P1 finding is open or unverified, every high-impact assumption has evidence or an explicit blocker, all acceptance criteria are testable, and every applicable review is complete or degradation-recorded.
+Return `COMPLETE` only when no P0/P1 finding or high-impact assumption is open, blocked, or unverified, all acceptance criteria are testable, and every applicable review is complete or degradation-recorded. A high-impact assumption blocked by unavailable evidence yields `NEEDS_INPUT` or `BLOCKED` instead.
 
 Return `COMPLETE_WITH_RESIDUAL_RISKS` when P2/P3 items remain with an owner, rationale, verification, and review date.
 
@@ -27,7 +27,7 @@ Return `BLOCKED` when external evidence, runtime access, or a security/feasibili
 
 ## Anti-loop rules
 
-- Default maximum is three full cycles; absolute maximum is five.
+- Target three full cycles by default; absolute maximum is five.
 - A finding surviving two cycles must be escalated, not renamed or silently downgraded.
 - A new P0/P1 finding resets the completion gate.
 - A plan revision must never close a finding without new evidence.

@@ -344,9 +344,9 @@ this one toward that one, don't treat this one as a second vote.
 > `.claude/commands/<name>.md` (+ aliases `/check-improvements`, `/capture-workflow`, `/check-memory`,
 > `/board`), so `/gather-requirements` etc. appear in Claude Code's slash-command menu. Wrappers are
 > entry points ONLY — they redirect here; never put skill content in a wrapper. New skill → also
-> generate its wrapper (see `new-skill`). **Not this index's rule:** a skill vendored directly under
-> `.claude/skills/<name>/` (e.g. `plan-analysis`, ADR-136) is natively discoverable by Claude Code
-> with no wrapper at all — a different mechanism, not an exception to this one.
+> generate its wrapper (see `new-skill`). **Not this index's rule:** the agent-local
+> `.claude/skills/plan-analysis/` skill is natively discoverable when this employee workspace is
+> active; it dispatches client work from here and does not add wrappers to client repositories.
 
 | File | Invoked by saying... |
 |---|---|
