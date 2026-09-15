@@ -10,11 +10,9 @@
     the current git state, the latest ADR/RISK, and whether memory/memory.md has gone stale,
     instead of that being something the agent has to remember to go check.
 
-    Confirmed wire-compatible with both tools (2026-08-23, ADR-113): Codex CLI's own
-    SessionStart hook (context-mode's hooks/codex/sessionstart.mjs, installed on this
-    machine) emits the identical {hookSpecificOutput:{hookEventName,additionalContext}}
-    shape Claude Code uses, and codex-cli 0.148.0 (installed here) is above the 0.141.0
-    minimum context-mode's own capability probe requires for this to be honored.
+    This helper is a read-only summary only. Claude project lifecycle hooks and Codex project-hook
+    support are separate runtime capabilities and must be verified independently; do not infer
+    synchronization from this script's output.
 
     Emits ONE line of JSON on stdout, matching the hook wire protocol both tools share.
     Never throws -- any internal failure degrades to a short "sync check failed" note rather
@@ -46,10 +44,10 @@ if ([string]::IsNullOrWhiteSpace($VaultPath)) {
 }
 if ([string]::IsNullOrWhiteSpace($PythonExe)) { $PythonExe = "python" }
 
-# Wired GLOBALLY (~/.claude/settings.json, ~/.codex/hooks.json) because project_myps cannot
-# carry its own hook config (ADR-107/108 zero-footprint) -- same pattern already proven by
-# project-myps-guard.sh: global wiring, path-scoped internally. A session rooted in an
-# unrelated project (Khen Panel, Binance bots, ...) must get zero MYPS noise.
+# This helper is intentionally not a hook registration file. The Employee repository owns its
+# Claude project hooks; Codex project-hook support is build-dependent. A session rooted in an
+# unrelated project must get zero MYPS noise, and explicit runtime-sync commands are required when
+# the active Codex build does not expose project hooks.
 #
 # Confirmed field name (2026-08-23): both tools' SessionStart stdin carries the session's
 # working directory as `cwd` -- verified by reading context-mode's own installed Codex

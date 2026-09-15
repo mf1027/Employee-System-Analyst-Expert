@@ -180,6 +180,29 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase prompt_submit",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Read",
@@ -188,6 +211,16 @@
             "type": "command",
             "command": "bash .claude/hooks/memory-gate-mark-read.sh",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|MultiEdit|Bash|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase tool_complete",
+            "timeout": 10
           }
         ]
       }
@@ -200,6 +233,17 @@
             "type": "command",
             "command": "bash .claude/hooks/memory-gate-check.sh",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase postflight",
+            "timeout": 10
           }
         ]
       }

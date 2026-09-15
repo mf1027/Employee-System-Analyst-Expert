@@ -47,13 +47,13 @@ try {
         if ($pyMajor -gt 3 -or ($pyMajor -eq 3 -and $pyMinor -ge 10)) {
             Write-OK "Python $pyRaw"
         } else {
-            Write-FAIL "Python $pyRaw detected - need >= 3.10. Get it: https://python.org"
+            Write-WARN "Python $pyRaw detected - need >= 3.10 for Python-backed skills and Soup. Get it: https://python.org"
         }
     } else {
-        Write-FAIL "Could not parse Python version. Get it: https://python.org"
+        Write-WARN "Could not parse Python version; Python-backed skills and Soup may be unavailable. Get it: https://python.org"
     }
 } catch {
-    Write-FAIL "Python not found. Get it: https://python.org"
+    Write-WARN "Python not found - Python-backed skills and Soup are unavailable. Get it: https://python.org"
 }
 
 # Bun (needed for context-mode hooks)
@@ -179,6 +179,7 @@ $claudeMemOK    = $false
 $contextModeOK  = $false
 $ponytailClaudeOK = $false
 $ponytailCodexOK  = $false
+$ponytailMarketplaceOK = $false
 $duplicateClaudePonytail = @()
 $claudeCLI = Get-Command claude -ErrorAction SilentlyContinue
 $claudeCLIAvailable = $null -ne $claudeCLI
@@ -214,6 +215,19 @@ if ($codexCLIAvailable) {
     Write-WARN "Codex CLI not found - install it separately before using Codex with this repo."
 }
 
+if ($claudeCLIAvailable) {
+    try {
+        $claudeMarketplaces = (& $claudeCLI.Source plugin marketplace list 2>&1 | Out-String)
+        if ($LASTEXITCODE -eq 0 -and $claudeMarketplaces -match '(?i)DietrichGebert/ponytail|ponytail') { $ponytailMarketplaceOK = $true }
+    } catch { Write-WARN "Could not inspect Claude plugin marketplaces - verify with: claude plugin marketplace list" }
+}
+if ($codexCLIAvailable) {
+    try {
+        $codexMarketplaces = (& $codexCLI.Source plugin marketplace list 2>&1 | Out-String)
+        if ($LASTEXITCODE -eq 0 -and $codexMarketplaces -match '(?i)DietrichGebert/ponytail|ponytail') { $ponytailMarketplaceOK = $true }
+    } catch { Write-WARN "Could not inspect Codex plugin marketplaces - verify with: codex plugin marketplace list" }
+}
+
 if ($claudeMemOK)   { Write-OK "claude-mem plugin installed" }
 else                { Write-WARN "claude-mem NOT installed" }
 
@@ -235,6 +249,9 @@ else                   { Write-WARN "Codex host unavailable - install Codex CLI 
 $ponytailRuntimeOK = $ponytailClaudeOK -and $ponytailCodexOK
 if ($ponytailRuntimeOK) { Write-OK "Ponytail runtime verified" }
 else                    { Write-WARN "Ponytail runtime not fully verified" }
+if ($ponytailMarketplaceOK) { Write-OK "Ponytail marketplace available" }
+else                        { Write-WARN "Ponytail marketplace not detected; setup does not add marketplaces automatically" }
+Write-INFO "Ponytail hooks trusted: operator review/trust required; setup does not auto-trust hooks."
 
 if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
     Write-Host ""
@@ -349,10 +366,26 @@ if (-not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigu
     Write-Host "    Configure an explicit local model before verification:" -ForegroundColor White
     Write-Host '      `$env:OLLAMA_MODEL = "<local-model-name>"' -ForegroundColor Yellow
     Write-Host '      ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this' -ForegroundColor Yellow
+    Write-Host '      `$env:RUNTIME_SYNC_PROVIDER = "ollama"' -ForegroundColor Yellow
     Write-Host '      ollama launch claude --model $env:OLLAMA_MODEL' -ForegroundColor Yellow
     Write-Host '      ollama launch codex --model $env:OLLAMA_MODEL' -ForegroundColor Yellow
     Write-Host "    Ollama only supplies inference; the host runtime supplies skills, tools, permissions, and hooks." -ForegroundColor Gray
 }
+
+# -- 6b. Repository-owned synchronization hooks -------------------------------
+
+Write-Step "Checking four-mode runtime synchronization"
+if (Test-Path (Join-Path $root ".claude\settings.json")) { Write-OK "Claude project hooks present" }
+else { Write-WARN "Claude project hooks missing - runtime events cannot be recorded automatically" }
+if ($codexCLIAvailable) {
+    $codexHelp = (& $codexCLI.Source --help 2>&1 | Out-String)
+    if ($codexHelp -match '(?i)hook') { Write-OK "Codex project-hook support advertised by installed build" }
+    else { Write-WARN "Codex project-hook support is not advertised by this build - use explicit runtime-sync preflight/postflight" }
+} else { Write-WARN "Codex project-hook support cannot be checked until Codex is installed" }
+if (Test-Path (Join-Path $PSScriptRoot "runtime-sync.mjs")) { Write-OK "Shared runtime-sync helper present" }
+else { Write-WARN "Shared runtime-sync helper missing - mind-map synchronization is unavailable" }
+Write-INFO "Native sessions default to provider=native. For Ollama sessions set RUNTIME_SYNC_PROVIDER=ollama before launch."
+Write-INFO "Hooks append events; only an authorized postflight updates the Agent Tooling Mindmap."
 
 # -- 7. Verify document engines ------------------------------------------------
 

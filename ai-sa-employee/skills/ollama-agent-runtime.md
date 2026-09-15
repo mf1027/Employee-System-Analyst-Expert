@@ -5,13 +5,15 @@ description: Use when a Claude or Codex task involves Ollama, Soup, Ponytail, re
 
 # Ollama Agent Runtime
 
-This is the cross-agent preflight and completion contract for Ollama-backed Employee sessions. Ollama
-provides model inference only. Claude Code and Codex independently provide skill loading, repository
-tools, permissions, hooks, and agent loops.
+This is the cross-agent preflight and completion contract for native and Ollama-backed Employee
+sessions. Ollama provides model inference only. Claude Code and Codex independently provide skill
+loading, repository tools, permissions, hooks, and agent loops.
 
 ## Required sequence
 
-1. Identify the active host: Claude Code or Codex. Never infer the other host's plugin or hook state.
+1. Identify the active host: Claude Code or Codex, and the inference provider: native or Ollama.
+   Treat Claude/native, Claude/Ollama, Codex/native, and Codex/Ollama as separate runtime targets.
+   Never infer one target from another.
 2. Resolve `MYPS_VAULT_ROOT`. Prefer the operator's explicit value; otherwise use the documented
    sibling vault only when it exists. If the vault cannot be resolved, mark mind-map sync
    `UNVERIFIED` and do not claim synchronized completion.
@@ -23,7 +25,7 @@ tools, permissions, hooks, and agent loops.
    - `ai-sa-employee/skills/code-behavior-audit.md`
    - `ai-sa-employee/skills/rollback-readiness-test.md`
    - `ai-sa-employee/skills/ollama-agent-runtime.md`
-5. Verify Ollama with the dependency-free repository helper:
+5. For Ollama-backed sessions, verify Ollama with the dependency-free repository helper:
 
    ```text
    node scripts/verify-ollama-runtime.mjs --host "$OLLAMA_HOST" --model "$OLLAMA_MODEL"
@@ -32,15 +34,24 @@ tools, permissions, hooks, and agent loops.
    `OLLAMA_MODEL` is mandatory. Do not auto-pull, auto-select, silently switch, or use cloud-only
    models. Treat unknown context capacity, insufficient context, failed tool calling, a missing
    service, or a missing exact model as `LIMITED` or `UNVERIFIED`.
-6. Verify the active host's own tool loop with one harmless read-only repository operation. An Ollama
-   API tool-call response alone does not prove that Claude or Codex executed a host tool.
+6. For native or Ollama-backed sessions, verify the active host's own tool loop with one harmless
+   read-only repository operation. An Ollama API tool-call response alone does not prove that Claude
+   or Codex executed a host tool.
 7. For implementation or test-design work, verify that the active host has upstream Ponytail
    installed and trusted. If it is missing, report `Ponytail runtime: UNVERIFIED`; do not claim the
    full runtime contract passed. Apply Ponytail full mode only to simplification choices.
 8. Load exactly the one task-specific skill required after this preflight. For backend behavior,
    chain `code-behavior-audit` before `rollback-readiness-test`.
-9. Before completion, reconcile prior tooling/runtime entries, run the related-note freshness checker,
-   prepare the map update, and write it only when normal documentation authorization exists.
+9. Record lifecycle evidence with the shared helper:
+
+   ```text
+   node scripts/runtime-sync.mjs --preflight --host <claude|codex> --provider <native|ollama>
+   node scripts/runtime-sync.mjs --postflight --host <claude|codex> --provider <native|ollama> --status <status>
+   ```
+
+   Hook mode appends events only. Explicit postflight is the only mode that updates the mind-map.
+10. Before completion, reconcile prior tooling/runtime entries, run the related-note freshness checker,
+    prepare the map update, and write it only when normal documentation authorization exists.
 
 ## Status contract
 
@@ -55,6 +66,19 @@ Use exactly one overall status:
 Never convert a failed gate into a successful status with prose. A runtime status does not establish a
 MYPS readiness verdict. Only `rollback-readiness-test` owns `Internal-ready`, `API-ready`,
 `Deployment-ready`, `GO`, `GO WITH CONDITIONS`, and `NO-GO`.
+
+## Four-mode event identity
+
+Every ledger event records `host`, `provider`, `launch_mode`, `model`, skill paths, Ponytail status,
+Soup status, and overall status. For Ollama launches, set `RUNTIME_SYNC_PROVIDER=ollama` before
+starting the host; native sessions default to `native`. If the provider cannot be identified, report
+`UNVERIFIED` instead of guessing.
+
+Claude project lifecycle hooks are declared in `.claude/settings.json`. Codex project-hook support
+is build-dependent and must be verified against the installed CLI; no global hook file is assumed.
+If Codex does not expose project hooks, use the explicit preflight/postflight commands above.
+Hook presence is not hook trust, and hook trust is not host-tool verification; each must be checked
+independently.
 
 ## Soup boundary
 

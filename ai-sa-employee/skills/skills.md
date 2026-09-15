@@ -356,7 +356,8 @@ Ollama is an inference backend. Claude Code and Codex remain the agent hosts tha
 instructions, route to one canonical skill, execute tools, and enforce permissions and hooks. Use
 an explicit locally installed `OLLAMA_MODEL`; never auto-pull, auto-select, or silently switch
 models. Verify the service, model, host tool loop, and relevant skill path before calling a run
-Ollama-ready. Ponytail may simplify implementation and test choices but cannot override the
+Ollama-ready. Native and Ollama-backed Claude/Codex sessions are separate verification targets.
+Ponytail may simplify implementation and test choices but cannot override the
 rollback-readiness contract or any safety, authentication, evidence, or completion gate.
 
 For the local Employee contract, read `.claude/skills/plan-analysis/SKILL.md` for plan-analysis,
@@ -373,6 +374,12 @@ evidence and verdicts. Do not create a duplicate `.codex/skills/ponytail` or loc
 These skills are repository contracts, not Ollama-native tools. The active host must read them and
 execute the permitted checks. Soup is not run for ordinary tasks, and a successful Soup command
 never proves repository skill discovery, host tool execution, Ponytail, or MYPS readiness.
+
+Claude's repository-owned `.claude/settings.json` can append lifecycle events through
+`scripts/runtime-sync.mjs`. Codex project-hook support is build-dependent; verify the installed
+CLI before relying on automatic events, otherwise run the explicit runtime-sync preflight and
+postflight commands. The append-only ledger is lifecycle evidence; the Agent Tooling Mindmap is
+updated only by an authorized postflight.
 
 | File | Invoked by saying... |
 |---|---|

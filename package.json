@@ -4,9 +4,10 @@
   "description": "AI System Analyst / Architect / PM Employee",
   "private": true,
   "scripts": {
-    "test": "npm run test:plan-analysis && npm run test:ollama-setup",
+    "test": "npm run test:plan-analysis && npm run test:ollama-setup && npm run test:runtime-sync",
     "test:plan-analysis": "node --test .claude/skills/plan-analysis/scripts/validate-artifacts.test.mjs",
     "test:ollama-setup": "node --test scripts/ollama-setup.test.mjs",
+    "test:runtime-sync": "node --test scripts/runtime-sync.test.mjs",
     "verify:ollama": "node scripts/verify-ollama-runtime.mjs",
     "verify:soup": "node scripts/soup-setup.mjs"
   },

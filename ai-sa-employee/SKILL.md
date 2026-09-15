@@ -166,12 +166,15 @@ Run before every deliverable:
 
 When the Employee is launched through Ollama, Ollama supplies only local model inference. Claude
 Code or Codex remains responsible for loading this skill, routing through the canonical skill index,
-executing tools, permissions, hooks, evidence capture, and final gates. Load only the relevant skill
-file rather than injecting the full inventory into every prompt. Require an explicit locally
+executing tools, permissions, hooks, evidence capture, and final gates. Claude/native,
+Claude/Ollama, Codex/native, and Codex/Ollama are separate runtime targets. Load only the relevant
+skill file rather than injecting the full inventory into every prompt. Require an explicit locally
 installed `OLLAMA_MODEL`; never auto-pull, auto-select, or silently switch models.
 
 Use `.claude/skills/plan-analysis/SKILL.md` for plan-analysis, then read
 `ai-sa-employee/skills/code-behavior-audit.md` or
 `ai-sa-employee/skills/rollback-readiness-test.md` when those workflows apply. Upstream Ponytail may
 simplify implementation and test choices, but never readiness, authentication, rollback, safety,
-or evidence requirements.
+or evidence requirements. The repository-owned runtime hooks append host/provider events through
+`scripts/runtime-sync.mjs`; an authorized postflight projects the result into the Agent Tooling
+Mindmap.

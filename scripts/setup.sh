@@ -73,7 +73,7 @@ for cmd in python3 python; do
     fi
 done
 if [ -z "$PY_CMD" ]; then
-    fail "Python >= 3.10 not found. Get it: https://python.org"
+    warn "Python >= 3.10 not found — Python-backed skills and Soup are unavailable. Get it: https://python.org"
 fi
 
 # Bun (needed for context-mode hooks)
@@ -176,6 +176,7 @@ CLAUDE_MEM_OK=0
 CONTEXT_MODE_OK=0
 PONYTAIL_CLAUDE_OK=0
 PONYTAIL_CODEX_OK=0
+PONYTAIL_MARKETPLACE_OK=0
 CLAUDE_CLI_OK=0
 CODEX_CLI_OK=0
 
@@ -229,8 +230,19 @@ if command -v codex &>/dev/null; then
     if printf '%s\n' "$CODEX_PLUGIN_LIST" | grep -Eiq 'engineering-suite-ponytail'; then
         warn "Another Ponytail package is active in Codex — do not remove it automatically."
     fi
+    CODEX_MARKETPLACE_LIST=$(codex plugin marketplace list 2>&1 || true)
+    if printf '%s\n' "$CODEX_MARKETPLACE_LIST" | grep -Eiq 'DietrichGebert/ponytail|ponytail'; then
+        PONYTAIL_MARKETPLACE_OK=1
+    fi
 else
     warn "Codex CLI not found — install it separately before using Codex with this repo."
+fi
+
+if command -v claude &>/dev/null; then
+    CLAUDE_MARKETPLACE_LIST=$(claude plugin marketplace list 2>&1 || true)
+    if printf '%s\n' "$CLAUDE_MARKETPLACE_LIST" | grep -Eiq 'DietrichGebert/ponytail|ponytail'; then
+        PONYTAIL_MARKETPLACE_OK=1
+    fi
 fi
 
 [ "$CLAUDE_MEM_OK" -eq 1 ]   && ok   "claude-mem plugin installed"   || warn "claude-mem NOT installed"
@@ -245,6 +257,8 @@ if [ "$PONYTAIL_CLAUDE_OK" -eq 1 ] && [ "$PONYTAIL_CODEX_OK" -eq 1 ]; then
 else
     warn "Ponytail runtime not fully verified"
 fi
+[ "$PONYTAIL_MARKETPLACE_OK" -eq 1 ] && ok "Ponytail marketplace available" || warn "Ponytail marketplace not detected; setup does not add marketplaces automatically"
+info "Ponytail hooks trusted: operator review/trust required; setup does not auto-trust hooks."
 
 if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
     echo ""
@@ -351,10 +365,28 @@ if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA
     echo "    Configure an explicit local model before verification:"
     echo -e "      ${YELLOW}export OLLAMA_MODEL=\"<local-model-name>\"${NC}"
     echo -e "      ${YELLOW}ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this${NC}"
+    echo -e "      ${YELLOW}export RUNTIME_SYNC_PROVIDER=ollama${NC}"
     echo -e "      ${YELLOW}ollama launch claude --model \$OLLAMA_MODEL${NC}"
     echo -e "      ${YELLOW}ollama launch codex --model \$OLLAMA_MODEL${NC}"
     info "Ollama only supplies inference; the host runtime supplies skills, tools, permissions, and hooks."
 fi
+
+# -- 6b. Repository-owned synchronization hooks -------------------------------
+
+step "Checking four-mode runtime synchronization"
+[ -f "$ROOT/.claude/settings.json" ] && ok "Claude project hooks present" || warn "Claude project hooks missing — runtime events cannot be recorded automatically"
+if [ "$CODEX_CLI_OK" -eq 1 ]; then
+    if codex --help 2>&1 | grep -qi hook; then
+        ok "Codex project-hook support advertised by installed build"
+    else
+        warn "Codex project-hook support is not advertised by this build — use explicit runtime-sync preflight/postflight"
+    fi
+else
+    warn "Codex project-hook support cannot be checked until Codex is installed"
+fi
+[ -f "$SCRIPT_DIR/runtime-sync.mjs" ] && ok "Shared runtime-sync helper present" || warn "Shared runtime-sync helper missing — mind-map synchronization is unavailable"
+info "Native sessions default to provider=native. For Ollama sessions export RUNTIME_SYNC_PROVIDER=ollama before launch."
+info "Hooks append events; only an authorized postflight updates the Agent Tooling Mindmap."
 
 # -- 7. Verify document engines ------------------------------------------------
 

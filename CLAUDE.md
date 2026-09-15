@@ -95,6 +95,7 @@ Before responding to anything in a new session, in this exact order:
    `MYPS/20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md`.
    For Ollama, Soup, Ponytail, skill, or readiness work, then read
    `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
+   Read `MYPS/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,
    open risks, blocked decisions, outstanding deliverables. Format:
    *"Before we start — X open items from last session: [list]."* Do not wait to be asked.
@@ -549,6 +550,7 @@ enforce permissions and hooks. Start a local-model session with an explicit inst
 ```text
 OLLAMA_HOST=http://localhost:11434
 OLLAMA_MODEL=<local-model-name>
+RUNTIME_SYNC_PROVIDER=ollama
 ollama launch claude --model $OLLAMA_MODEL
 ollama launch codex --model $OLLAMA_MODEL
 ```
@@ -556,6 +558,9 @@ ollama launch codex --model $OLLAMA_MODEL
 Never auto-pull, auto-select, or silently switch models. Verify the Ollama service, exact model,
 host tool loop, and relevant skill path before claiming local-runtime readiness. A local model that
 cannot support the required context or read-only tool smoke test is `UNVERIFIED`, not ready.
+Native Claude, Ollama-backed Claude, native Codex, and Ollama-backed Codex are separate verification
+targets. The runtime-sync helper records the active host/provider pair and updates the Agent Tooling
+Mindmap only during authorized postflight.
 
 The repository-local planning source is `.claude/skills/plan-analysis/SKILL.md`; the shared behavior
 and readiness sources are `ai-sa-employee/skills/code-behavior-audit.md` and
@@ -574,6 +579,12 @@ first, then the verified ignored repo-local environment, and remains plan-only u
 approves the exact training, export, deployment, or model-replacement operation. Ordinary Employee
 tasks must not invoke Soup. Relevant tasks must report the runtime-sync block and cannot claim
 completion when the applicable Ponytail, Ollama, skill-path, or mind-map gate is unverified.
+
+Fresh-clone setup checks Ponytail and Soup without changing user-level installations. If Ponytail is
+missing, setup prints the Claude and Codex marketplace/install commands. If Soup is missing, setup
+prints the explicit `-InstallSoup` / `--install-soup` command using the verified archive; training
+extras require a separate flag. Review and trust hooks, then restart Claude Code or open a fresh
+Codex task after installing either tool.
 
 ---
 
@@ -704,7 +715,8 @@ Employee System Analyst Expert/
 │   ├── fetch-libreoffice-local.ps1    ← ✅ Extract LibreOffice MSI into engines/ (no system install)
 │   ├── verify-engines.ps1 / .sh       ← ✅ End-to-end document engine test (PASS/FAIL checklist)
 │   ├── generate-board-xlsx.py         ← ✅ Task-board xlsx report (any project's board.md → 4-sheet workbook; task-board skill)
-│   ├── session-sync.ps1               ← ✅ SessionStart hook payload (git state + latest ADR/RISK + memory.md staleness + vault node coverage, ADR-113/117), wired globally via ~/.claude/settings.json + ~/.codex/hooks.json
+│   ├── session-sync.ps1               ← ✅ Read-only SessionStart summary; not proof of runtime synchronization
+│   ├── runtime-sync.mjs                ← ✅ Shared four-mode event ledger and mind-map postflight helper
 │   └── backup.ps1 / backup.sh         ← ✅ Zip client data + engines, retention-aware
 │   (Client-specific scripts do NOT live here — they go in
 │    memory/clients/[client]/[project]/scripts/ which is gitignored.)

@@ -13,13 +13,16 @@ work in this workspace itself).
    Real-Time Sync Protocol.md` — the canonical startup and completion sources.
 2. Read applicable project memory and decision records only after confirming their paths exist;
    report missing or conflicting startup sources instead of trusting a stale path.
-3. For Ollama, Soup, Ponytail, skills, or MYPS readiness work, read
+3. Read `MYPS/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
+4. For Ollama, Soup, Ponytail, skills, or MYPS readiness work, read
    `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
 
-A `SessionStart` hook (`scripts/session-sync.ps1`, wired in `~/.codex/hooks.json`, self-scoped to
-`project_myps`/this workspace) already injects a live summary of the above automatically — git
-state, latest ADR/RISK, memory-currency check. That is a summary to orient a fresh session, **not**
-a substitute for reading the files above before doing real work.
+Claude project lifecycle hooks are declared in `.claude/settings.json`. The installed Codex build
+must be checked independently for project-hook support; this repository does not assume a global
+`~/.codex/hooks.json` or invent an unsupported Codex hook contract. When automatic Codex hooks are
+not exposed, run the explicit `runtime-sync.mjs --preflight` and `--postflight` commands from the
+runtime skill. `scripts/session-sync.ps1` is only a read-only summary and is not synchronization
+evidence.
 
 ## Canonical memory
 
@@ -65,8 +68,10 @@ under `ai-sa-employee/skills/`:
 
 Ollama supplies local model inference; Claude Code and Codex remain the agent hosts responsible for
 skill discovery, tools, permissions, hooks, and agent loops. Use an explicit installed model through
-`OLLAMA_MODEL` and verify it before claiming local-runtime readiness. The native launch paths are
-`ollama launch claude --model $OLLAMA_MODEL` and `ollama launch codex --model $OLLAMA_MODEL`.
+`OLLAMA_MODEL` and verify it before claiming local-runtime readiness. The native Ollama launch paths
+are `RUNTIME_SYNC_PROVIDER=ollama ollama launch claude --model $OLLAMA_MODEL` and
+`RUNTIME_SYNC_PROVIDER=ollama ollama launch codex --model $OLLAMA_MODEL`.
+Claude/native, Claude/Ollama, Codex/native, and Codex/Ollama are four separate verification targets.
 
 - Read `.claude/skills/plan-analysis/SKILL.md` for repository-local plan-analysis.
 - Read `ai-sa-employee/skills/code-behavior-audit.md` for existing-code behavior tracing.

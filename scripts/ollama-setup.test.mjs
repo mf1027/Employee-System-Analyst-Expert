@@ -16,6 +16,7 @@ const runtimeSkill = fs.readFileSync(path.join(root, 'ai-sa-employee', 'skills',
 const soupSkill = fs.readFileSync(path.join(root, 'ai-sa-employee', 'skills', 'soup-model-preparation.md'), 'utf8');
 const runtimeWrapper = fs.readFileSync(path.join(root, '.claude', 'commands', 'ollama-agent-runtime.md'), 'utf8');
 const soupWrapper = fs.readFileSync(path.join(root, '.claude', 'commands', 'soup-model-preparation.md'), 'utf8');
+const claudeSettings = fs.readFileSync(path.join(root, '.claude', 'settings.json'), 'utf8');
 
 for (const [name, script] of [['PowerShell', powershell], ['Bash', bash]]) {
   test(`${name} setup checks explicit local Ollama model without mutating user state`, () => {
@@ -34,6 +35,10 @@ for (const [name, script] of [['PowerShell', powershell], ['Bash', bash]]) {
     assert.match(script, /Claude host available/);
     assert.match(script, /Codex host available/);
     assert.match(script, /Ponytail runtime verified/);
+    assert.match(script, /Ponytail marketplace available/);
+    assert.match(script, /Ponytail hooks trusted/);
+    assert.match(script, /RUNTIME_SYNC_PROVIDER/);
+    assert.match(script, /runtime-sync\.mjs/);
     assert.match(script, /cloud/i);
     assert.match(script, /never|not automatic|do not/i);
   });
@@ -77,6 +82,24 @@ test('runtime and Soup skills are discoverable by both host entry points', () =>
   assert.match(soupSkill, /soup advise/);
   assert.match(soupSkill, /global Soup first/i);
   assert.match(soupSkill, /duplicate/i);
+});
+
+test('Claude hooks are repository-owned and Codex support is checked honestly', () => {
+  const claudeConfig = JSON.parse(claudeSettings);
+  assert.equal((claudeSettings.match(/"PostToolUse"/g) || []).length, 1);
+  assert.ok(claudeConfig.hooks.SessionStart);
+  assert.ok(claudeConfig.hooks.UserPromptSubmit);
+  assert.ok(claudeConfig.hooks.PostToolUse);
+  assert.ok(claudeConfig.hooks.Stop);
+  assert.match(JSON.stringify(claudeConfig), /runtime-sync\.mjs/);
+  assert.match(agents, /Codex project-hook support.*verified|explicit.*runtime-sync/i);
+  assert.match(powershell, /Codex project-hook support/);
+  assert.match(bash, /Codex project-hook support/);
+  for (const document of [agents, claude]) {
+    assert.match(document, /Claude\/native|Claude, Ollama-backed Claude|four separate verification/i);
+    assert.match(document, /RUNTIME_SYNC_PROVIDER/);
+    assert.match(document, /Agent Tooling Mindmap/);
+  }
 });
 
 function fakeFetch(responses) {

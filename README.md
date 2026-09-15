@@ -68,6 +68,7 @@ model before using the local path:
 ```powershell
 $env:OLLAMA_HOST = "http://localhost:11434"
 $env:OLLAMA_MODEL = "<local-model-name>"
+$env:RUNTIME_SYNC_PROVIDER = "ollama"
 ollama launch claude --model $env:OLLAMA_MODEL
 ollama launch codex --model $env:OLLAMA_MODEL
 ```
@@ -76,6 +77,13 @@ The setup scripts check Ollama, service reachability, and the exact model but ne
 switch models automatically. For reliable agent work, verify adequate context and read-only tool
 calling with the selected model. Ollama does not make Claude and Codex hooks identical; verify each
 host independently.
+
+Native Claude, Ollama-backed Claude, native Codex, and Ollama-backed Codex are four separate
+verification targets. Claude project hooks can record the active host/provider pair; Codex
+project-hook support must be verified against the installed CLI. If Codex hooks are unavailable,
+run the runtime skill's explicit preflight and postflight commands. An authorized postflight
+updates the Agent Tooling Mindmap. `RUNTIME_SYNC_PROVIDER=ollama` prevents a native session from
+being misreported as Ollama-backed.
 
 ---
 
@@ -304,6 +312,40 @@ Relevant Ollama/Ponytail/Soup/readiness work must first use
 `ai-sa-employee/skills/ollama-agent-runtime.md`. It requires the Agent Tooling Mindmap preflight,
 independent Claude/Codex verification, and an approval-gated sync entry before completion. Soup is
 only invoked through `ai-sa-employee/skills/soup-model-preparation.md` when explicitly requested.
+
+### Fresh-clone Soup and Ponytail setup
+
+The default setup is check-only for both tools. It never changes user-level Claude/Codex plugin
+stores, downloads an Ollama model, trains a model, or removes duplicate installations.
+
+If Ponytail is missing, run the printed marketplace commands:
+
+```text
+Claude Code:
+  /plugin marketplace add DietrichGebert/ponytail
+  /plugin install ponytail@ponytail
+
+Codex:
+  codex plugin marketplace add DietrichGebert/ponytail
+  codex plugin add ponytail@ponytail
+```
+
+If Soup is explicitly needed, install it in the ignored repository environment after the archive
+hash check:
+
+```powershell
+.\scripts\setup.ps1 -InstallSoup -SoupArchivePath <path-to-Soup-0.75.0.zip>
+.\scripts\setup.ps1 -InstallSoup -InstallSoupTraining -SoupArchivePath <path-to-Soup-0.75.0.zip>
+```
+
+```bash
+bash scripts/setup.sh --install-soup --soup-archive <path-to-Soup-0.75.0.zip>
+bash scripts/setup.sh --install-soup --install-soup-training --soup-archive <path-to-Soup-0.75.0.zip>
+```
+
+Soup is fully available for explicit model preparation, but it is not run during ordinary Employee
+tasks. After a Soup-prepared model is imported into Ollama, Claude/Codex still load repository
+skills and Ponytail remains the implementation/test simplification method.
 
 ### Optional Soup model preparation
 
