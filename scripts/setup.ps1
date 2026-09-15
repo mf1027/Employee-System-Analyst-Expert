@@ -173,6 +173,8 @@ $contextModeOK  = $false
 $ponytailClaudeOK = $false
 $ponytailCodexOK  = $false
 $duplicateClaudePonytail = @()
+$claudeCLI = Get-Command claude -ErrorAction SilentlyContinue
+$claudeCLIAvailable = $null -ne $claudeCLI
 $codexCLI = Get-Command codex -ErrorAction SilentlyContinue
 $codexCLIAvailable = $null -ne $codexCLI
 
@@ -217,6 +219,16 @@ else                   { Write-WARN "Ponytail plugin NOT installed for Claude Co
 if ($ponytailCodexOK) { Write-OK "Ponytail plugin detected for Codex" }
 elseif ($codexCLIAvailable) { Write-WARN "Ponytail plugin NOT detected for Codex" }
 
+if ($claudeCLIAvailable) { Write-OK "Claude host available" }
+else                    { Write-WARN "Claude host unavailable - install Claude Code separately before using this repo." }
+
+if ($codexCLIAvailable) { Write-OK "Codex host available" }
+else                   { Write-WARN "Codex host unavailable - install Codex CLI separately before using this repo." }
+
+$ponytailRuntimeOK = $ponytailClaudeOK -and $ponytailCodexOK
+if ($ponytailRuntimeOK) { Write-OK "Ponytail runtime verified" }
+else                    { Write-WARN "Ponytail runtime not fully verified" }
+
 if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
     Write-Host ""
     Write-Host "    Open Claude Code in this directory and run:" -ForegroundColor White
@@ -241,7 +253,65 @@ if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -no
     Write-Host "    Ponytail lifecycle hooks require Node.js (already checked above)." -ForegroundColor Gray
 }
 
-# -- 5. Verify document engines ------------------------------------------------
+# -- 5. Ollama local-model check -----------------------------------------------
+
+Write-Step "Checking Ollama local-model runtime"
+
+$ollamaCLI = Get-Command ollama -ErrorAction SilentlyContinue
+$ollamaInstalled = $null -ne $ollamaCLI
+$ollamaServiceOK = $false
+$ollamaModelConfigured = -not [string]::IsNullOrWhiteSpace($env:OLLAMA_MODEL)
+$ollamaModelOK = $false
+$ollamaCloudModel = $ollamaModelConfigured -and $env:OLLAMA_MODEL -match '(?i)(^|[-:])cloud($|[-:])'
+$ollamaHost = if ([string]::IsNullOrWhiteSpace($env:OLLAMA_HOST)) { "http://localhost:11434" } else { $env:OLLAMA_HOST.TrimEnd('/') }
+
+if ($ollamaInstalled) {
+    Write-OK "Ollama installed"
+    Write-OK "Ollama CLI available"
+    try {
+        Invoke-RestMethod -Uri "$ollamaHost/api/tags" -Method Get -TimeoutSec 3 | Out-Null
+        $ollamaServiceOK = $true
+        Write-OK "Ollama service reachable at $ollamaHost"
+    } catch {
+        Write-WARN "Ollama service not reachable at $ollamaHost - start Ollama before launching an agent"
+    }
+
+    if ($ollamaModelConfigured) {
+        Write-OK "Explicit model configured: $env:OLLAMA_MODEL"
+    } else {
+        Write-WARN "Explicit model not configured"
+    }
+
+    if ($ollamaCloudModel) {
+        Write-WARN "Cloud model names are not allowed for local-runtime verification: $env:OLLAMA_MODEL"
+    } elseif ($ollamaModelConfigured) {
+        $ollamaModels = (& $ollamaCLI.Source ls 2>&1 | Out-String)
+        $ollamaModelOK = ($LASTEXITCODE -eq 0) -and @($ollamaModels -split "`r?`n" | Where-Object {
+            $parts = $_.Trim() -split '\s+'
+            $parts.Count -gt 0 -and $parts[0] -eq $env:OLLAMA_MODEL
+        }).Count -gt 0
+        if ($ollamaModelOK) {
+            Write-OK "Explicit Ollama model installed locally: $env:OLLAMA_MODEL"
+        } else {
+            Write-WARN "OLLAMA_MODEL '$env:OLLAMA_MODEL' is not present in ollama ls"
+        }
+    } else {
+        Write-WARN "OLLAMA_MODEL is not set - local-model verification is incomplete"
+    }
+} else {
+    Write-WARN "Ollama not installed - local-model execution is unavailable"
+}
+
+if (-not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK) {
+    Write-Host "    Configure an explicit local model before verification:" -ForegroundColor White
+    Write-Host '      `$env:OLLAMA_MODEL = "<local-model-name>"' -ForegroundColor Yellow
+    Write-Host '      ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this' -ForegroundColor Yellow
+    Write-Host '      ollama launch claude --model $env:OLLAMA_MODEL' -ForegroundColor Yellow
+    Write-Host '      ollama launch codex --model $env:OLLAMA_MODEL' -ForegroundColor Yellow
+    Write-Host "    Ollama only supplies inference; the host runtime supplies skills, tools, permissions, and hooks." -ForegroundColor Gray
+}
+
+# -- 6. Verify document engines ------------------------------------------------
 
 Write-Step "Verifying document engines (end-to-end)"
 $verify = Join-Path $PSScriptRoot "verify-engines.ps1"
@@ -251,14 +321,15 @@ if (Test-Path $verify) {
     Write-WARN "verify-engines.ps1 not found - skipping engine verification"
 }
 
-# -- 6. Summary ----------------------------------------------------------------
+# -- 7. Summary ----------------------------------------------------------------
 
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "  Setup complete" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 
-if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
+if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailRuntimeOK -or -not $claudeCLIAvailable -or -not $codexCLIAvailable -or
+    -not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK) {
     Write-Host "  Action needed: install the missing plugin(s) listed above." -ForegroundColor Yellow
 } else {
     Write-Host "  All dependencies ready. Open this folder in Claude Code." -ForegroundColor Green

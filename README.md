@@ -50,6 +50,7 @@ The script checks and installs:
 - Node.js dependencies (`claude-mem`, `context-mode`, `@opendataloader/pdf`)
 - Python `chromadb` for semantic memory search
 - Checks for the upstream Ponytail plugin in Claude Code and Codex
+- Checks optional Ollama CLI/service state and the explicitly configured local model
 - Prints Claude Code and Codex Ponytail install commands if needed
 - Reminds you to review/trust hooks and restart the agent runtime
 
@@ -57,6 +58,24 @@ The script checks and installs:
 5. Review/trust Ponytail hooks, then reload Claude Code or open a fresh Codex task
 
 **You're ready.** Open this folder in Claude Code and start a session.
+
+### Optional local Ollama model
+
+Ollama supplies inference; Claude Code and Codex remain the agent hosts that load the repository
+skills, execute tools, enforce permissions, and run hooks. Configure an explicit locally installed
+model before using the local path:
+
+```powershell
+$env:OLLAMA_HOST = "http://localhost:11434"
+$env:OLLAMA_MODEL = "<local-model-name>"
+ollama launch claude --model $env:OLLAMA_MODEL
+ollama launch codex --model $env:OLLAMA_MODEL
+```
+
+The setup scripts check Ollama, service reachability, and the exact model but never pull, select, or
+switch models automatically. For reliable agent work, verify adequate context and read-only tool
+calling with the selected model. Ollama does not make Claude and Codex hooks identical; verify each
+host independently.
 
 ---
 
@@ -278,6 +297,15 @@ installed separately for Claude Code and Codex by the post-clone setup instructi
 specific readiness contract remains in `ai-sa-employee/skills/rollback-readiness-test.md`, and
 `AGENTS.md` tells Codex where to read it. Ponytail simplifies implementation and test choices;
 it never overrides rollback, authentication, evidence, safety, or mind-map completion gates.
+
+### Optional Soup model preparation
+
+`Soup-0.75.0.zip` is the external `soup-cli` fine-tuning/post-training tool. It is not an Ollama
+server, agent host, skill loader, or Ponytail implementation. Keep it outside this repository and,
+if needed, install `soup-cli==0.75.0` in an isolated tool environment such as `pipx`. Do not add its
+heavy training dependencies to normal setup. A Soup-produced model still needs a separate
+compatibility/export/import check before Ollama can serve it; Soup is never required for Employee
+skills or readiness verdicts.
 
 **Delivery skills (design → build bridge):**
 

@@ -160,6 +160,7 @@ CLAUDE_MEM_OK=0
 CONTEXT_MODE_OK=0
 PONYTAIL_CLAUDE_OK=0
 PONYTAIL_CODEX_OK=0
+CLAUDE_CLI_OK=0
 CODEX_CLI_OK=0
 
 if [ -f "$IP_PATH" ]; then
@@ -197,6 +198,12 @@ exit(0 if any('ponytail' in name.lower() and name != 'ponytail@ponytail' for nam
     fi
 fi
 
+if command -v claude &>/dev/null; then
+    CLAUDE_CLI_OK=1
+else
+    warn "Claude host unavailable — install Claude Code separately before using this repo."
+fi
+
 if command -v codex &>/dev/null; then
     CODEX_CLI_OK=1
     CODEX_PLUGIN_LIST=$(codex plugin list 2>&1 || true)
@@ -214,6 +221,14 @@ fi
 [ "$CONTEXT_MODE_OK" -eq 1 ] && ok   "context-mode plugin installed" || warn "context-mode NOT installed"
 [ "$PONYTAIL_CLAUDE_OK" -eq 1 ] && ok "Ponytail plugin installed for Claude Code" || warn "Ponytail plugin NOT installed for Claude Code"
 [ "$PONYTAIL_CODEX_OK" -eq 1 ] && ok "Ponytail plugin detected for Codex" || { [ "$CODEX_CLI_OK" -eq 1 ] && warn "Ponytail plugin NOT detected for Codex"; }
+[ "$CLAUDE_CLI_OK" -eq 1 ] && ok "Claude host available" || true
+[ "$CODEX_CLI_OK" -eq 1 ] && ok "Codex host available" || true
+
+if [ "$PONYTAIL_CLAUDE_OK" -eq 1 ] && [ "$PONYTAIL_CODEX_OK" -eq 1 ]; then
+    ok "Ponytail runtime verified"
+else
+    warn "Ponytail runtime not fully verified"
+fi
 
 if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
     echo ""
@@ -231,7 +246,61 @@ if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CL
     echo -e "    Ponytail lifecycle hooks require Node.js (already checked above)."
 fi
 
-# -- 5. Verify document engines ------------------------------------------------
+# -- 5. Ollama local-model check -----------------------------------------------
+
+step "Checking Ollama local-model runtime"
+
+OLLAMA_INSTALLED=0
+OLLAMA_SERVICE_OK=0
+OLLAMA_MODEL_CONFIGURED=0
+OLLAMA_MODEL_OK=0
+OLLAMA_CLOUD_MODEL=0
+OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}"
+OLLAMA_HOST="${OLLAMA_HOST%/}"
+
+if command -v ollama &>/dev/null; then
+    OLLAMA_INSTALLED=1
+    ok "Ollama installed"
+    ok "Ollama CLI available"
+    if command -v curl &>/dev/null && curl -fsS --max-time 3 "$OLLAMA_HOST/api/tags" >/dev/null; then
+        OLLAMA_SERVICE_OK=1
+        ok "Ollama service reachable at $OLLAMA_HOST"
+    else
+        warn "Ollama service not reachable at $OLLAMA_HOST — start Ollama before launching an agent"
+    fi
+
+    if [ -n "${OLLAMA_MODEL:-}" ]; then
+        OLLAMA_MODEL_CONFIGURED=1
+        ok "Explicit model configured: $OLLAMA_MODEL"
+        case "$OLLAMA_MODEL" in
+            *:cloud|*:cloud:*|*-cloud|*-cloud:*) OLLAMA_CLOUD_MODEL=1 ;;
+        esac
+        if [ "$OLLAMA_CLOUD_MODEL" -eq 1 ]; then
+            warn "Cloud model names are not allowed for local-runtime verification: $OLLAMA_MODEL"
+        elif ollama ls 2>/dev/null | awk -v model="$OLLAMA_MODEL" 'NR > 1 && $1 == model { found=1 } END { exit !found }'; then
+            OLLAMA_MODEL_OK=1
+            ok "Explicit Ollama model installed locally: $OLLAMA_MODEL"
+        else
+            warn "OLLAMA_MODEL '$OLLAMA_MODEL' is not present in ollama ls"
+        fi
+    else
+        warn "Explicit model not configured"
+        warn "OLLAMA_MODEL is not set — local-model verification is incomplete"
+    fi
+else
+    warn "Ollama not installed — local-model execution is unavailable"
+fi
+
+if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ]; then
+    echo "    Configure an explicit local model before verification:"
+    echo -e "      ${YELLOW}export OLLAMA_MODEL=\"<local-model-name>\"${NC}"
+    echo -e "      ${YELLOW}ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this${NC}"
+    echo -e "      ${YELLOW}ollama launch claude --model \$OLLAMA_MODEL${NC}"
+    echo -e "      ${YELLOW}ollama launch codex --model \$OLLAMA_MODEL${NC}"
+    info "Ollama only supplies inference; the host runtime supplies skills, tools, permissions, and hooks."
+fi
+
+# -- 6. Verify document engines ------------------------------------------------
 
 step "Verifying document engines (end-to-end)"
 if [ -f "$SCRIPT_DIR/verify-engines.sh" ]; then
@@ -240,14 +309,15 @@ else
     warn "verify-engines.sh not found - skipping engine verification"
 fi
 
-# -- 6. Summary ----------------------------------------------------------------
+# -- 7. Summary ----------------------------------------------------------------
 
 echo ""
 echo -e "${CYAN}======================================${NC}"
 echo -e "${CYAN}  Setup complete${NC}"
 echo -e "${CYAN}======================================${NC}"
 
-if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
+if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ] || [ "$CLAUDE_CLI_OK" -eq 0 ] || [ "$CODEX_CLI_OK" -eq 0 ] ||
+   [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ]; then
     echo -e "  ${YELLOW}Action needed: install the missing plugin(s) listed above.${NC}"
 else
     echo -e "  ${GREEN}All dependencies ready. Open this folder in Claude Code.${NC}"

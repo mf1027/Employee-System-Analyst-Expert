@@ -538,6 +538,35 @@ All invokable skills live in `ai-sa-employee/skills/`. Full inventory and intera
 **Security/research skills:** security-review, web-research
 **Utility skills:** create-diagram, new-skill, system-drill, document-specialist-skill, create-pr-timesheet
 
+## Ollama-backed runtime
+
+Ollama is an optional local inference backend, not a replacement for the Claude Code or Codex
+agent host. The host continues to load this file, route to one canonical skill, execute tools, and
+enforce permissions and hooks. Start a local-model session with an explicit installed model:
+
+```text
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=<local-model-name>
+ollama launch claude --model $OLLAMA_MODEL
+ollama launch codex --model $OLLAMA_MODEL
+```
+
+Never auto-pull, auto-select, or silently switch models. Verify the Ollama service, exact model,
+host tool loop, and relevant skill path before claiming local-runtime readiness. A local model that
+cannot support the required context or read-only tool smoke test is `UNVERIFIED`, not ready.
+
+The repository-local planning source is `.claude/skills/plan-analysis/SKILL.md`; the shared behavior
+and readiness sources are `ai-sa-employee/skills/code-behavior-audit.md` and
+`ai-sa-employee/skills/rollback-readiness-test.md`. Upstream Ponytail remains the generic
+minimalism method. Its simplifications never override readiness, evidence, authentication,
+rollback, safety, or mind-map gates. Claude and Codex must report their own runtime/plugin state;
+Ollama does not make their hooks identical.
+
+Soup v0.75.0 is optional fine-tuning/post-training tooling only. It is not an Ollama runtime, skill
+loader, agent host, or Ponytail implementation. Do not vendor the ZIP or add its heavy training
+stack to the normal Employee setup. Fine-tuned models require a separate compatibility/import
+check before Ollama can serve them.
+
 ---
 
 ## Document Skills (Phase 2)

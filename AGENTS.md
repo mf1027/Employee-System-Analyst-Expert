@@ -55,3 +55,19 @@ under `ai-sa-employee/skills/`:
   generic minimalism and its runtime plugin.
 - Claude and Codex must verify their own runtime/plugin state; never claim identical runtime hooks
   merely because both agents follow the same workflow.
+
+## Ollama-backed execution
+
+Ollama supplies local model inference; Claude Code and Codex remain the agent hosts responsible for
+skill discovery, tools, permissions, hooks, and agent loops. Use an explicit installed model through
+`OLLAMA_MODEL` and verify it before claiming local-runtime readiness. The native launch paths are
+`ollama launch claude --model $OLLAMA_MODEL` and `ollama launch codex --model $OLLAMA_MODEL`.
+
+- Read `.claude/skills/plan-analysis/SKILL.md` for repository-local plan-analysis.
+- Read `ai-sa-employee/skills/code-behavior-audit.md` for existing-code behavior tracing.
+- Read `ai-sa-employee/skills/rollback-readiness-test.md` for the MYPS readiness contract and verdicts.
+- Apply upstream Ponytail when simplifying implementation or test choices; it never overrides
+  readiness, evidence, authentication, rollback, or safety gates.
+- Do not copy Ponytail into `.codex/skills/`, and do not copy the global plan-analysis bridge here.
+- Verify Claude and Codex independently. Ollama-backed parity means equivalent behavior and evidence,
+  not identical Claude/Codex internals or hooks.

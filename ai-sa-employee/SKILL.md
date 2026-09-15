@@ -161,3 +161,17 @@ Run before every deliverable:
 | `memory/memory.md` | Every session start — working memory, operator profile, client index |
 | `memory/communication.md` | Communication/reporting tasks — RAG template, ID reference |
 | `ai-sa-employee/skills/skills.md` | Full skill inventory, trigger conditions, output formats |
+
+## Runtime boundary
+
+When the Employee is launched through Ollama, Ollama supplies only local model inference. Claude
+Code or Codex remains responsible for loading this skill, routing through the canonical skill index,
+executing tools, permissions, hooks, evidence capture, and final gates. Load only the relevant skill
+file rather than injecting the full inventory into every prompt. Require an explicit locally
+installed `OLLAMA_MODEL`; never auto-pull, auto-select, or silently switch models.
+
+Use `.claude/skills/plan-analysis/SKILL.md` for plan-analysis, then read
+`ai-sa-employee/skills/code-behavior-audit.md` or
+`ai-sa-employee/skills/rollback-readiness-test.md` when those workflows apply. Upstream Ponytail may
+simplify implementation and test choices, but never readiness, authentication, rollback, safety,
+or evidence requirements.

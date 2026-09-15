@@ -350,6 +350,19 @@ this one toward that one, don't treat this one as a second vote.
 > Codex exposes only the thin bridge at `C:\Users\Msi\.codex\skills\plan-analysis`, which loads the
 > canonical source at runtime and is not a second maintained copy.
 
+## 6a. Ollama runtime boundary
+
+Ollama is an inference backend. Claude Code and Codex remain the agent hosts that load repository
+instructions, route to one canonical skill, execute tools, and enforce permissions and hooks. Use
+an explicit locally installed `OLLAMA_MODEL`; never auto-pull, auto-select, or silently switch
+models. Verify the service, model, host tool loop, and relevant skill path before calling a run
+Ollama-ready. Ponytail may simplify implementation and test choices but cannot override the
+rollback-readiness contract or any safety, authentication, evidence, or completion gate.
+
+For the local Employee contract, read `.claude/skills/plan-analysis/SKILL.md` for plan-analysis,
+`code-behavior-audit.md` for source behavior tracing, and `rollback-readiness-test.md` for readiness
+evidence and verdicts. Do not create a duplicate `.codex/skills/ponytail` or local Ponytail skill.
+
 | File | Invoked by saying... |
 |---|---|
 | `gather-requirements.md` | "gather requirements", "what do they need" |
