@@ -54,8 +54,11 @@ loading, repository tools, permissions, hooks, and agent loops.
      --provider <native|ollama> --model <model-if-ollama> --evidence <safe-evidence.json>
    ```
 
-   Status is derived from the evidence; `--status VERIFIED` is rejected. After normal documentation
-   write authorization, record and project the same validated evidence explicitly:
+   Status is derived from the evidence; `--status VERIFIED` is rejected. A dry-run validates the
+   safe evidence shape and matching gates, but it is not itself a live host smoke result. Likewise,
+   `runtime-sync.mjs --verify` may report `VAULT_READY` only; it checks vault artifacts, not runtime
+   behavior. After normal documentation write authorization, record and project the same validated
+   evidence explicitly:
 
    ```text
    node scripts/runtime-sync.mjs --postflight --authorize-mindmap --host <claude|codex> \

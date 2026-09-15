@@ -84,7 +84,9 @@ project-hook support must be verified against the installed CLI. If Codex hooks 
 run the runtime skill's explicit evidence flow. First run a `runtime-sync.mjs --dry-run` with safe,
 matching host evidence; only a postflight that also supplies `--authorize-mindmap` can update the
 Agent Tooling Mindmap. `RUNTIME_SYNC_PROVIDER=ollama` prevents a native session from being
-misreported as Ollama-backed.
+misreported as Ollama-backed. `runtime-sync.mjs --verify` can report `VAULT_READY` only; it checks
+the vault artifacts and does not verify a host tool, Ponytail hook, or Ollama model. The project
+does not retain broad automatic Claude command approvals; review each requested command.
 
 ---
 

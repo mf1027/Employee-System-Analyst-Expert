@@ -25,7 +25,9 @@ Claude project lifecycle hooks are declared in `.claude/settings.json`. Codex pr
 not exposed, follow the runtime skill's evidence flow: run `runtime-sync.mjs --dry-run` first,
 then use the matching evidence file for any authorised ledger write. `--authorize-mindmap` is
 required in addition to `--postflight` before a mind-map projection. `scripts/session-sync.ps1`
-is only a read-only summary and is not synchronization evidence.
+is only a read-only summary and is not synchronization evidence. `runtime-sync.mjs --verify`
+reports `VAULT_READY` only: it checks vault artifacts and never establishes a live host, tool,
+Ponytail, or Ollama verification result.
 
 ## Canonical memory
 
@@ -37,13 +39,11 @@ the authority gap instead of using a stale machine-specific path.
 
 ## DB safety — same rule everywhere, stated once here for this workspace's own sessions
 
-**Revised 2026-08-25.** Target: `myps_db_dev` on `192.168.50.200` (server `WIN-TPHP1ERQB12`), via
-`sa`/`@dmin123` — the connection string in `appsettings.Development.json`'s `MYPSDb` entry. This is
-now the standing approved target; `myps_db_revision` is retired. **Never** `myps_db` (any host).
-Read-only by default; never mutate without the operator's explicit per-task override. The
-`sa`/`@dmin123` credential remains a tracked, open exposure (RISK-090/091) — accepted as a known
-condition of using this target, not resolved by it. Full detail belongs to the canonical MYPS sync
-protocol and current vault records; do not replace them with a stale startup copy.
+**Revised 2026-09-16.** Resolve the approved development target from the canonical MYPS sync
+protocol and active application configuration. Never copy connection strings or credentials into
+agent instructions, reports, commands, or evidence. Read-only by default; never mutate without the
+operator's explicit per-task override. Full target and risk detail belongs to the canonical MYPS
+security records; do not replace them with a stale startup copy.
 
 ## `project_myps` — separate, stricter rule
 

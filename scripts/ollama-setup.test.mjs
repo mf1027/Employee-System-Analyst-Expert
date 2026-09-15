@@ -123,6 +123,7 @@ test('runtime documentation requires evidence dry-runs and explicit mind-map aut
   for (const document of [agents, claude, fs.readFileSync(path.join(root, 'README.md'), 'utf8'), runtimeSkill]) {
     assert.match(document, /dry-run/);
     assert.match(document, /authorize-mindmap/);
+    assert.match(document, /VAULT_READY/);
   }
   assert.match(runtimeSkill, /--evidence/);
   assert.match(runtimeSkill, /--status VERIFIED.*rejected/);
@@ -144,6 +145,15 @@ test('Claude hooks are repository-owned and Codex support is checked honestly', 
     assert.match(document, /RUNTIME_SYNC_PROVIDER/);
     assert.match(document, /Agent Tooling Mindmap/);
   }
+});
+
+test('project Claude configuration has no historical automatic permissions or machine-specific secrets', () => {
+  const claudeConfig = JSON.parse(claudeSettings);
+  assert.deepEqual(claudeConfig.permissions?.allow ?? [], []);
+  assert.deepEqual(claudeConfig.permissions?.additionalDirectories ?? [], []);
+  assert.doesNotMatch(claudeSettings, /C:\\Users\\khen|sqlcmd|(?:^|[^a-z])password(?:[^a-z]|$)|api[_-]?key/i);
+  assert.ok(claudeConfig.hooks.SessionStart);
+  assert.ok(claudeConfig.hooks.Stop);
 });
 
 function fakeFetch(responses) {
@@ -195,6 +205,23 @@ test('Ollama verifier fails closed for cloud and limited models', async () => {
     ]),
   });
   assert.equal(limited.status, 'LIMITED');
+});
+
+test('Ollama verifier passes an abort signal to every request', async () => {
+  let requestsWithSignal = 0;
+  const result = await verifyOllama({
+    model: 'signal-local:latest',
+    requestTimeoutMs: 100,
+    fetchImpl: async (_url, options) => {
+      if (options?.signal) requestsWithSignal += 1;
+      if (requestsWithSignal === 1) return { ok: true, status: 200, json: async () => ({ models: [{ name: 'signal-local:latest' }] }) };
+      if (requestsWithSignal === 2) return { ok: true, status: 200, json: async () => ({ model_info: { 'general.context_length': DEFAULT_MIN_CONTEXT_TOKENS } }) };
+      return { ok: true, status: 200, json: async () => ({ message: { tool_calls: [{ function: { name: 'read_only_probe', arguments: { path: '.' } } }] } }) };
+    },
+  });
+
+  assert.equal(result.status, 'VERIFIED');
+  assert.equal(requestsWithSignal, 3);
 });
 
 test('Soup source contract remains pinned to the inspected archive', () => {

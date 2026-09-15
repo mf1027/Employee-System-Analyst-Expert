@@ -3,181 +3,8 @@
     "CLAUDE_MEM_DATA_DIR": "./.claude-mem"
   },
   "permissions": {
-    "allow": [
-      "Bash(npm install *)",
-      "Bash(node ./node_modules/.bin/claude-mem *)",
-      "Bash(npx claude-mem *)",
-      "Bash(claude plugins *)",
-      "Bash(npm show *)",
-      "Bash(node ./node_modules/.bin/context-mode --version)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\" -ErrorAction SilentlyContinue | Select-Object Name, Attributes)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\plugins\" -Recurse -Depth 2 | Select-Object FullName)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\context-mode\" -ErrorAction SilentlyContinue | Select-Object Name)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\context-mode\" -Recurse | Select-Object FullName)",
-      "Bash(node ./node_modules/context-mode/cli.bundle.mjs --version)",
-      "Bash(node -e \"require\\('./node_modules/context-mode/cli.bundle.mjs'\\)\")",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('bin:', d.get\\('bin'\\)\\); print\\('main:', d.get\\('main'\\)\\); print\\('type:', d.get\\('type'\\)\\)\")",
-      "PowerShell(claude mcp list 2>&1)",
-      "PowerShell(node --version)",
-      "PowerShell(npm list -g claude-mem 2>&1)",
-      "PowerShell(npm list -g @anthropic-ai/claude-code 2>&1)",
-      "PowerShell(ls \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\" | Where-Object { $_.Name -match \"claude-mem|context-mode\" } | Select-Object Name)",
-      "PowerShell(Invoke-RestMethod -Uri \"http://127.0.0.1:37777/v1/projects\" -Method GET -ErrorAction SilentlyContinue)",
-      "mcp__plugin_claude-mem_mcp-search__memory_context",
-      "mcp__plugin_claude-mem_mcp-search__search",
-      "PowerShell(python -c \"import chromadb; print\\('chromadb:', chromadb.__version__\\)\" 2>&1)",
-      "PowerShell(node \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\cli.bundle.mjs\" --version 2>&1)",
-      "PowerShell(python --version)",
-      "PowerShell(pip show chromadb 2>&1)",
-      "PowerShell(ls \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\\")",
-      "PowerShell(node \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\cli.bundle.mjs\" 2>&1)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\AppData\\\\Local\\\\Claude\\\\\" -ErrorAction SilentlyContinue | Select-Object Name, LastWriteTime)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\\" -ErrorAction SilentlyContinue | Select-Object Name, LastWriteTime | Sort-Object LastWriteTime -Descending | Select-Object -First 15)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\sessions\\\\\" | Sort-Object LastWriteTime -Descending | Select-Object -First 5 | Select-Object Name, LastWriteTime)",
-      "PowerShell($file = \"$env:USERPROFILE\\\\.claude\\\\sessions\\\\23648.json\"; \\(Get-Content $file -Raw | ConvertFrom-Json\\) | Select-Object -ExpandProperty mcpServers -ErrorAction SilentlyContinue 2>&1)",
-      "PowerShell($content = Get-Content \"$env:USERPROFILE\\\\.claude\\\\sessions\\\\23648.json\" -Raw; $content.Substring\\(0, [Math]::Min\\(500, $content.Length\\)\\))",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\\" -ErrorAction SilentlyContinue | Select-Object Name)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\thedotmack\\\\\" | Select-Object Name)",
-      "PowerShell(ls \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\.claude-plugin\\\\\")",
-      "PowerShell(pip install chromadb 2>&1)",
-      "PowerShell(Tail -20)",
-      "PowerShell(Get-Process -Id 11132 -ErrorAction SilentlyContinue)",
-      "PowerShell(ls \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\.claude-mem\\\\\")",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\\" | Where-Object { $_.Name -match \"anthropic.claude-code\" } | Select-Object Name | Sort-Object Name -Descending | Select-Object -First 3)",
-      "PowerShell(Test-Path \"$env:USERPROFILE\\\\.vscode\\\\extensions\\\\anthropic.claude-code-2.1.173-win32-x64\\\\resources\\\\native-binary\\\\claude.exe\")",
-      "PowerShell(Stop-Process -Id 20084 -Force -ErrorAction SilentlyContinue)",
-      "PowerShell(Start-Sleep -Seconds 5; $pid_info = Get-Content \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\.claude-mem\\\\worker.pid\"; $pid_info; $new_pid = \\($pid_info | ConvertFrom-Json\\).pid; $proc = Get-Process -Id $new_pid -ErrorAction SilentlyContinue; if \\($proc\\) { \"Process $new_pid is running\" } else { \"Process $new_pid not found\" })",
-      "PowerShell(python -c \"import chromadb; print\\('chromadb:', chromadb.__version__\\)\")",
-      "PowerShell($pid_info = Get-Content \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\.claude-mem\\\\worker.pid\" | ConvertFrom-Json; $proc = Get-Process -Id $pid_info.pid -ErrorAction SilentlyContinue; if \\($proc\\) { \"Worker PID $\\($pid_info.pid\\) - RUNNING on port $\\($pid_info.port\\)\" } else { \"Worker DEAD\" })",
-      "PowerShell(python -c \"import chromadb; print\\('chromadb', chromadb.__version__, '- OK'\\)\")",
-      "PowerShell($job = Start-Job { node \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\start.mjs\" }; Start-Sleep -Seconds 4; $output = Receive-Job $job 2>&1; Stop-Job $job; Remove-Job $job; $output)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\ide\\\\\" | Sort-Object LastWriteTime -Descending | Select-Object -First 3 | Select-Object Name, LastWriteTime)",
-      "PowerShell($initMsg = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}' + \"`n\"; $proc = Start-Process -FilePath \"node\" -ArgumentList \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\start.mjs\" -RedirectStandardInput \"C:\\\\Temp\\\\mcp_in.txt\" -RedirectStandardOutput \"C:\\\\Temp\\\\mcp_out.txt\" -RedirectStandardError \"C:\\\\Temp\\\\mcp_err.txt\" -NoNewWindow -PassThru; $initMsg | Out-File \"C:\\\\Temp\\\\mcp_in.txt\" -Encoding utf8 -NoNewline; Start-Sleep -Seconds 3; Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; $out = Get-Content \"C:\\\\Temp\\\\mcp_out.txt\" -ErrorAction SilentlyContinue; $err = Get-Content \"C:\\\\Temp\\\\mcp_err.txt\" -ErrorAction SilentlyContinue; \"=OUT=\"; $out; \"=ERR=\"; $err)",
-      "PowerShell(New-Item -ItemType Directory -Path \"C:\\\\Temp\" -Force | Out-Null; $initMsg = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}'; $initMsg | Out-File \"C:\\\\Temp\\\\mcp_in.txt\" -Encoding utf8; $listMsg = '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}'; Add-Content \"C:\\\\Temp\\\\mcp_in.txt\" $listMsg; $proc = Start-Process -FilePath \"node\" -ArgumentList \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\start.mjs\" -RedirectStandardInput \"C:\\\\Temp\\\\mcp_in.txt\" -RedirectStandardOutput \"C:\\\\Temp\\\\mcp_out.txt\" -RedirectStandardError \"C:\\\\Temp\\\\mcp_err.txt\" -NoNewWindow -PassThru; Start-Sleep -Seconds 5; Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; \"=OUT=\"; Get-Content \"C:\\\\Temp\\\\mcp_out.txt\" -ErrorAction SilentlyContinue; \"=ERR=\"; Get-Content \"C:\\\\Temp\\\\mcp_err.txt\" -ErrorAction SilentlyContinue)",
-      "PowerShell($p = \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\node_modules\\\\context-mode\\\\start.mjs\"; $psi = New-Object System.Diagnostics.ProcessStartInfo; $psi.FileName = \"node\"; $psi.Arguments = \"`\"$p`\"\"; $psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.UseShellExecute = $false; $proc = [System.Diagnostics.Process]::Start\\($psi\\); $proc.StandardInput.WriteLine\\('{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}'\\); $proc.StandardInput.WriteLine\\('{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}'\\); Start-Sleep -Seconds 4; $proc.Kill\\(\\); $out = $proc.StandardOutput.ReadToEnd\\(\\); $err = $proc.StandardError.ReadToEnd\\(\\); \"=OUT=\"; $out; \"=ERR=\"; $err)",
-      "PowerShell($content = Get-Content \"$env:USERPROFILE\\\\.claude\\\\sessions\\\\14056.json\" -Raw; $content.Substring\\(0, [Math]::Min\\(800, $content.Length\\)\\))",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\installed_plugins.json\" -ErrorAction SilentlyContinue; if \\(-not $?\\) { \"File not found\" })",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\\" | Select-Object Name)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\thedotmack\\\\claude-mem\\\\13.5.5\\\\\" | Select-Object Name)",
-      "PowerShell($ipPath = \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\installed_plugins.json\"; $ip = Get-Content $ipPath -Raw | ConvertFrom-Json; $entry = [PSCustomObject]@{ scope = \"user\"; installPath = \"C:\\\\Users\\\\khen\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\"; version = \"1.0.162\"; installedAt = \\(Get-Date -Format \"o\"\\); lastUpdated = \\(Get-Date -Format \"o\"\\) }; $ip.plugins | Add-Member -NotePropertyName \"context-mode@context-mode\" -NotePropertyValue @\\($entry\\) -Force; $ip | ConvertTo-Json -Depth 10 | Out-File $ipPath -Encoding utf8; Write-Output \"Registered context-mode@context-mode\"; Get-Content $ipPath)",
-      "PowerShell(ls \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\hooks\\\\\" | Select-Object Name)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\hooks\\\\hooks.json\")",
-      "PowerShell($pluginRoot = \"C:\\\\Users\\\\khen\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\"; $nodePath = \\(Get-Command node\\).Source; node -e \"import\\('$\\($pluginRoot.Replace\\('\\\\','/'\\)\\)/hooks/normalize-hooks.mjs'\\).then\\(m => { m.normalizeHooksOnStartup\\({ pluginRoot: '$\\($pluginRoot.Replace\\('\\\\','/'\\)\\)', nodePath: '$\\($nodePath.Replace\\('\\\\','/'\\)\\)' , platform: 'win32' }\\); console.log\\('normalized'\\); }\\).catch\\(e => console.error\\('ERR:', e.message\\)\\)\" 2>&1)",
-      "PowerShell(\\(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\hooks\\\\hooks.json\" | Select-String \"command\" | Select-Object -First 2\\).Line)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\hooks\\\\normalize-hooks.mjs\" -TotalCount 60)",
-      "PowerShell($hooksFile = \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\hooks\\\\hooks.json\"; $content = Get-Content $hooksFile -Raw; $fixed = $content -replace [regex]::Escape\\(\"C:/Users/khen/Desktop/Agents/Employee System Analyst Expert/node_modules/context-mode\"\\), \"C:/Users/khen/.claude/plugins/cache/context-mode/context-mode/1.0.162\"; $fixed | Out-File $hooksFile -Encoding utf8 -NoNewline; Write-Output \"Patched\"; \\(Get-Content $hooksFile | Select-String \"posttooluse\" | Select-Object -First 1\\).Line)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\.claude-plugin\\\\plugin.json\")",
-      "PowerShell($pjPath = \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\.claude-plugin\\\\plugin.json\"; $pj = Get-Content $pjPath -Raw | ConvertFrom-Json; $pj.mcpServers.\"context-mode\".args[0] = \"C:/Users/khen/.claude/plugins/cache/context-mode/context-mode/1.0.162/start.mjs\"; $pj | ConvertTo-Json -Depth 10 | Out-File $pjPath -Encoding utf8; Write-Output \"plugin.json updated\"; $pj.mcpServers.\"context-mode\".args[0])",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\installed_plugins.json\")",
-      "PowerShell(if \\(-not $?\\) { \"No .gitignore found\" })",
-      "PowerShell(New-Item -ItemType Directory -Path \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\scripts\" -Force)",
-      "PowerShell(Set-Location \"C:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\"; powershell -ExecutionPolicy Bypass -File \".\\\\scripts\\\\setup.ps1\")",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\.claude-plugin\\\\plugin.json\" | Select-String \"command|args\" | Select-Object -First 4)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\hooks\\\\context-mode-cache-heal.mjs\" -TotalCount 30)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\.claude-plugin\\\\plugin.json\" | ConvertFrom-Json | Select-Object -ExpandProperty mcpServers | ConvertTo-Json -Depth 5)",
-      "PowerShell($ip = Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\installed_plugins.json\" -Raw | ConvertFrom-Json; $ip.plugins.'context-mode@context-mode' | ConvertTo-Json)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\installed_plugins.json\" -Raw)",
-      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.claude\\\\plugins\\\\cache\\\\context-mode\\\\context-mode\\\\1.0.162\\\\plugin.json\" -Raw)",
-      "mcp__plugin_context-mode_context-mode__ctx_execute_file",
-      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
-      "mcp__plugin_context-mode_context-mode__ctx_search",
-      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('version:', d.get\\('version'\\)\\); print\\('description:', d.get\\('description'\\)\\); print\\('bin:', d.get\\('bin'\\)\\); print\\('main:', d.get\\('main'\\)\\)\")",
-      "Bash(curl -s \"https://registry.npmjs.org/@opendataloader/pdf/2.4.7\")",
-      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('readme',''\\)[:3000]\\)\")",
-      "Bash(python .claude/skills/plan-analysis/scripts/validate-artifacts.py *)",
-      "Bash(npx --yes @opendataloader/pdf --help)",
-      "Bash(node_modules\\\\.bin\\\\opendataloader-pdf --version)",
-      "Bash(Remove-Item \"c:\\\\Users\\\\khen\\\\Desktop\\\\Agents\\\\Employee System Analyst Expert\\\\ai-sa-employee\\\\references\\\\gstack-reference.md\" -Force)",
-      "PowerShell(winget install --id TheDocumentFoundation.LibreOffice -e --accept-source-agreements --accept-package-agreements --silent)",
-      "PowerShell(winget search poppler --accept-source-agreements)",
-      "PowerShell(winget install --id oschwartz10612.Poppler -e --accept-source-agreements --accept-package-agreements --silent)",
-      "PowerShell(python -m pip install --quiet defusedxml lxml openpyxl pdf2image pdfplumber pillow pypdf validators)",
-      "PowerShell(python -c \"import defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf, validators; print\\('all 8 packages import OK'\\)\")",
-      "PowerShell(git mv skills ai-sa-employee/skills)",
-      "PowerShell(git mv document-skills ai-sa-employee/document-skills)",
-      "PowerShell(New-Item -ItemType Directory -Force engines)",
-      "PowerShell(\"--- moving ---\")",
-      "PowerShell(if \\($?\\) { \"moved skills/ -> ai-sa-employee/skills/\" })",
-      "PowerShell(if \\($?\\) { \"moved document-skills/ -> ai-sa-employee/document-skills/\" })",
-      "PowerShell(\"--- verify ---\")",
-      "Bash(git -C \"c:/Users/khen/Documents/ChatGPT/MYPS\" status --short)",
-      "PowerShell(& sqlcmd -S \".\" -E -d master -Q \"SELECT @@SERVERNAME AS ServerName, @@VERSION AS Ver\" -C -h -1 2>&1)",
-      "PowerShell(& sqlcmd -S \".\\\\MSSQLSERVER01\" -E -d master -Q \"SELECT @@SERVERNAME AS ServerName\" -C -h -1 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d master -Q \"SELECT name, state_desc, create_date FROM sys.databases ORDER BY name\" -C -h -1 2>&1)",
-      "PowerShell(& sqlcmd -S \".\\\\MSSQLSERVER01\" -E -d master -Q \"SELECT name, state_desc, create_date FROM sys.databases ORDER BY name\" -C -h -1 2>&1)",
-      "Bash(git add *)",
-      "Bash(git commit -m ' *)",
-      "Bash([ -d \"$P\" ])",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps branch --show-current)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps status --short)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps diff --stat)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps diff -- DBHelper/Models/Table/ModificationRules.cs)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps diff -- DBHelper/Models/Table/Revision/RevisionRules.cs)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log --oneline -8)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps diff -- WebAPI/Controllers/Revision/RevisionController.cs)",
-      "Bash(grep -n '^| \\\\*\\\\*Status\\\\*\\\\* | Open, found not fixed |$' c:/Users/khen/Documents/ChatGPT/MYPS/memory/clients/myps/myps-system/risks.md)",
-      "PowerShell(& \"c:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\scripts\\\\codex-sync-startup.ps1\")",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '%Revision%' AND TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME\" -C -h -1 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'tTransactionLog' ORDER BY ORDINAL_POSITION\" -C -h -1 -s \"|\" -W 2>&1)",
-      "Bash(find /c/Users/khen/source/repos/mf1027/project_myps/DBHelper/Models -iname *Revision* -o -iname *TransactionLog*)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log --oneline -10)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log --oneline -3 -- WebAPI/Services/Revision/IRevisionPcmaPublisher.cs)",
-      "Bash(git -C /c/Users/khen/source/repos/mf1027/project_myps log -1 --stat)",
-      "Bash(dotnet build *)",
-      "Bash(dotnet test *)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; EXEC sp_helptext 'pRecomputeProjectPublishable'\" -C -h -1 -W -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id = OBJECT_ID\\('dbo.pRecomputeProjectPublishable'\\)\" -C -h -1 -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id = OBJECT_ID\\('dbo.pRecomputeProjectPublishable'\\)\" -C -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SELECT o.name, o.type_desc FROM sys.sql_modules m JOIN sys.objects o ON o.object_id=m.object_id WHERE m.definition LIKE '%IsPublishable%' ORDER BY o.name\" -C -h -1 -s \"|\" -W 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id=OBJECT_ID\\('dbo.sp_myps_pub_project'\\)\" -C -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d \"myps_db_revision\" -Q \"SET NOCOUNT ON; SELECT definition FROM sys.sql_modules WHERE object_id=OBJECT_ID\\('dbo.pPublishProgram'\\)\" -C -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SELECT OBJECT_DEFINITION\\(OBJECT_ID\\('dbo.pRecomputeProjectPublishable'\\)\\)\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -i \"C:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\deliverables\\\\documents\\\\drill-project-publishable.sql\" -y 0 -W 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -i \"C:\\\\Users\\\\khen\\\\Documents\\\\ChatGPT\\\\MYPS\\\\memory\\\\clients\\\\myps\\\\myps-system\\\\deliverables\\\\documents\\\\drill-project-publishable.sql\" -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SELECT OBJECT_DEFINITION\\(OBJECT_ID\\('dbo.fProjectComponentCost'\\)\\)\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name FROM sys.procedures WHERE name IN \\('sp_myps_pub_funding_byProgram','sp_myps_pub_funding_byProject','sp_myps_pub_origin_byProjComp','sp_myps_pub_PrexC','sp_myps_pub_program','sp_myps_pub_ProgramType','sp_myps_pub_project','sp_myps_pub_project_component_byProgram','sp_myps_pub_project_component_byProject'\\) ORDER BY name\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectStages' ORDER BY ORDINAL_POSITION\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT 'tProjectMajorWorkItem' AS TableName, COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectMajorWorkItem' ORDER BY ORDINAL_POSITION\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectComponentCost' ORDER BY ORDINAL_POSITION\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT OBJECT_DEFINITION\\(OBJECT_ID\\('dbo.fProjectMajorWorkItem'\\)\\)\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='vProjectLatest' ORDER BY ORDINAL_POSITION\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectMajorWorkLocations' ORDER BY ORDINAL_POSITION\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name FROM sys.procedures WHERE name = 'pExportRawProjectsMajorItems'\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name, create_date, modify_date FROM sys.procedures WHERE name = 'pGenerateAIP01'\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tProjectComponentCostPerYear' ORDER BY ORDINAL_POSITION\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN \\('vAdminDEO','vAdminOperatingUnit','vAdminImplementingOffice','tOptionAdminAreaCongressionalDistrict'\\)\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='tOptionAdminAreaCongressionalDistrict'\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT TOP 3 ProgramId, ProgramFK FROM tProgramRevisions\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"EXEC dbo.pGenerateAIP01 @ProgramId = N'jimeneznr_08132026_182745', @StageName = N'BP'\" -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT name, create_date, modify_date FROM sys.procedures WHERE name = 'pGenerateAIPComponents'\" -y 0)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -i \"C:\\\\Users\\\\khen\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-khen-Documents-ChatGPT-MYPS\\\\de3fac78-284f-42a4-8296-a6c96d22bc3d\\\\scratchpad\\\\fix-pGenerateAIP01.sql\" -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"EXEC dbo.pGenerateAIP01 @ProgramId = N'jimeneznr_08132026_182745'\" -y 0 2>&1)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT p.name AS ProcName, pa.parameter_id AS Ord, pa.name AS ParamName, t.name AS DataType, pa.max_length, pa.is_nullable, pa.has_default_value, pa.default_value FROM sys.procedures p JOIN sys.parameters pa ON pa.object_id = p.object_id JOIN sys.types t ON t.user_type_id = pa.user_type_id WHERE p.name IN \\('pGenerateAIP01','pGenerateRDIP','pGenerateRBPComponents','pGenerateRBP','pGenerateAIPComponents'\\) ORDER BY p.name, pa.parameter_id\" -y 0 -W)",
-      "PowerShell(& sqlcmd -S \".\" -E -d myps_db_revision -Q \"SET NOCOUNT ON; SELECT p.name AS ProcName, pa.parameter_id AS Ord, pa.name AS ParamName, t.name AS DataType, pa.max_length, pa.is_nullable, pa.has_default_value, pa.default_value FROM sys.procedures p JOIN sys.parameters pa ON pa.object_id = p.object_id JOIN sys.types t ON t.user_type_id = pa.user_type_id WHERE p.name IN \\('pGenerateAIP01','pGenerateRDIP','pGenerateRBPComponents','pGenerateRBP','pGenerateAIPComponents'\\) ORDER BY p.name, pa.parameter_id\" -y 0)",
-      "Skill(update-config)",
-      "Skill(update-config:*)",
-      "Bash(echo \"---exit: $?---\")",
-      "Bash(jq --version)",
-      "Bash(chmod +x .claude/hooks/*.sh)",
-      "Bash(rm -rf .claude/memory/gate)",
-      "Bash(bash .claude/hooks/memory-gate-mark-read.sh)",
-      "Bash(echo \"exit=$?\")",
-      "Bash(bash .claude/hooks/memory-gate-check.sh)",
-      "Bash(echo \"exit=$? \\(blank above = correct\\)\")",
-      "PowerShell(& sqlcmd -S 192.168.50.200 -U sa -P '@dmin123' -d myps_db_dev -Q \"SET NOCOUNT ON; SELECT t.name AS TableName, c.column_id AS Ord, c.name AS ColumnName, ty.name AS DataType, c.is_identity FROM sys.columns c JOIN sys.tables t ON t.object_id=c.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id WHERE t.name IN \\('tImportingStatus','tProjectSet','tProjectGroups','tRevisionPCMAComponent','tImportJob','tImportJobResult'\\) ORDER BY t.name, c.column_id;\" -W -s\"|\")",
-      "Bash(iconv -f UTF-16LE -t UTF-8 \"Main/LOCAL-MYPS\\(table-schema\\).sql\")",
-      "PowerShell(& \"C:\\\\Users\\\\khen\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-khen-Documents-ChatGPT-MYPS\\\\de3fac78-284f-42a4-8296-a6c96d22bc3d\\\\scratchpad\\\\gen-alter-transaction-sps.ps1\")",
-      "PowerShell(& sqlcmd -S \"192.168.50.200\" -U sa -P \"@dmin123\" -d \"myps_db_dev\" -Q $q -C -W)"
-    ],
-    "additionalDirectories": [
-      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\Main",
-      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps",
-      "C:\\Users\\khen\\Desktop\\Projects\\Obsidian\\project_obsidian_mem",
-      "C:\\Users\\khen\\.claude",
-      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\.claude",
-      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\DBHelper\\Models\\Enums",
-      "C:\\Users\\khen\\source\\repos\\mf1027\\project_myps\\Helpers"
-    ]
+    "allow": [],
+    "additionalDirectories": []
   },
   "hooks": {
     "SessionStart": [
@@ -186,8 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude",
-            "timeout": 10
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude"
           }
         ]
       }
@@ -197,8 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase prompt_submit",
-            "timeout": 10
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase prompt_submit"
           }
         ]
       }
@@ -209,8 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/memory-gate-mark-read.sh",
-            "timeout": 5
+            "command": "bash .claude/hooks/memory-gate-mark-read.sh"
           }
         ]
       },
@@ -219,8 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase tool_complete",
-            "timeout": 10
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase tool_complete"
           }
         ]
       }
@@ -231,8 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/memory-gate-check.sh",
-            "timeout": 5
+            "command": "bash .claude/hooks/memory-gate-check.sh"
           }
         ]
       }
@@ -242,8 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase postflight",
-            "timeout": 10
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase postflight"
           }
         ]
       }

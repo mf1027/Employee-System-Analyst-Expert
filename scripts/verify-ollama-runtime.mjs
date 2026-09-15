@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 export const DEFAULT_HOST = 'http://localhost:11434';
 export const DEFAULT_MIN_CONTEXT_TOKENS = 65536;
+export const DEFAULT_REQUEST_TIMEOUT_MS = 30000;
 
 function parseArgs(argv) {
   const args = { host: process.env.OLLAMA_HOST || DEFAULT_HOST, model: process.env.OLLAMA_MODEL || '', json: false };
@@ -38,17 +39,27 @@ function endpoint(host, path) {
   return `${host.replace(/\/+$/, '')}${path}`;
 }
 
-async function getJson(fetchImpl, url, options = {}) {
-  const response = await fetchImpl(url, options);
-  const body = await response.json();
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return body;
+async function getJson(fetchImpl, url, options = {}, requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
+  try {
+    const response = await fetchImpl(url, { ...options, signal: controller.signal });
+    const body = await response.json();
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return body;
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error(`request timed out after ${requestTimeoutMs}ms`);
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function verifyOllama({
   host = DEFAULT_HOST,
   model = '',
   minContext = DEFAULT_MIN_CONTEXT_TOKENS,
+  requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
   fetchImpl = fetch,
 } = {}) {
   const result = {
@@ -72,7 +83,7 @@ export async function verifyOllama({
 
   let tags;
   try {
-    tags = await getJson(fetchImpl, endpoint(host, '/api/tags'));
+    tags = await getJson(fetchImpl, endpoint(host, '/api/tags'), {}, requestTimeoutMs);
     result.serviceReachable = true;
   } catch (error) {
     result.errors.push(`service unreachable: ${error.message}`);
@@ -100,7 +111,7 @@ export async function verifyOllama({
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ model }),
-    });
+    }, requestTimeoutMs);
     result.contextCapacity = findContextLength(metadata);
     if (result.contextCapacity === undefined) {
       result.errors.push('context capacity is not exposed by model metadata');
@@ -138,7 +149,7 @@ export async function verifyOllama({
           },
         }],
       }),
-    });
+    }, requestTimeoutMs);
     const calls = response?.message?.tool_calls;
     const call = Array.isArray(calls) ? calls.find((item) => item?.function?.name === 'read_only_probe') : null;
     result.toolCallingVerified = Boolean(call && call.function.arguments && typeof call.function.arguments === 'object');

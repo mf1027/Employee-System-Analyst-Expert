@@ -69,6 +69,18 @@ test('classifies Ollama and Ponytail gates without manufacturing success', () =>
   }), 'BLOCKED');
 });
 
+test('requires verified canonical skill paths before any runtime can be VERIFIED', () => {
+  assert.equal(classifyRuntimeStatus({
+    provider: 'native',
+    hostToolsVerified: true,
+    hooksVerified: true,
+    ponytailVerified: true,
+    vaultVerified: true,
+    mindmapWriteAuthorized: true,
+    skillPathsVerified: false,
+  }), 'UNVERIFIED');
+});
+
 test('event payload keeps four-mode identity and excludes sensitive hook fields', () => {
   const event = buildRuntimeEvent({
     host: 'claude',
@@ -238,4 +250,17 @@ test('postflight leaves the mind-map byte-identical until --authorize-mindmap is
   const authorized = await runRuntimeSync([...args, '--authorize-mindmap'], { writeOutput: () => {} });
   assert.equal(authorized.event.overall_status, 'VERIFIED');
   assert.match(fs.readFileSync(mapPath, 'utf8'), /Overall status: VERIFIED/);
+});
+
+test('vault verification reports vault readiness, not live runtime verification', async () => {
+  const vault = createVault();
+  const output = [];
+  const result = await runRuntimeSync(['--verify', '--vault', vault, '--json'], {
+    writeOutput: (line) => output.push(line),
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.status, 'VAULT_READY');
+  assert.equal(result.result.scope, 'vault-only');
+  assert.match(output[0], /VAULT_READY/);
 });

@@ -561,7 +561,10 @@ cannot support the required context or read-only tool smoke test is `UNVERIFIED`
 Native Claude, Ollama-backed Claude, native Codex, and Ollama-backed Codex are separate verification
 targets. Validate safe matching host evidence with `runtime-sync.mjs --dry-run` before any ledger
 write. The helper records the active host/provider pair and updates the Agent Tooling Mindmap only
-during an explicitly authorized `--postflight --authorize-mindmap`.
+during an explicitly authorized `--postflight --authorize-mindmap`. Its `--verify` result is
+`VAULT_READY` only: it validates the vault artifacts and is never a substitute for a fresh host-tool,
+Ponytail, or Ollama smoke test. Project command permissions are deny-by-default; approve only the
+specific command required for the current task.
 
 For relevant work, use the same routing chain in every host: Agent Tooling Mindmap →
 `ai-sa-employee/skills/skills.md` → one canonical task skill → constrained Ponytail when applicable

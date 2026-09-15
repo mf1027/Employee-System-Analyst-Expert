@@ -43,12 +43,13 @@ export function classifyRuntimeStatus({
   hostToolsVerified = false,
   hooksVerified = false,
   ponytailVerified = false,
+  skillPathsVerified = true,
   vaultVerified = false,
   mindmapWriteAuthorized = false,
 }) {
   if (!['native', 'ollama'].includes(provider)) return 'UNVERIFIED';
   if (!vaultVerified || !mindmapWriteAuthorized) return 'BLOCKED';
-  if (!hostToolsVerified || !hooksVerified || !ponytailVerified) return 'UNVERIFIED';
+  if (!skillPathsVerified || !hostToolsVerified || !hooksVerified || !ponytailVerified) return 'UNVERIFIED';
   if (provider === 'ollama') {
     const normalizedOllama = {
       installed: ollama.installed ?? ollama.serviceReachable,
@@ -231,6 +232,11 @@ export function resolveVaultRoot(repoRoot, explicitVault) {
   return fs.existsSync(sibling) ? path.resolve(sibling) : null;
 }
 
+export function verifyCanonicalSkillPaths(repoRoot) {
+  const missing = CANONICAL_SKILL_PATHS.filter((relativePath) => !fs.existsSync(path.join(repoRoot, relativePath)));
+  return { verified: missing.length === 0, missing };
+}
+
 function readStdin() {
   if (!process.stdin.isTTY) {
     try { return fs.readFileSync(0, 'utf8'); } catch { return ''; }
@@ -311,7 +317,7 @@ export function updateMindmap(vaultRoot, event) {
   return target;
 }
 
-export function eventFromInput(args, input, { vaultVerified = false, evidence = null } = {}) {
+export function eventFromInput(args, input, { vaultVerified = false, skillPathsVerified = true, evidence = null } = {}) {
   const host = args.host || (input.host === 'claude' || input.host === 'codex' ? input.host : null);
   const provider = args.provider || input.provider || process.env.RUNTIME_SYNC_PROVIDER || 'native';
   if (!host) throw new Error('host is required: use --host claude or --host codex');
@@ -332,6 +338,7 @@ export function eventFromInput(args, input, { vaultVerified = false, evidence = 
     hostToolsVerified: evidenceResult.hostToolsVerified,
     hooksVerified: evidenceResult.hooksVerified,
     ponytailVerified: evidenceResult.ponytailVerified,
+    skillPathsVerified,
     vaultVerified,
     mindmapWriteAuthorized: args.authorizeMindmap === true,
   });
@@ -364,10 +371,11 @@ export async function runRuntimeSync(argv, { repoRoot = repoRootFromScript(), wr
       vault: vaultRoot,
       mindmap: vaultRoot ? fs.existsSync(mindmapPath(vaultRoot)) : false,
       ledger: vaultRoot ? fs.existsSync(ledgerPath(vaultRoot)) : false,
-      status: vaultRoot && fs.existsSync(mindmapPath(vaultRoot)) ? 'READY' : 'BLOCKED',
+      scope: 'vault-only',
+      status: vaultRoot && fs.existsSync(mindmapPath(vaultRoot)) ? 'VAULT_READY' : 'BLOCKED',
     };
     writeOutput(args.json ? JSON.stringify(result) : `Runtime sync: ${result.status}`);
-    return { exitCode: result.status === 'READY' ? 0 : 2, result };
+    return { exitCode: result.status === 'VAULT_READY' ? 0 : 2, result };
   }
   if (!['hook', 'preflight', 'postflight'].includes(args.command)) {
     writeOutput('Usage: runtime-sync.mjs --hook|--preflight|--postflight --host claude|codex [--provider native|ollama] [--evidence evidence.json] [--dry-run]');
@@ -379,10 +387,15 @@ export async function runRuntimeSync(argv, { repoRoot = repoRootFromScript(), wr
   }
   const input = args.command === 'hook' ? parseHookInput(readStdin()) : {};
   const evidence = readEvidence(args.evidence);
+  const skillPaths = verifyCanonicalSkillPaths(repoRoot);
   const event = eventFromInput(
     { ...args, phase: args.phase || (args.command === 'preflight' ? 'preflight' : args.command === 'postflight' ? 'postflight' : null) },
     input,
-    { vaultVerified: fs.existsSync(mindmapPath(vaultRoot)), evidence },
+    {
+      vaultVerified: fs.existsSync(mindmapPath(vaultRoot)),
+      skillPathsVerified: skillPaths.verified,
+      evidence,
+    },
   );
   event.mindmap_path = path.relative(vaultRoot, mindmapPath(vaultRoot));
   if (!args.dryRun) {
