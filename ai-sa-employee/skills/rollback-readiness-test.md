@@ -16,6 +16,10 @@ evidence.
 This is a proof/testing skill. It does not authorize code changes, schema changes, git operations,
 or permanent database mutation.
 
+For relevant Ollama, Ponytail, Soup, skill-synchronization, or mind-map work, run
+`ai-sa-employee/skills/ollama-agent-runtime.md` first. Its runtime status is a separate gate and
+must be reported honestly; it does not replace this skill's readiness evidence or verdict.
+
 ## Constrained Ponytail integration
 
 When the task includes choosing, proposing, or authoring test-harness code, helpers, queries,
@@ -62,9 +66,8 @@ evidence and rollback-readiness layer.
 - Never run git commit, push, reset, checkout, or staging commands.
 - Never mutate production databases.
 - Never connect to a live/prod DB. For MYPS specifically, the approved target and forbidden
-  names/hosts change over time (revised 2026-08-25 — see
-  `memory/clients/myps/myps-system/CODEX_SYNC_STARTUP.md`'s "DB safety rules" for the current
-  standing target; don't hardcode a specific host/DB name here, it will go stale).
+  names/hosts change over time; read the current MYPS Obsidian sync protocol and approved task
+  instruction instead of trusting a stale machine-specific path.
 - Never perform permanent DB writes by default.
 - Rollback drills require an explicitly approved target database for the current task.
 - For MYPS, do not create or modify handover/planning Markdown inside `project_myps`.

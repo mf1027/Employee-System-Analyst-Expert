@@ -31,13 +31,20 @@
 #>
 
 param(
-    [string]$ProjectMypsPath = "C:\Users\khen\source\repos\mf1027\project_myps",
-    [string]$MypsWorkspacePath = "C:\Users\khen\Documents\ChatGPT\MYPS",
-    [string]$VaultPath = "C:\Users\khen\Desktop\Projects\Obsidian\project_obsidian_mem",
-    [string]$PythonExe = "C:\Users\khen\AppData\Local\Python\bin\python.exe"
+    [string]$ProjectMypsPath = $env:MYPS_PROJECT_PATH,
+    [string]$MypsWorkspacePath = $env:MYPS_WORKSPACE_PATH,
+    [string]$VaultPath = $env:MYPS_VAULT_ROOT,
+    [string]$PythonExe = $env:MYPS_PYTHON_EXE
 )
 
 $ErrorActionPreference = "Stop"
+
+$repoRoot = Split-Path $PSScriptRoot -Parent
+if ([string]::IsNullOrWhiteSpace($MypsWorkspacePath)) { $MypsWorkspacePath = $repoRoot }
+if ([string]::IsNullOrWhiteSpace($VaultPath)) {
+    $VaultPath = Join-Path (Split-Path $repoRoot -Parent) "Obsidian\MYPS_Obsidian_Vault"
+}
+if ([string]::IsNullOrWhiteSpace($PythonExe)) { $PythonExe = "python" }
 
 # Wired GLOBALLY (~/.claude/settings.json, ~/.codex/hooks.json) because project_myps cannot
 # carry its own hook config (ADR-107/108 zero-footprint) -- same pattern already proven by
@@ -177,7 +184,7 @@ function Get-SyncText {
 
     # 7. Static DB safety reminder -- always present, never conditional.
     $lines.Add("- DB SAFETY (revised 2026-08-25): myps_db_dev on 192.168.50.200 via appsettings.Development.json's MYPSDb connection string is now the standing approved target -- myps_db_revision is retired. Never myps_db (any host). The sa/@dmin123 credential remains a tracked, OPEN exposure (RISK-090/091) -- accepted as a known condition of this target, not resolved. No DB mutation without explicit per-task operator override.")
-    $lines.Add("- Read CODEX_SYNC_STARTUP.md before starting MYPS backend/database work. This sync check is a summary, not a substitute.")
+    $lines.Add("- Read the MYPS Obsidian Claude + Codex Real-Time Sync Protocol and Agent Tooling Mindmap before starting relevant backend/database or runtime work. This sync check is a summary, not a substitute.")
 
     return ($lines -join "`n")
 }

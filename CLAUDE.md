@@ -93,6 +93,8 @@ Before responding to anything in a new session, in this exact order:
    `C:\Users\Msi\Desktop\LLM\Obsidian\MYPS_Obsidian_Vault\MYPS\00 - START HERE.md`,
    `MYPS/00 - Home & Navigation/MYPS Current State Dashboard.md`, and
    `MYPS/20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md`.
+   For Ollama, Soup, Ponytail, skill, or readiness work, then read
+   `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,
    open risks, blocked decisions, outstanding deliverables. Format:
    *"Before we start — X open items from last session: [list]."* Do not wait to be asked.
@@ -257,7 +259,7 @@ These are always active. No mode, client, or task overrides them.
    the `-i`/interactive path fails with a misleading "-E and -U/-P mutually exclusive" error. This
    is the standing rule for all DB execution. Target names below are illustrative of the *pattern*
    (real host/DB, real PowerShell invocation) — for the CURRENT approved target, always check
-   `CODEX_SYNC_STARTUP.md`'s "DB safety rules" rather than trusting a name here; it changes over
+   the current MYPS Obsidian sync protocol's DB safety rules rather than trusting a name here; it changes over
    time (was `myps_db_revision`/local, is `myps_db_dev`/192.168.50.200 as of 2026-08-25, ADR-118 —
    this line itself went stale for exactly that reason before this correction, ADR-121). `myps_db`
    the name stays forbidden regardless of which host is current. `Mock_PCMA` remains the PCMA-side
@@ -265,8 +267,8 @@ These are always active. No mode, client, or task overrides them.
    **Substrate-identity check before asserting or editing a schema/object (SKL-047):** before
    trusting a schema/object fact (a column doesn't exist, a constraint is set to CASCADE, a
    generated ID format matches a pattern) or shipping an edit built on one, confirm which
-   database/configuration is *currently* the active target — cheap gate: check `CODEX_SYNC_STARTUP.md`
-   or the connection string actually in use. Don't reuse a fact confirmed against a substrate that may
+   database/configuration is *currently* the active target — cheap gate: check the current MYPS
+   Obsidian sync protocol or the connection string actually in use. Don't reuse a fact confirmed against a substrate that may
    since have been replaced or repointed. Caught live: 2026-08-12 answered "ComponentId doesn't exist
    on tProjectMajorWorkItem" — true of the DB queried for weeks (myps_db_revision), false of the one
    the application hit (myps_db_dev), rebuilt from scratch that evening; 2026-08-25/26 changed
@@ -566,6 +568,12 @@ Soup v0.75.0 is optional fine-tuning/post-training tooling only. It is not an Ol
 loader, agent host, or Ponytail implementation. Do not vendor the ZIP or add its heavy training
 stack to the normal Employee setup. Fine-tuned models require a separate compatibility/import
 check before Ollama can serve them.
+
+For explicit Soup work, read `ai-sa-employee/skills/soup-model-preparation.md`. It checks global Soup
+first, then the verified ignored repo-local environment, and remains plan-only until the operator
+approves the exact training, export, deployment, or model-replacement operation. Ordinary Employee
+tasks must not invoke Soup. Relevant tasks must report the runtime-sync block and cannot claim
+completion when the applicable Ponytail, Ollama, skill-path, or mind-map gate is unverified.
 
 ---
 

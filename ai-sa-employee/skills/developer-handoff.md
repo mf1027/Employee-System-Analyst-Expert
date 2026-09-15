@@ -161,11 +161,7 @@ pass (RISK-073–080, ADR-094) reconciled them.
    `scripts/generate-db-asbuilt.py` for the existing generated-not-hand-maintained pattern) over
    maintaining it by hand.
 
-**Concrete implementation (MYPS, 2026-08-13):**
-`memory/clients/myps/myps-system/CODEX_SYNC_STARTUP.md` — role split, startup checklist, canonical
-file list, DB safety rules, current Revision authority, and a report-back protocol, meant to be
-read at the start of every Codex/MYPS implementation chat. Paired with a read-only
-`scripts/codex-sync-startup.ps1` in the same folder (prints branch/dirty-file state for both
-repos, latest ADR/RISK headers, a DB-target warning; never writes, never connects to a database
-unless `-CheckDb` is passed, and even then the target is hardcoded, not parameterizable). Use this
-pair as the template when another client needs the same external-agent protocol.
+**Current MYPS authority:**
+The MYPS Obsidian `Claude + Codex Real-Time Sync Protocol` and `Agent Tooling Mindmap` are the
+shared startup authorities. Resolve the vault through `MYPS_VAULT_ROOT` or the documented
+sibling-vault rule; do not depend on the retired machine-specific startup file.

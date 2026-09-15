@@ -280,6 +280,8 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `deep-analysis` | "analyze this deeply", "RCA this", "is this the right approach", "challenge this plan" |
 | `code-behavior-audit` | "audit this code for bugs", "trace this for issues", "check this controller for defects" — behavior trace with code/config/memory/mind-map/DB authority reconciliation |
 | `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict; uses constrained upstream Ponytail simplification for implementation/test choices without overriding readiness gates |
+| `ollama-agent-runtime` | "verify Ollama", "sync the agent runtime", "use the mind-map" — verifies the active Claude/Codex host, local model, context/tool calling, Ponytail, canonical skills, and relevant mind-map gates |
+| `soup-model-preparation` | "use Soup", "fine-tune", "post-train", "prepare model for Ollama" — explicit plan-and-verify Soup workflow; training/export/deploy/model replacement require approval |
 | `codex-behavior-parity` | "make Claude work like Codex", "sync Claude and Codex behavior", "Codex personal behavior" — maps Codex operating discipline to Claude-safe MYPS workflow rules without claiming unsupported runtime features |
 
 **Not in the table above:** `plan-analysis` is an agent-local, client-scoped planning skill at
@@ -298,6 +300,11 @@ specific readiness contract remains in `ai-sa-employee/skills/rollback-readiness
 `AGENTS.md` tells Codex where to read it. Ponytail simplifies implementation and test choices;
 it never overrides rollback, authentication, evidence, safety, or mind-map completion gates.
 
+Relevant Ollama/Ponytail/Soup/readiness work must first use
+`ai-sa-employee/skills/ollama-agent-runtime.md`. It requires the Agent Tooling Mindmap preflight,
+independent Claude/Codex verification, and an approval-gated sync entry before completion. Soup is
+only invoked through `ai-sa-employee/skills/soup-model-preparation.md` when explicitly requested.
+
 ### Optional Soup model preparation
 
 `Soup-0.75.0.zip` is the external `soup-cli` fine-tuning/post-training tool. It is not an Ollama
@@ -306,6 +313,22 @@ if needed, install `soup-cli==0.75.0` in an isolated tool environment such as `p
 heavy training dependencies to normal setup. A Soup-produced model still needs a separate
 compatibility/export/import check before Ollama can serve it; Soup is never required for Employee
 skills or readiness verdicts.
+
+When explicitly requested, setup can install Soup into the ignored repo-local environment after
+checking the archive hash:
+
+```powershell
+.\scripts\setup.ps1 -InstallSoup -SoupArchivePath C:\Users\Msi\Downloads\Soup-0.75.0.zip
+.\scripts\setup.ps1 -InstallSoup -InstallSoupTraining -SoupArchivePath C:\Users\Msi\Downloads\Soup-0.75.0.zip
+```
+
+```bash
+bash scripts/setup.sh --install-soup --soup-archive /path/to/Soup-0.75.0.zip
+bash scripts/setup.sh --install-soup --install-soup-training --soup-archive /path/to/Soup-0.75.0.zip
+```
+
+The training extra is a separate explicit choice. Setup never runs `soup train`, `soup export`,
+`soup deploy`, or `ollama create`, and never replaces a global Soup installation.
 
 **Delivery skills (design → build bridge):**
 

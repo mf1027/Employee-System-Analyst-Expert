@@ -18,12 +18,28 @@ GRAY='\033[0;90m'
 NC='\033[0m'
 
 FAILED=0
+INSTALL_SOUP=0
+INSTALL_SOUP_TRAINING=0
+SOUP_ARCHIVE="${SOUP_ARCHIVE:-}"
 
 step() { echo -e "\n${CYAN}==> $1${NC}"; }
 ok()   { echo -e "    ${GREEN}[OK]   $1${NC}"; }
 fail() { echo -e "    ${RED}[FAIL] $1${NC}"; FAILED=1; }
 warn() { echo -e "    ${YELLOW}[WARN] $1${NC}"; }
 info() { echo -e "    ${GRAY}$1${NC}"; }
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --install-soup) INSTALL_SOUP=1 ;;
+        --install-soup-training) INSTALL_SOUP_TRAINING=1; INSTALL_SOUP=1 ;;
+        --soup-archive)
+            shift
+            SOUP_ARCHIVE="${1:-}"
+            ;;
+        *) warn "Unknown setup option: $1" ;;
+    esac
+    shift
+done
 
 # -- 1. Prerequisites ----------------------------------------------------------
 
@@ -246,7 +262,33 @@ if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CL
     echo -e "    Ponytail lifecycle hooks require Node.js (already checked above)."
 fi
 
-# -- 5. Ollama local-model check -----------------------------------------------
+# -- 5. Soup tool check/install -------------------------------------------------
+
+step "Checking Soup model-preparation tool"
+SOUP_ARGS=("$ROOT/scripts/soup-setup.mjs" --repo "$ROOT")
+[ -n "$SOUP_ARCHIVE" ] && SOUP_ARGS+=(--archive "$SOUP_ARCHIVE")
+[ "$INSTALL_SOUP" -eq 1 ] && SOUP_ARGS+=(--install)
+[ "$INSTALL_SOUP_TRAINING" -eq 1 ] && SOUP_ARGS+=(--training)
+
+SOUP_OUTPUT=""
+if SOUP_OUTPUT=$(node "${SOUP_ARGS[@]}" 2>&1); then
+    SOUP_EXIT=0
+else
+    SOUP_EXIT=$?
+fi
+printf '%s\n' "$SOUP_OUTPUT"
+if [ "$SOUP_EXIT" -eq 0 ]; then
+    ok "Soup runtime verified"
+elif [ "$INSTALL_SOUP" -eq 1 ]; then
+    warn "Soup installation/check did not complete; model preparation remains blocked"
+    info "  Re-run with a valid Soup archive and Python 3.10-3.12, or inspect the reported reason."
+else
+    info "Soup is optional. To install it into the ignored repo-local environment:"
+    info "  bash scripts/setup.sh --install-soup --soup-archive <path-to-Soup-0.75.0.zip>"
+    info "  Add --install-soup-training only when training dependencies are explicitly needed."
+fi
+
+# -- 6. Ollama local-model check -----------------------------------------------
 
 step "Checking Ollama local-model runtime"
 
@@ -254,6 +296,7 @@ OLLAMA_INSTALLED=0
 OLLAMA_SERVICE_OK=0
 OLLAMA_MODEL_CONFIGURED=0
 OLLAMA_MODEL_OK=0
+OLLAMA_CAPABILITY_OK=0
 OLLAMA_CLOUD_MODEL=0
 OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}"
 OLLAMA_HOST="${OLLAMA_HOST%/}"
@@ -291,7 +334,20 @@ else
     warn "Ollama not installed — local-model execution is unavailable"
 fi
 
-if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ]; then
+if [ "$OLLAMA_INSTALLED" -eq 1 ] && [ "$OLLAMA_SERVICE_OK" -eq 1 ] && [ "$OLLAMA_MODEL_OK" -eq 1 ]; then
+    echo "    Read-only Ollama context/tool-calling probe:"
+    if node "$SCRIPT_DIR/verify-ollama-runtime.mjs" --host "$OLLAMA_HOST" --model "$OLLAMA_MODEL"; then
+        OLLAMA_CAPABILITY_OK=1
+    else
+        warn "Ollama context/tool-calling verification did not pass"
+    fi
+    info "Context capacity and Tool calling verified by verify-ollama-runtime.mjs; see the probe status above."
+else
+    info "Context capacity and Tool calling verified: not run because Ollama, service, or exact model is unavailable."
+    info "Ollama context/tool-calling probe skipped until the local service and exact model are verified."
+fi
+
+if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ]; then
     echo "    Configure an explicit local model before verification:"
     echo -e "      ${YELLOW}export OLLAMA_MODEL=\"<local-model-name>\"${NC}"
     echo -e "      ${YELLOW}ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this${NC}"
@@ -300,7 +356,7 @@ if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA
     info "Ollama only supplies inference; the host runtime supplies skills, tools, permissions, and hooks."
 fi
 
-# -- 6. Verify document engines ------------------------------------------------
+# -- 7. Verify document engines ------------------------------------------------
 
 step "Verifying document engines (end-to-end)"
 if [ -f "$SCRIPT_DIR/verify-engines.sh" ]; then
@@ -309,7 +365,7 @@ else
     warn "verify-engines.sh not found - skipping engine verification"
 fi
 
-# -- 7. Summary ----------------------------------------------------------------
+# -- 8. Summary ----------------------------------------------------------------
 
 echo ""
 echo -e "${CYAN}======================================${NC}"
@@ -317,7 +373,8 @@ echo -e "${CYAN}  Setup complete${NC}"
 echo -e "${CYAN}======================================${NC}"
 
 if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ] || [ "$CLAUDE_CLI_OK" -eq 0 ] || [ "$CODEX_CLI_OK" -eq 0 ] ||
-   [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ]; then
+   [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ] ||
+   { [ "$INSTALL_SOUP" -eq 1 ] && [ "$SOUP_EXIT" -ne 0 ]; }; then
     echo -e "  ${YELLOW}Action needed: install the missing plugin(s) listed above.${NC}"
 else
     echo -e "  ${GREEN}All dependencies ready. Open this folder in Claude Code.${NC}"

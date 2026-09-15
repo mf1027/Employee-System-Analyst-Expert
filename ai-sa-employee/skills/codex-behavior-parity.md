@@ -51,7 +51,7 @@ Before producing a plan or handoff, read or verify the current authority surface
 
 1. Current operator instruction.
 2. Obsidian MYPS startup notes and current-state dashboard.
-3. `CODEX_SYNC_STARTUP.md`.
+3. The MYPS Obsidian `Claude + Codex Real-Time Sync Protocol` and `Agent Tooling Mindmap`.
 4. Relevant MYPS ADR/RISK/memory lane files.
 5. Live code/config/schema evidence when the task is implementation-related.
 
@@ -218,7 +218,7 @@ Mind-map sync:
 - **A `SessionStart` (or equivalent automated context-injection) hook is a reminder, not a
   substitute.** If a hook auto-injects a summary of MYPS state at session start, treat it as a
   prompt to go read the real sources (Obsidian entry points, `decisions.md`/`risks.md`,
-  `CODEX_SYNC_STARTUP.md`) — never as a replacement for actually reading them.
+  the MYPS Obsidian sync protocol and Agent Tooling Mindmap) — never as a replacement for actually reading them.
 - Git operations (commit, push, reset, checkout, staging) are available when the operator directs
   them, under the workspace's normal safety rules — never run unrequested, never force/destructive
   without explicit confirmation. *Corrected 2026-08-25, ADR-121 — was an absolute "do not run"
@@ -234,8 +234,8 @@ Mind-map sync:
   case specifically, which the general "confirm before force/destructive" wording doesn't by itself
   prompt a pre-emptive check for.
 - DB mutation requires the current task's explicit approval and the workspace's active DB-safety
-  target (`CODEX_SYNC_STARTUP.md`) — same rule as every other skill, not a parity-specific
-  restriction.
+  target from the current MYPS Obsidian sync protocol — same rule as every other skill, not a
+  parity-specific restriction.
 - Do not convert Claude into a fake Codex runtime **in either direction** — never claim inability to
   do something Claude Code can actually do here, and never claim a Codex-only capability Claude
   does not have.

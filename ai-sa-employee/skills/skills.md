@@ -363,6 +363,17 @@ For the local Employee contract, read `.claude/skills/plan-analysis/SKILL.md` fo
 `code-behavior-audit.md` for source behavior tracing, and `rollback-readiness-test.md` for readiness
 evidence and verdicts. Do not create a duplicate `.codex/skills/ponytail` or local Ponytail skill.
 
+## 6b. Cross-agent runtime and Soup skills
+
+| File | Invoked by saying... |
+|---|---|
+| `ollama-agent-runtime.md` | "verify Ollama", "sync the agent runtime", "use the mind-map", or any relevant Ollama/Soup/Ponytail/skill/readiness task — preflight and completion contract for the active Claude or Codex host |
+| `soup-model-preparation.md` | "use Soup", "fine-tune this model", "post-train this model", or "prepare this model for Ollama" — explicit plan-and-verify workflow with approval gates |
+
+These skills are repository contracts, not Ollama-native tools. The active host must read them and
+execute the permitted checks. Soup is not run for ordinary tasks, and a successful Soup command
+never proves repository skill discovery, host tool execution, Ponytail, or MYPS readiness.
+
 | File | Invoked by saying... |
 |---|---|
 | `gather-requirements.md` | "gather requirements", "what do they need" |

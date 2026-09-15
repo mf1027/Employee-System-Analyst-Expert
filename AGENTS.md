@@ -8,10 +8,13 @@ work in this workspace itself).
 
 ## Read first, every session
 
-1. `memory/clients/myps/myps-system/CODEX_SYNC_STARTUP.md` — the canonical startup checklist:
-   role split, DB safety rules, current Revision-schema authority, "canonical files to read" list.
-2. `memory/clients/myps/myps-system/decisions.md` — newest ADR first.
-3. `memory/clients/myps/myps-system/risks.md` — newest RISK first.
+1. Resolve `MYPS_VAULT_ROOT` (or the documented sibling Obsidian vault) and read `MYPS/00 - START
+   HERE.md`, the current-state dashboard, and `MYPS/20 - Standards & Conventions/Claude + Codex
+   Real-Time Sync Protocol.md` — the canonical startup and completion sources.
+2. Read applicable project memory and decision records only after confirming their paths exist;
+   report missing or conflicting startup sources instead of trusting a stale path.
+3. For Ollama, Soup, Ponytail, skills, or MYPS readiness work, read
+   `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
 
 A `SessionStart` hook (`scripts/session-sync.ps1`, wired in `~/.codex/hooks.json`, self-scoped to
 `project_myps`/this workspace) already injects a live summary of the above automatically — git
@@ -20,11 +23,11 @@ a substitute for reading the files above before doing real work.
 
 ## Canonical memory
 
-`C:\Users\khen\Documents\ChatGPT\MYPS\memory\clients\myps\myps-system\` is canonical for the whole
-MYPS engagement — `decisions.md` (ADR-), `risks.md` (RISK-/ASS-), `requirements.md` (REQ-),
-`database.md`, `board.md`. **You do not own these files.** Report findings in plain text; the
-operator (or Claude) logs them as `RISK-`/`ADR-` entries — see `CODEX_SYNC_STARTUP.md`'s "How
-Codex reports findings" section.
+The MYPS Obsidian vault resolved through `MYPS_VAULT_ROOT` is canonical for the live engagement.
+Follow its Claude/Codex sync protocol for the current memory, decision, risk, and reporting sources.
+**You do not own those files.** Report findings in plain text; the operator or Claude records them
+in the canonical vault according to that protocol. If `MYPS_VAULT_ROOT` cannot be resolved, report
+the authority gap instead of using a stale machine-specific path.
 
 ## DB safety — same rule everywhere, stated once here for this workspace's own sessions
 
@@ -33,8 +36,8 @@ Codex reports findings" section.
 now the standing approved target; `myps_db_revision` is retired. **Never** `myps_db` (any host).
 Read-only by default; never mutate without the operator's explicit per-task override. The
 `sa`/`@dmin123` credential remains a tracked, open exposure (RISK-090/091) — accepted as a known
-condition of using this target, not resolved by it. Full detail: `CODEX_SYNC_STARTUP.md`'s
-"DB safety rules" section.
+condition of using this target, not resolved by it. Full detail belongs to the canonical MYPS sync
+protocol and current vault records; do not replace them with a stale startup copy.
 
 ## `project_myps` — separate, stricter rule
 
@@ -48,6 +51,8 @@ When working from this Employee-System-Analyst-Expert repository, use the canoni
 under `ai-sa-employee/skills/`:
 
 - Read `ai-sa-employee/skills/rollback-readiness-test.md` for MYPS readiness testing and verdicts.
+- Read `ai-sa-employee/skills/ollama-agent-runtime.md` for cross-agent runtime and mind-map
+  verification; read `ai-sa-employee/skills/soup-model-preparation.md` only for explicit Soup work.
 - Apply the upstream Ponytail plugin in full mode when choosing or simplifying implementation and
   test work, subject to the rollback skill's safety and evidence gates.
 - Do not create a duplicate Ponytail copy under `.codex/skills/`.
@@ -66,6 +71,9 @@ skill discovery, tools, permissions, hooks, and agent loops. Use an explicit ins
 - Read `.claude/skills/plan-analysis/SKILL.md` for repository-local plan-analysis.
 - Read `ai-sa-employee/skills/code-behavior-audit.md` for existing-code behavior tracing.
 - Read `ai-sa-employee/skills/rollback-readiness-test.md` for the MYPS readiness contract and verdicts.
+- Read `ai-sa-employee/skills/ollama-agent-runtime.md` first for relevant runtime, skill, Ponytail,
+  Soup, or mind-map work; read `ai-sa-employee/skills/soup-model-preparation.md` only when Soup is
+  explicitly requested.
 - Apply upstream Ponytail when simplifying implementation or test choices; it never overrides
   readiness, evidence, authentication, rollback, or safety gates.
 - Do not copy Ponytail into `.codex/skills/`, and do not copy the global plan-analysis bridge here.

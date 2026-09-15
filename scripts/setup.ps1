@@ -3,6 +3,13 @@
 #   cd "Employee System Analyst Expert"
 #   .\scripts\setup.ps1
 
+[CmdletBinding()]
+param(
+    [switch]$InstallSoup,
+    [switch]$InstallSoupTraining,
+    [string]$SoupArchivePath
+)
+
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
 
@@ -253,7 +260,28 @@ if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -no
     Write-Host "    Ponytail lifecycle hooks require Node.js (already checked above)." -ForegroundColor Gray
 }
 
-# -- 5. Ollama local-model check -----------------------------------------------
+# -- 5. Soup tool check/install -------------------------------------------------
+
+Write-Step "Checking Soup model-preparation tool"
+$soupArgs = @((Join-Path $PSScriptRoot "soup-setup.mjs"), "--repo", $root)
+if ($SoupArchivePath) { $soupArgs += @("--archive", $SoupArchivePath) }
+if ($InstallSoup -or $InstallSoupTraining) { $soupArgs += "--install" }
+if ($InstallSoupTraining) { $soupArgs += "--training" }
+
+& node @soupArgs
+$soupExit = $LASTEXITCODE
+if ($soupExit -eq 0) {
+    Write-OK "Soup runtime verified"
+} elseif ($InstallSoup -or $InstallSoupTraining) {
+    Write-WARN "Soup installation/check did not complete; model preparation remains blocked"
+    Write-INFO "  Re-run with a valid Soup archive and Python 3.10-3.12, or inspect the reported reason."
+} else {
+    Write-INFO "Soup is optional. To install it into the ignored repo-local environment:"
+    Write-INFO "  .\scripts\setup.ps1 -InstallSoup -SoupArchivePath <path-to-Soup-0.75.0.zip>"
+    Write-INFO "  Add -InstallSoupTraining only when training dependencies are explicitly needed."
+}
+
+# -- 6. Ollama local-model check -----------------------------------------------
 
 Write-Step "Checking Ollama local-model runtime"
 
@@ -262,6 +290,7 @@ $ollamaInstalled = $null -ne $ollamaCLI
 $ollamaServiceOK = $false
 $ollamaModelConfigured = -not [string]::IsNullOrWhiteSpace($env:OLLAMA_MODEL)
 $ollamaModelOK = $false
+$ollamaCapabilityOK = $false
 $ollamaCloudModel = $ollamaModelConfigured -and $env:OLLAMA_MODEL -match '(?i)(^|[-:])cloud($|[-:])'
 $ollamaHost = if ([string]::IsNullOrWhiteSpace($env:OLLAMA_HOST)) { "http://localhost:11434" } else { $env:OLLAMA_HOST.TrimEnd('/') }
 
@@ -302,7 +331,21 @@ if ($ollamaInstalled) {
     Write-WARN "Ollama not installed - local-model execution is unavailable"
 }
 
-if (-not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK) {
+if ($ollamaInstalled -and $ollamaServiceOK -and $ollamaModelOK) {
+    Write-Host "    Read-only Ollama context/tool-calling probe:" -ForegroundColor White
+    $ollamaVerify = Join-Path $PSScriptRoot "verify-ollama-runtime.mjs"
+    & node $ollamaVerify --host $ollamaHost --model $env:OLLAMA_MODEL
+    $ollamaCapabilityOK = $LASTEXITCODE -eq 0
+    Write-INFO "Context capacity and Tool calling verified by verify-ollama-runtime.mjs; see the probe status above."
+    if (-not $ollamaCapabilityOK) {
+        Write-WARN "Ollama context/tool-calling verification did not pass"
+    }
+} else {
+    Write-INFO "Context capacity and Tool calling verified: not run because Ollama, service, or exact model is unavailable."
+    Write-INFO "Ollama context/tool-calling probe skipped until the local service and exact model are verified."
+}
+
+if (-not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK -or -not $ollamaCapabilityOK) {
     Write-Host "    Configure an explicit local model before verification:" -ForegroundColor White
     Write-Host '      `$env:OLLAMA_MODEL = "<local-model-name>"' -ForegroundColor Yellow
     Write-Host '      ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this' -ForegroundColor Yellow
@@ -311,7 +354,7 @@ if (-not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigu
     Write-Host "    Ollama only supplies inference; the host runtime supplies skills, tools, permissions, and hooks." -ForegroundColor Gray
 }
 
-# -- 6. Verify document engines ------------------------------------------------
+# -- 7. Verify document engines ------------------------------------------------
 
 Write-Step "Verifying document engines (end-to-end)"
 $verify = Join-Path $PSScriptRoot "verify-engines.ps1"
@@ -321,7 +364,7 @@ if (Test-Path $verify) {
     Write-WARN "verify-engines.ps1 not found - skipping engine verification"
 }
 
-# -- 7. Summary ----------------------------------------------------------------
+# -- 8. Summary ----------------------------------------------------------------
 
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
@@ -329,7 +372,9 @@ Write-Host "  Setup complete" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 
 if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailRuntimeOK -or -not $claudeCLIAvailable -or -not $codexCLIAvailable -or
-    -not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK) {
+    -not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK -or
+    -not $ollamaCapabilityOK -or
+    (($InstallSoup -or $InstallSoupTraining) -and $soupExit -ne 0)) {
     Write-Host "  Action needed: install the missing plugin(s) listed above." -ForegroundColor Yellow
 } else {
     Write-Host "  All dependencies ready. Open this folder in Claude Code." -ForegroundColor Green

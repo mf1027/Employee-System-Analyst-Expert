@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+.venv-soup/
+.tools/soup/
 
 # Project-local episodic memory (stays on machine, never pushed)
 .claude-mem/
