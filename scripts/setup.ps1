@@ -278,14 +278,15 @@ else                    { Write-WARN "Claude host unavailable - install Claude C
 if ($codexCLIAvailable) { Write-OK "Codex host available" }
 else                   { Write-WARN "Codex host unavailable - install Codex CLI separately before using this repo." }
 
-$ponytailRuntimeOK = $ponytailClaudeOK -and $ponytailClaudeEnabled -and $ponytailCodexOK
-if ($ponytailRuntimeOK) { Write-OK "Ponytail runtime verified" }
-else                    { Write-WARN "Ponytail runtime not fully verified" }
+$ponytailInstalledEnabled = $ponytailClaudeOK -and $ponytailClaudeEnabled -and $ponytailCodexOK
+if ($ponytailInstalledEnabled) { Write-OK "Ponytail installed/enabled for both available hosts" }
+else                            { Write-WARN "Ponytail installed/enabled status is incomplete" }
 if ($ponytailMarketplaceOK) { Write-OK "Ponytail marketplace available" }
 else                        { Write-WARN "Ponytail marketplace not detected; setup does not add marketplaces automatically" }
-$ponytailHooksTrusted = $ponytailRuntimeOK -and $claudeProjectTrustOK -and $codexProjectTrustOK
-if ($ponytailHooksTrusted) { Write-OK "Ponytail hooks trusted for this project" }
-else { Write-WARN "Ponytail hooks trusted: project trust is not fully verified" }
+if ($claudeProjectTrustOK -or $codexProjectTrustOK) {
+    Write-INFO "Ponytail project-trust configuration was found; it does not prove a lifecycle hook ran."
+}
+Write-WARN "Ponytail hook trust verified by fresh-host smoke: NOT VERIFIED by setup"
 Write-INFO "Review any first-run lifecycle-hook prompt in each host. Setup never bypasses hook trust."
 
 if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {

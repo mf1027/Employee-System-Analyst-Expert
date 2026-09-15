@@ -50,9 +50,17 @@ export function classifyRuntimeStatus({
   if (!vaultVerified || !mindmapWriteAuthorized) return 'BLOCKED';
   if (!hostToolsVerified || !hooksVerified || !ponytailVerified) return 'UNVERIFIED';
   if (provider === 'ollama') {
+    const normalizedOllama = {
+      installed: ollama.installed ?? ollama.serviceReachable,
+      serviceReachable: ollama.serviceReachable,
+      modelConfigured: ollama.modelConfigured ?? ollama.explicitModelConfigured,
+      modelInstalled: ollama.modelInstalled ?? ollama.localModelVerified,
+      toolCallingVerified: ollama.toolCallingVerified,
+      contextVerified: ollama.contextVerified,
+    };
     const required = ['installed', 'serviceReachable', 'modelConfigured', 'modelInstalled', 'toolCallingVerified'];
-    if (required.some((key) => ollama[key] !== true)) return 'UNVERIFIED';
-    if (ollama.contextVerified !== true) return 'LIMITED';
+    if (required.some((key) => normalizedOllama[key] !== true)) return 'UNVERIFIED';
+    if (normalizedOllama.contextVerified !== true) return 'LIMITED';
   }
   return 'VERIFIED';
 }
@@ -78,6 +86,8 @@ export function buildRuntimeEvent({
   ponytailStatus = 'UNVERIFIED',
   soupStatus = 'NOT_APPLICABLE',
   ollama = null,
+  evidenceSummary = null,
+  mindmapStatus = 'NOT_REQUESTED',
   ...ignored
 }) {
   const identity = inferRuntimeIdentity({ host, provider, model });
@@ -97,12 +107,17 @@ export function buildRuntimeEvent({
     ollama_status: identity.provider === 'ollama' ? (ollama || {}) : 'NOT_APPLICABLE',
     ponytail_status: ponytailStatus,
     soup_status: soupStatus,
+    evidence: evidenceSummary,
+    mindmap_status: mindmapStatus,
     overall_status: status,
   });
 }
 
-function parseArgs(argv) {
-  const args = { command: 'help', host: null, provider: null, model: null, phase: null, status: 'UNVERIFIED', vault: null };
+export function parseArgs(argv) {
+  const args = {
+    command: 'help', host: null, provider: null, model: null, phase: null, vault: null,
+    evidence: null, dryRun: false, authorizeMindmap: false, deprecatedStatus: null,
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
     if (value === '--hook') args.command = 'hook';
@@ -110,14 +125,96 @@ function parseArgs(argv) {
     else if (value === '--postflight') args.command = 'postflight';
     else if (value === '--verify') args.command = 'verify';
     else if (value === '--json') args.json = true;
+    else if (value === '--dry-run') args.dryRun = true;
+    else if (value === '--authorize-mindmap') args.authorizeMindmap = true;
     else if (value === '--host') args.host = argv[++i];
     else if (value === '--provider') args.provider = argv[++i];
     else if (value === '--model') args.model = argv[++i];
     else if (value === '--phase') args.phase = argv[++i];
-    else if (value === '--status') args.status = argv[++i];
+    else if (value === '--status') args.deprecatedStatus = argv[++i];
     else if (value === '--vault') args.vault = argv[++i];
+    else if (value === '--evidence') args.evidence = argv[++i];
   }
   return args;
+}
+
+function readEvidence(evidencePath) {
+  if (!evidencePath) return null;
+  let raw;
+  try { raw = fs.readFileSync(path.resolve(evidencePath), 'utf8'); }
+  catch (error) { throw new Error(`evidence file cannot be read: ${error.message}`); }
+  try { return JSON.parse(raw); }
+  catch { throw new Error('evidence file must contain valid JSON'); }
+}
+
+function requireEvidence(condition, message) {
+  if (!condition) throw new Error(`runtime evidence invalid: ${message}`);
+}
+
+function safeHost(host) {
+  if (typeof host !== 'string' || !host) return null;
+  try {
+    const parsed = new URL(host);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return null;
+  }
+}
+
+function safeOllamaSummary(ollama) {
+  return {
+    host: safeHost(ollama.host),
+    model: ollama.model || null,
+    status: ollama.status || 'UNVERIFIED',
+    explicit_model_configured: ollama.explicitModelConfigured === true,
+    service_reachable: ollama.serviceReachable === true,
+    local_model_verified: ollama.localModelVerified === true,
+    context_capacity: Number.isFinite(ollama.contextCapacity) ? ollama.contextCapacity : null,
+    context_verified: ollama.contextVerified === true,
+    tool_calling_verified: ollama.toolCallingVerified === true,
+  };
+}
+
+export function validateRuntimeEvidence(identity, evidence) {
+  requireEvidence(evidence && typeof evidence === 'object' && !Array.isArray(evidence), 'a JSON object is required');
+  requireEvidence(evidence.host === identity.host, 'host does not match command identity');
+  requireEvidence(evidence.provider === identity.provider, 'provider does not match command identity');
+  if (identity.model) requireEvidence(evidence.model === identity.model, 'model does not match command identity');
+
+  const soupStatus = evidence.soup_status || 'NOT_APPLICABLE';
+  requireEvidence(
+    soupStatus === 'NOT_APPLICABLE' || evidence.soup_in_scope === true,
+    'Soup activity requires explicit soup_in_scope: true',
+  );
+  const hostToolsVerified = evidence.host_tool?.read_only_completed === true;
+  const hooksVerified = evidence.ponytail?.hook_trusted === true;
+  const ponytailVerified = evidence.ponytail?.installed === true
+    && evidence.ponytail?.hook_trusted === true
+    && evidence.ponytail?.full_mode_applied === true;
+  let ollama = {};
+  if (identity.provider === 'ollama') {
+    requireEvidence(evidence.ollama && typeof evidence.ollama === 'object', 'raw Ollama verifier result is required');
+    requireEvidence(evidence.ollama.status === 'VERIFIED', 'Ollama verifier status must be VERIFIED');
+    requireEvidence(evidence.ollama.model === identity.model, 'Ollama verifier model does not match command identity');
+    ollama = evidence.ollama;
+  }
+  return {
+    hostToolsVerified,
+    hooksVerified,
+    ponytailVerified,
+    soupStatus,
+    ollama,
+    summary: {
+      host_tool: { read_only_completed: hostToolsVerified },
+      ponytail: {
+        installed: evidence.ponytail?.installed === true,
+        hook_trusted: hooksVerified,
+        full_mode_applied: evidence.ponytail?.full_mode_applied === true,
+      },
+      ollama: identity.provider === 'ollama' ? safeOllamaSummary(ollama) : 'NOT_APPLICABLE',
+      soup_status: soupStatus,
+    },
+  };
 }
 
 function repoRootFromScript() {
@@ -214,28 +311,52 @@ export function updateMindmap(vaultRoot, event) {
   return target;
 }
 
-export function eventFromInput(args, input) {
+export function eventFromInput(args, input, { vaultVerified = false, evidence = null } = {}) {
   const host = args.host || (input.host === 'claude' || input.host === 'codex' ? input.host : null);
   const provider = args.provider || input.provider || process.env.RUNTIME_SYNC_PROVIDER || 'native';
   if (!host) throw new Error('host is required: use --host claude or --host codex');
   const phase = args.phase || input.hook_event_name || 'unknown';
   const model = args.model || input.model || (provider === 'ollama' ? process.env.OLLAMA_MODEL : process.env.NATIVE_MODEL) || null;
+  const identity = inferRuntimeIdentity({ host, provider, model });
+  const evidenceResult = evidence ? validateRuntimeEvidence(identity, evidence) : {
+    hostToolsVerified: false,
+    hooksVerified: false,
+    ponytailVerified: false,
+    soupStatus: 'NOT_APPLICABLE',
+    ollama: {},
+    summary: null,
+  };
+  const status = classifyRuntimeStatus({
+    provider: identity.provider,
+    ollama: evidenceResult.ollama,
+    hostToolsVerified: evidenceResult.hostToolsVerified,
+    hooksVerified: evidenceResult.hooksVerified,
+    ponytailVerified: evidenceResult.ponytailVerified,
+    vaultVerified,
+    mindmapWriteAuthorized: args.authorizeMindmap === true,
+  });
   return buildRuntimeEvent({
-    host,
-    provider,
-    model,
+    ...identity,
     sessionId: input.session_id || process.env.RUNTIME_SYNC_SESSION_ID || null,
     phase,
-    status: args.status,
+    status,
     mindmapPath: null,
-    ponytailStatus: process.env.PONYTAIL_RUNTIME_STATUS || 'UNVERIFIED',
-    soupStatus: process.env.SOUP_RUNTIME_STATUS || (provider === 'ollama' ? 'NOT_APPLICABLE' : 'NOT_APPLICABLE'),
+    ponytailStatus: evidenceResult.ponytailVerified ? 'VERIFIED' : 'UNVERIFIED',
+    soupStatus: evidenceResult.soupStatus,
+    ollama: identity.provider === 'ollama' ? safeOllamaSummary(evidenceResult.ollama) : null,
+    evidenceSummary: evidenceResult.summary,
+    mindmapStatus: args.authorizeMindmap === true ? 'AUTHORIZED' : 'BLOCKED',
   });
 }
 
-async function main(argv) {
+export async function runRuntimeSync(argv, { repoRoot = repoRootFromScript(), writeOutput = (line) => console.log(line) } = {}) {
   const args = parseArgs(argv);
-  const repoRoot = repoRootFromScript();
+  if (args.deprecatedStatus !== null) {
+    throw new Error('--status is not accepted; supply matching --evidence so status can be derived');
+  }
+  if (args.authorizeMindmap && args.command !== 'postflight') {
+    throw new Error('--authorize-mindmap is valid only with --postflight');
+  }
   const vaultRoot = resolveVaultRoot(repoRoot, args.vault);
   if (args.command === 'verify') {
     const result = {
@@ -245,24 +366,41 @@ async function main(argv) {
       ledger: vaultRoot ? fs.existsSync(ledgerPath(vaultRoot)) : false,
       status: vaultRoot && fs.existsSync(mindmapPath(vaultRoot)) ? 'READY' : 'BLOCKED',
     };
-    console.log(args.json ? JSON.stringify(result) : `Runtime sync: ${result.status}`);
-    return result.status === 'READY' ? 0 : 2;
+    writeOutput(args.json ? JSON.stringify(result) : `Runtime sync: ${result.status}`);
+    return { exitCode: result.status === 'READY' ? 0 : 2, result };
   }
   if (!['hook', 'preflight', 'postflight'].includes(args.command)) {
-    console.log('Usage: runtime-sync.mjs --hook|--preflight|--postflight --host claude|codex [--provider native|ollama]');
-    return 0;
+    writeOutput('Usage: runtime-sync.mjs --hook|--preflight|--postflight --host claude|codex [--provider native|ollama] [--evidence evidence.json] [--dry-run]');
+    return { exitCode: 0, event: null };
   }
   if (!vaultRoot) throw new Error('MYPS vault could not be resolved');
-  const input = parseHookInput(readStdin());
-  const event = eventFromInput({ ...args, phase: args.phase || (args.command === 'preflight' ? 'preflight' : args.command === 'postflight' ? 'postflight' : null) }, input);
+  if (args.command === 'postflight' && !args.evidence) {
+    throw new Error('--postflight requires --evidence with independently observed host and Ponytail evidence');
+  }
+  const input = args.command === 'hook' ? parseHookInput(readStdin()) : {};
+  const evidence = readEvidence(args.evidence);
+  const event = eventFromInput(
+    { ...args, phase: args.phase || (args.command === 'preflight' ? 'preflight' : args.command === 'postflight' ? 'postflight' : null) },
+    input,
+    { vaultVerified: fs.existsSync(mindmapPath(vaultRoot)), evidence },
+  );
   event.mindmap_path = path.relative(vaultRoot, mindmapPath(vaultRoot));
-  appendEvent(vaultRoot, event);
-  if (args.command === 'postflight') updateMindmap(vaultRoot, event);
-  console.log(JSON.stringify({ runtime_sync: event.overall_status, event_id: event.event_id, host: event.host, provider: event.provider }));
-  return 0;
+  if (!args.dryRun) {
+    appendEvent(vaultRoot, event);
+    if (args.command === 'postflight' && args.authorizeMindmap) updateMindmap(vaultRoot, event);
+  }
+  writeOutput(JSON.stringify({
+    runtime_sync: event.overall_status,
+    event_id: event.event_id,
+    host: event.host,
+    provider: event.provider,
+    dry_run: args.dryRun,
+    mindmap_projected: args.command === 'postflight' && args.authorizeMindmap && !args.dryRun,
+  }));
+  return { exitCode: 0, event };
 }
 
 if (process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1])) {
-  try { process.exitCode = await main(process.argv.slice(2)); }
+  try { process.exitCode = (await runRuntimeSync(process.argv.slice(2))).exitCode; }
   catch (error) { console.error(`runtime sync blocked: ${error.message}`); process.exitCode = 2; }
 }

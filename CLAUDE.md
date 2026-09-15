@@ -559,8 +559,9 @@ Never auto-pull, auto-select, or silently switch models. Verify the Ollama servi
 host tool loop, and relevant skill path before claiming local-runtime readiness. A local model that
 cannot support the required context or read-only tool smoke test is `UNVERIFIED`, not ready.
 Native Claude, Ollama-backed Claude, native Codex, and Ollama-backed Codex are separate verification
-targets. The runtime-sync helper records the active host/provider pair and updates the Agent Tooling
-Mindmap only during authorized postflight.
+targets. Validate safe matching host evidence with `runtime-sync.mjs --dry-run` before any ledger
+write. The helper records the active host/provider pair and updates the Agent Tooling Mindmap only
+during an explicitly authorized `--postflight --authorize-mindmap`.
 
 For relevant work, use the same routing chain in every host: Agent Tooling Mindmap →
 `ai-sa-employee/skills/skills.md` → one canonical task skill → constrained Ponytail when applicable

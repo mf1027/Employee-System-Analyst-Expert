@@ -253,12 +253,12 @@ fi
 [ "$CODEX_CLI_OK" -eq 1 ] && ok "Codex host available" || true
 
 if [ "$PONYTAIL_CLAUDE_OK" -eq 1 ] && [ "$PONYTAIL_CODEX_OK" -eq 1 ]; then
-    ok "Ponytail runtime verified"
+    ok "Ponytail installed/enabled for both available hosts"
 else
-    warn "Ponytail runtime not fully verified"
+    warn "Ponytail installed/enabled status is incomplete"
 fi
 [ "$PONYTAIL_MARKETPLACE_OK" -eq 1 ] && ok "Ponytail marketplace available" || warn "Ponytail marketplace not detected; setup does not add marketplaces automatically"
-warn "Ponytail hooks trusted: verify project trust and any first-run lifecycle-hook prompt in each host"
+warn "Ponytail hook trust verified by fresh-host smoke: NOT VERIFIED by setup"
 info "Setup never bypasses hook trust; review the hook commands before accepting them."
 
 if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then

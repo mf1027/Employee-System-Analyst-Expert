@@ -20,12 +20,12 @@ work in this workspace itself).
    required by the request. Read `rollback-readiness-test.md` for readiness, `code-behavior-audit.md`
    for behavior tracing, and `soup-model-preparation.md` only for an explicit Soup request.
 
-Claude project lifecycle hooks are declared in `.claude/settings.json`. The installed Codex build
-must be checked independently for project-hook support; this repository does not assume a global
+Claude project lifecycle hooks are declared in `.claude/settings.json`. Codex project-hook support must be verified independently against the installed build; this repository does not assume a global
 `~/.codex/hooks.json` or invent an unsupported Codex hook contract. When automatic Codex hooks are
-not exposed, run the explicit `runtime-sync.mjs --preflight` and `--postflight` commands from the
-runtime skill. `scripts/session-sync.ps1` is only a read-only summary and is not synchronization
-evidence.
+not exposed, follow the runtime skill's evidence flow: run `runtime-sync.mjs --dry-run` first,
+then use the matching evidence file for any authorised ledger write. `--authorize-mindmap` is
+required in addition to `--postflight` before a mind-map projection. `scripts/session-sync.ps1`
+is only a read-only summary and is not synchronization evidence.
 
 ## Canonical memory
 

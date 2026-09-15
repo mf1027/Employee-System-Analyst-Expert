@@ -81,9 +81,10 @@ host independently.
 Native Claude, Ollama-backed Claude, native Codex, and Ollama-backed Codex are four separate
 verification targets. Claude project hooks can record the active host/provider pair; Codex
 project-hook support must be verified against the installed CLI. If Codex hooks are unavailable,
-run the runtime skill's explicit preflight and postflight commands. An authorized postflight
-updates the Agent Tooling Mindmap. `RUNTIME_SYNC_PROVIDER=ollama` prevents a native session from
-being misreported as Ollama-backed.
+run the runtime skill's explicit evidence flow. First run a `runtime-sync.mjs --dry-run` with safe,
+matching host evidence; only a postflight that also supplies `--authorize-mindmap` can update the
+Agent Tooling Mindmap. `RUNTIME_SYNC_PROVIDER=ollama` prevents a native session from being
+misreported as Ollama-backed.
 
 ---
 

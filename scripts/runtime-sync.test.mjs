@@ -10,8 +10,10 @@ import {
   eventFromInput,
   inferRuntimeIdentity,
   resolveVaultRoot,
+  runRuntimeSync,
   sanitizeEvent,
   updateMindmap,
+  validateRuntimeEvidence,
 } from './runtime-sync.mjs';
 
 const CANONICAL_SKILL_PATHS = [
@@ -136,4 +138,104 @@ test('records an event and atomically projects the latest status into the mind-m
   assert.equal(JSON.parse(ledger).provider, 'native');
   assert.match(map, /codex\/native/);
   assert.match(map, /Overall status: VERIFIED/);
+});
+
+function verifiedCodexOllamaEvidence(model = 'qwen3-coder:30b') {
+  return {
+    host: 'codex',
+    provider: 'ollama',
+    model,
+    ollama: {
+      host: 'http://localhost:11434',
+      model,
+      explicitModelConfigured: true,
+      serviceReachable: true,
+      localModelVerified: true,
+      contextCapacity: 262144,
+      contextVerified: true,
+      toolCallingVerified: true,
+      status: 'VERIFIED',
+    },
+    host_tool: { read_only_completed: true },
+    ponytail: { installed: true, hook_trusted: true, full_mode_applied: true },
+    soup_status: 'NOT_APPLICABLE',
+    prompt: 'must never reach the ledger',
+    tool_response: { secret: 'must never reach the ledger' },
+  };
+}
+
+function createVault() {
+  const vault = fs.mkdtempSync(path.join(os.tmpdir(), 'runtime-sync-contract-'));
+  const architecture = path.join(vault, '01 - Application Architecture');
+  fs.mkdirSync(architecture, { recursive: true });
+  fs.writeFileSync(path.join(architecture, 'Agent Tooling Mindmap.md'), '# Agent Tooling Mindmap\n\n## Change log\n', 'utf8');
+  return vault;
+}
+
+test('requires matching independently verified evidence instead of caller-supplied VERIFIED status', () => {
+  const evidence = verifiedCodexOllamaEvidence();
+  const result = validateRuntimeEvidence({ host: 'codex', provider: 'ollama', model: 'qwen3-coder:30b' }, evidence);
+  assert.equal(result.hostToolsVerified, true);
+  assert.equal(result.hooksVerified, true);
+  assert.equal(result.ponytailVerified, true);
+  assert.equal(result.ollama.status, 'VERIFIED');
+  assert.equal('prompt' in result.summary, false);
+  assert.equal('tool_response' in result.summary, false);
+
+  const credentialedHost = validateRuntimeEvidence({ host: 'codex', provider: 'ollama', model: 'qwen3-coder:30b' }, {
+    ...evidence,
+    ollama: { ...evidence.ollama, host: 'http://operator:secret@localhost:11434' },
+  });
+  assert.equal(credentialedHost.summary.ollama.host, 'http://localhost:11434');
+
+  assert.throws(
+    () => validateRuntimeEvidence({ host: 'codex', provider: 'ollama', model: 'gpt-oss:20b' }, evidence),
+    /model does not match/,
+  );
+  assert.throws(
+    () => validateRuntimeEvidence({ host: 'codex', provider: 'ollama', model: 'qwen3-coder:30b' }, {
+      ...evidence,
+      ollama: { ...evidence.ollama, status: 'UNVERIFIED' },
+    }),
+    /Ollama verifier status must be VERIFIED/,
+  );
+});
+
+test('dry-run validates evidence without appending a ledger event or changing the mind-map', async () => {
+  const vault = createVault();
+  const evidencePath = path.join(vault, 'evidence.json');
+  fs.writeFileSync(evidencePath, JSON.stringify(verifiedCodexOllamaEvidence()), 'utf8');
+  const architecture = path.join(vault, '01 - Application Architecture');
+  const mapPath = path.join(architecture, 'Agent Tooling Mindmap.md');
+  const before = fs.readFileSync(mapPath, 'utf8');
+  const output = [];
+
+  const result = await runRuntimeSync([
+    '--postflight', '--dry-run', '--authorize-mindmap', '--host', 'codex', '--provider', 'ollama',
+    '--model', 'qwen3-coder:30b', '--vault', vault, '--evidence', evidencePath,
+  ], { writeOutput: (line) => output.push(line) });
+
+  assert.equal(result.event.overall_status, 'VERIFIED');
+  assert.equal(fs.existsSync(path.join(architecture, 'Agent Runtime Sync Ledger.jsonl')), false);
+  assert.equal(fs.readFileSync(mapPath, 'utf8'), before);
+  assert.equal(output.length, 1);
+  assert.match(output[0], /"dry_run":true/);
+});
+
+test('postflight leaves the mind-map byte-identical until --authorize-mindmap is supplied', async () => {
+  const vault = createVault();
+  const evidencePath = path.join(vault, 'evidence.json');
+  fs.writeFileSync(evidencePath, JSON.stringify(verifiedCodexOllamaEvidence('gpt-oss:20b')), 'utf8');
+  const architecture = path.join(vault, '01 - Application Architecture');
+  const mapPath = path.join(architecture, 'Agent Tooling Mindmap.md');
+  const before = fs.readFileSync(mapPath, 'utf8');
+  const args = ['--postflight', '--host', 'codex', '--provider', 'ollama', '--model', 'gpt-oss:20b', '--vault', vault, '--evidence', evidencePath];
+
+  const blocked = await runRuntimeSync(args, { writeOutput: () => {} });
+  assert.equal(blocked.event.overall_status, 'BLOCKED');
+  assert.equal(fs.readFileSync(mapPath, 'utf8'), before);
+
+  const authorized = await runRuntimeSync([...args, '--authorize-mindmap'], { writeOutput: () => {} });
+  assert.equal(authorized.event.overall_status, 'VERIFIED');
+  assert.match(fs.readFileSync(mapPath, 'utf8'), /Overall status: VERIFIED/);
 });

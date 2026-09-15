@@ -37,19 +37,33 @@ loading, repository tools, permissions, hooks, and agent loops.
 6. For native or Ollama-backed sessions, verify the active host's own tool loop with one harmless
    read-only repository operation. An Ollama API tool-call response alone does not prove that Claude
    or Codex executed a host tool.
-7. For implementation or test-design work, verify that the active host has upstream Ponytail
-   installed and trusted. If it is missing, report `Ponytail runtime: UNVERIFIED`; do not claim the
-   full runtime contract passed. Apply Ponytail full mode only to simplification choices.
+7. For implementation or test-design work, independently observe that the active host has upstream
+   Ponytail installed, its hook trust accepted, and full mode applied. Installation or a project-trust
+   record alone is not that evidence. If any part is missing, report `Ponytail runtime: UNVERIFIED`;
+   do not claim the full runtime contract passed. Apply Ponytail full mode only to simplification
+   choices.
 8. Load exactly the one task-specific skill required after this preflight. For backend behavior,
    chain `code-behavior-audit` before `rollback-readiness-test`.
-9. Record lifecycle evidence with the shared helper:
+9. Before any ledger write, create a safe evidence file outside tracked source. It must identify the
+   same host/provider/model and contain the raw Ollama verifier result (for Ollama), one completed
+   read-only host tool, and Ponytail installed/hook-trusted/full-mode evidence. Do not include prompts,
+   tool input/output, credentials, or transcripts. Validate it first without side effects:
 
    ```text
-   node scripts/runtime-sync.mjs --preflight --host <claude|codex> --provider <native|ollama>
-   node scripts/runtime-sync.mjs --postflight --host <claude|codex> --provider <native|ollama> --status <status>
+   node scripts/runtime-sync.mjs --postflight --dry-run --host <claude|codex> \
+     --provider <native|ollama> --model <model-if-ollama> --evidence <safe-evidence.json>
    ```
 
-   Hook mode appends events only. Explicit postflight is the only mode that updates the mind-map.
+   Status is derived from the evidence; `--status VERIFIED` is rejected. After normal documentation
+   write authorization, record and project the same validated evidence explicitly:
+
+   ```text
+   node scripts/runtime-sync.mjs --postflight --authorize-mindmap --host <claude|codex> \
+     --provider <native|ollama> --model <model-if-ollama> --evidence <safe-evidence.json>
+   ```
+
+   Hook mode appends unverified lifecycle observations only. An explicit postflight updates the
+   mind-map only with `--authorize-mindmap`; without it the map is byte-for-byte unchanged.
 10. Before completion, reconcile prior tooling/runtime entries, run the related-note freshness checker,
     prepare the map update, and write it only when normal documentation authorization exists.
 

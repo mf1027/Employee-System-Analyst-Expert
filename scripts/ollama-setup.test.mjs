@@ -34,9 +34,10 @@ for (const [name, script] of [['PowerShell', powershell], ['Bash', bash]]) {
     assert.match(script, /installed locally/);
     assert.match(script, /Claude host available/);
     assert.match(script, /Codex host available/);
-    assert.match(script, /Ponytail runtime verified/);
+    assert.match(script, /Ponytail installed\/enabled/);
     assert.match(script, /Ponytail marketplace available/);
-    assert.match(script, /Ponytail hooks trusted/);
+    assert.match(script, /Ponytail hook trust verified by fresh-host smoke/);
+    assert.doesNotMatch(script, /Ponytail runtime verified/);
     assert.match(script, /RUNTIME_SYNC_PROVIDER/);
     assert.match(script, /runtime-sync\.mjs/);
     assert.match(script, /cloud/i);
@@ -116,6 +117,15 @@ test('runtime and Soup skills are discoverable by both host entry points', () =>
   assert.match(soupSkill, /soup advise/);
   assert.match(soupSkill, /global Soup first/i);
   assert.match(soupSkill, /duplicate/i);
+});
+
+test('runtime documentation requires evidence dry-runs and explicit mind-map authorization', () => {
+  for (const document of [agents, claude, fs.readFileSync(path.join(root, 'README.md'), 'utf8'), runtimeSkill]) {
+    assert.match(document, /dry-run/);
+    assert.match(document, /authorize-mindmap/);
+  }
+  assert.match(runtimeSkill, /--evidence/);
+  assert.match(runtimeSkill, /--status VERIFIED.*rejected/);
 });
 
 test('Claude hooks are repository-owned and Codex support is checked honestly', () => {
