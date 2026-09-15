@@ -158,6 +158,9 @@ step "Checking Claude Code plugins"
 IP_PATH="$HOME/.claude/plugins/installed_plugins.json"
 CLAUDE_MEM_OK=0
 CONTEXT_MODE_OK=0
+PONYTAIL_CLAUDE_OK=0
+PONYTAIL_CODEX_OK=0
+CODEX_CLI_OK=0
 
 if [ -f "$IP_PATH" ]; then
     if "$PY_CMD" -c "
@@ -176,19 +179,56 @@ exit(0 if 'context-mode@context-mode' in plugins else 1)
 " 2>/dev/null; then
         CONTEXT_MODE_OK=1
     fi
+    if "$PY_CMD" -c "
+import json
+d = json.load(open('$IP_PATH'))
+plugins = d.get('plugins', {})
+exit(0 if 'ponytail@ponytail' in plugins else 1)
+" 2>/dev/null; then
+        PONYTAIL_CLAUDE_OK=1
+    fi
+    if "$PY_CMD" -c "
+import json
+d = json.load(open('$IP_PATH'))
+plugins = d.get('plugins', {})
+exit(0 if any('ponytail' in name.lower() and name != 'ponytail@ponytail' for name in plugins) else 1)
+" 2>/dev/null; then
+        warn "Another Ponytail package is active in Claude Code — do not remove it automatically."
+    fi
+fi
+
+if command -v codex &>/dev/null; then
+    CODEX_CLI_OK=1
+    CODEX_PLUGIN_LIST=$(codex plugin list 2>&1 || true)
+    if printf '%s\n' "$CODEX_PLUGIN_LIST" | grep -Eiq 'ponytail'; then
+        PONYTAIL_CODEX_OK=1
+    fi
+    if printf '%s\n' "$CODEX_PLUGIN_LIST" | grep -Eiq 'engineering-suite-ponytail'; then
+        warn "Another Ponytail package is active in Codex — do not remove it automatically."
+    fi
+else
+    warn "Codex CLI not found — install it separately before using Codex with this repo."
 fi
 
 [ "$CLAUDE_MEM_OK" -eq 1 ]   && ok   "claude-mem plugin installed"   || warn "claude-mem NOT installed"
 [ "$CONTEXT_MODE_OK" -eq 1 ] && ok   "context-mode plugin installed" || warn "context-mode NOT installed"
+[ "$PONYTAIL_CLAUDE_OK" -eq 1 ] && ok "Ponytail plugin installed for Claude Code" || warn "Ponytail plugin NOT installed for Claude Code"
+[ "$PONYTAIL_CODEX_OK" -eq 1 ] && ok "Ponytail plugin detected for Codex" || { [ "$CODEX_CLI_OK" -eq 1 ] && warn "Ponytail plugin NOT detected for Codex"; }
 
-if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ]; then
+if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
     echo ""
     echo -e "    ${BOLD}Open Claude Code in this directory and run:${NC}"
     [ "$CLAUDE_MEM_OK" -eq 0 ]   && echo -e "      ${YELLOW}/plugin marketplace add thedotmack/claude-mem${NC}"
     [ "$CLAUDE_MEM_OK" -eq 0 ]   && echo -e "      ${YELLOW}/plugin install claude-mem@thedotmack${NC}"
     [ "$CONTEXT_MODE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin marketplace add mksglu/context-mode${NC}"
     [ "$CONTEXT_MODE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin install context-mode@context-mode${NC}"
-    echo -e "    ${BOLD}Then restart Claude Code.${NC}"
+    [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin marketplace add DietrichGebert/ponytail${NC}"
+    [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin install ponytail@ponytail${NC}"
+    [ "$PONYTAIL_CODEX_OK" -eq 0 ] && echo -e "    ${BOLD}In Codex, run:${NC}"
+    [ "$PONYTAIL_CODEX_OK" -eq 0 ] && echo -e "      ${YELLOW}codex plugin marketplace add DietrichGebert/ponytail${NC}"
+    [ "$PONYTAIL_CODEX_OK" -eq 0 ] && echo -e "      ${YELLOW}codex plugin add ponytail@ponytail${NC}"
+    echo -e "    ${BOLD}Review/trust Ponytail hooks, then restart Claude Code or open a fresh Codex task.${NC}"
+    echo -e "    Ponytail lifecycle hooks require Node.js (already checked above)."
 fi
 
 # -- 5. Verify document engines ------------------------------------------------
@@ -207,7 +247,7 @@ echo -e "${CYAN}======================================${NC}"
 echo -e "${CYAN}  Setup complete${NC}"
 echo -e "${CYAN}======================================${NC}"
 
-if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ]; then
+if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
     echo -e "  ${YELLOW}Action needed: install the missing plugin(s) listed above.${NC}"
 else
     echo -e "  ${GREEN}All dependencies ready. Open this folder in Claude Code.${NC}"

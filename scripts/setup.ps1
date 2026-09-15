@@ -167,14 +167,42 @@ Write-Step "Checking Claude Code plugins"
 $ipPath = "$env:USERPROFILE\.claude\plugins\installed_plugins.json"
 $claudeMemKey   = "claude-mem@thedotmack"
 $contextModeKey = "context-mode@context-mode"
+$ponytailKey    = "ponytail@ponytail"
 $claudeMemOK    = $false
 $contextModeOK  = $false
+$ponytailClaudeOK = $false
+$ponytailCodexOK  = $false
+$duplicateClaudePonytail = @()
+$codexCLI = Get-Command codex -ErrorAction SilentlyContinue
+$codexCLIAvailable = $null -ne $codexCLI
 
 if (Test-Path $ipPath) {
     $ip = Get-Content $ipPath -Raw | ConvertFrom-Json
     $pluginNames = $ip.plugins.PSObject.Properties.Name
     $claudeMemOK   = $pluginNames -contains $claudeMemKey
     $contextModeOK = $pluginNames -contains $contextModeKey
+    $ponytailClaudeOK = $pluginNames -contains $ponytailKey
+    $duplicateClaudePonytail = @($pluginNames | Where-Object { $_ -match '(?i)ponytail' -and $_ -ne $ponytailKey })
+}
+
+if ($duplicateClaudePonytail.Count -gt 0) {
+    Write-WARN "Another Ponytail package is active in Claude Code; do not remove it automatically."
+}
+
+if ($codexCLIAvailable) {
+    try {
+        $codexPluginList = (& $codexCLI.Source plugin list 2>&1 | Out-String)
+        if ($LASTEXITCODE -eq 0 -and $codexPluginList -match '(?i)ponytail') {
+            $ponytailCodexOK = $true
+        }
+        if ($codexPluginList -match '(?i)engineering-suite-ponytail') {
+            Write-WARN "Another Ponytail package is active in Codex; do not remove it automatically."
+        }
+    } catch {
+        Write-WARN "Could not inspect Codex plugins - verify with: codex plugin list"
+    }
+} else {
+    Write-WARN "Codex CLI not found - install it separately before using Codex with this repo."
 }
 
 if ($claudeMemOK)   { Write-OK "claude-mem plugin installed" }
@@ -183,7 +211,13 @@ else                { Write-WARN "claude-mem NOT installed" }
 if ($contextModeOK) { Write-OK "context-mode plugin installed" }
 else                { Write-WARN "context-mode NOT installed" }
 
-if (-not $claudeMemOK -or -not $contextModeOK) {
+if ($ponytailClaudeOK) { Write-OK "Ponytail plugin installed for Claude Code" }
+else                   { Write-WARN "Ponytail plugin NOT installed for Claude Code" }
+
+if ($ponytailCodexOK) { Write-OK "Ponytail plugin detected for Codex" }
+elseif ($codexCLIAvailable) { Write-WARN "Ponytail plugin NOT detected for Codex" }
+
+if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
     Write-Host ""
     Write-Host "    Open Claude Code in this directory and run:" -ForegroundColor White
     if (-not $claudeMemOK) {
@@ -194,7 +228,17 @@ if (-not $claudeMemOK -or -not $contextModeOK) {
         Write-Host "      /plugin marketplace add mksglu/context-mode" -ForegroundColor Yellow
         Write-Host "      /plugin install context-mode@context-mode" -ForegroundColor Yellow
     }
-    Write-Host "    Then restart Claude Code." -ForegroundColor White
+    if (-not $ponytailClaudeOK) {
+        Write-Host "      /plugin marketplace add DietrichGebert/ponytail" -ForegroundColor Yellow
+        Write-Host "      /plugin install ponytail@ponytail" -ForegroundColor Yellow
+    }
+    if (-not $ponytailCodexOK) {
+        Write-Host "    In Codex, run:" -ForegroundColor White
+        Write-Host "      codex plugin marketplace add DietrichGebert/ponytail" -ForegroundColor Yellow
+        Write-Host "      codex plugin add ponytail@ponytail" -ForegroundColor Yellow
+    }
+    Write-Host "    Review/trust Ponytail hooks, then restart Claude Code or open a fresh Codex task." -ForegroundColor White
+    Write-Host "    Ponytail lifecycle hooks require Node.js (already checked above)." -ForegroundColor Gray
 }
 
 # -- 5. Verify document engines ------------------------------------------------
@@ -214,7 +258,7 @@ Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "  Setup complete" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 
-if (-not $claudeMemOK -or -not $contextModeOK) {
+if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
     Write-Host "  Action needed: install the missing plugin(s) listed above." -ForegroundColor Yellow
 } else {
     Write-Host "  All dependencies ready. Open this folder in Claude Code." -ForegroundColor Green

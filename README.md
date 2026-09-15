@@ -49,10 +49,12 @@ bash scripts/setup.sh
 The script checks and installs:
 - Node.js dependencies (`claude-mem`, `context-mode`, `@opendataloader/pdf`)
 - Python `chromadb` for semantic memory search
-- Prints Claude Code plugin install commands if needed
+- Checks for the upstream Ponytail plugin in Claude Code and Codex
+- Prints Claude Code and Codex Ponytail install commands if needed
+- Reminds you to review/trust hooks and restart the agent runtime
 
-4. Install any missing plugins printed by the setup script (copy/paste into Claude Code terminal)
-5. Reload Claude Code
+4. Install any missing plugins printed by the setup script in Claude Code or Codex
+5. Review/trust Ponytail hooks, then reload Claude Code or open a fresh Codex task
 
 **You're ready.** Open this folder in Claude Code and start a session.
 
@@ -258,7 +260,7 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 | `new-skill` | "create a new skill", "add a skill for X" |
 | `deep-analysis` | "analyze this deeply", "RCA this", "is this the right approach", "challenge this plan" |
 | `code-behavior-audit` | "audit this code for bugs", "trace this for issues", "check this controller for defects" — behavior trace with code/config/memory/mind-map/DB authority reconciliation |
-| `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict |
+| `rollback-readiness-test` | "test this thoroughly like Code Tables", "rollback-only test", "deployment-readiness test", "prove this module works" — source audit + DB metadata + rollback-only drill + build/authenticated-API/negative-case evidence readiness verdict; uses constrained upstream Ponytail simplification for implementation/test choices without overriding readiness gates |
 | `codex-behavior-parity` | "make Claude work like Codex", "sync Claude and Codex behavior", "Codex personal behavior" — maps Codex operating discipline to Claude-safe MYPS workflow rules without claiming unsupported runtime features |
 
 **Not in the table above:** `plan-analysis` is an agent-local, client-scoped planning skill at
@@ -268,6 +270,14 @@ client/project. Codex exposes only a thin runtime bridge at
 application repositories. It defaults to live evidence-backed planning and supports an explicit,
 client-deliverables evidence bundle. See `CLAUDE.md`'s Tie-breaks section for how it relates to
 `deep-analysis`.
+
+### Ponytail ownership
+
+Generic Ponytail behavior remains sourced from the upstream `DietrichGebert/ponytail` plugin and is
+installed separately for Claude Code and Codex by the post-clone setup instructions. The MYPS
+specific readiness contract remains in `ai-sa-employee/skills/rollback-readiness-test.md`, and
+`AGENTS.md` tells Codex where to read it. Ponytail simplifies implementation and test choices;
+it never overrides rollback, authentication, evidence, safety, or mind-map completion gates.
 
 **Delivery skills (design → build bridge):**
 

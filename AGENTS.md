@@ -41,3 +41,17 @@ condition of using this target, not resolved by it. Full detail: `CODEX_SYNC_STA
 If you're working in `project_myps` specifically (the backend repo, not this workspace), the
 zero-AI-footprint rule applies — see `~/.codex/AGENTS.md` (global) and ADR-107 in `decisions.md`.
 It does not apply here; this workspace is where the AI-authored coordination files belong.
+
+## Canonical shared skills for Claude and Codex
+
+When working from this Employee-System-Analyst-Expert repository, use the canonical skill files
+under `ai-sa-employee/skills/`:
+
+- Read `ai-sa-employee/skills/rollback-readiness-test.md` for MYPS readiness testing and verdicts.
+- Apply the upstream Ponytail plugin in full mode when choosing or simplifying implementation and
+  test work, subject to the rollback skill's safety and evidence gates.
+- Do not create a duplicate Ponytail copy under `.codex/skills/`.
+- The Employee repository owns the MYPS readiness contract; the upstream Ponytail repository owns
+  generic minimalism and its runtime plugin.
+- Claude and Codex must verify their own runtime/plugin state; never claim identical runtime hooks
+  merely because both agents follow the same workflow.

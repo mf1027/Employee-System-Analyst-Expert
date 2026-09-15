@@ -16,6 +16,32 @@ evidence.
 This is a proof/testing skill. It does not authorize code changes, schema changes, git operations,
 or permanent database mutation.
 
+## Constrained Ponytail integration
+
+When the task includes choosing, proposing, or authoring test-harness code, helpers, queries,
+fixtures, or implementation changes, apply the upstream Ponytail skill in **full** mode as a
+constrained simplification method:
+
+1. Question whether the new work needs to exist at all.
+2. Reuse an existing repository pattern or helper.
+3. Prefer the standard library or native platform behavior.
+4. Prefer an already-installed dependency before adding anything new.
+5. Choose the smallest custom change that still proves the required behavior.
+
+This method does not shorten or weaken this skill's proof contract. Ponytail must never be used to
+skip DB-target reconciliation, read-only checks, explicit rollback approval, required SQL `SET`
+options, transaction/rollback verification, normal authenticated HTTP testing, negative/error
+cases, integration-boundary checks, scope-boundary reporting, prior-verdict reconciliation, or
+Obsidian freshness checks. It must not convert missing evidence into a Deployment-ready verdict.
+
+The workflow is therefore:
+
+`code-behavior-audit` → constrained Ponytail simplification → `rollback-readiness-test` evidence
+and verdict.
+
+Ponytail remains a method; this skill remains the only owner of `Internal-ready`, `API-ready`,
+`Deployment-ready`, `GO`, `GO WITH CONDITIONS`, and `NO-GO` readiness language.
+
 ## When to invoke
 
 Invoke for phrases such as:
@@ -176,6 +202,11 @@ Checks performed:
 - Integration boundaries:
 - Prior-verdict reconciliation (step 6a):
 - Mind-map freshness check (step 6b):
+
+Ponytail discipline:
+- Applied / Not applicable:
+- Simplifications made:
+- Required complexity intentionally retained:
 
 Findings:
 - File/object/function:
