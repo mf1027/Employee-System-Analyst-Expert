@@ -252,7 +252,7 @@ to include subfolders.
 
 ## Skills Reference
 
-The employee has **50+ invokable skills** (full index in `ai-sa-employee/skills/skills.md`).
+The employee has **59 invokable skills** (full index in `ai-sa-employee/skills/skills.md`).
 Trigger them by saying the phrases in the right column. The most-used are below.
 
 | Skill | Trigger phrases |
@@ -491,7 +491,7 @@ Employee System Analyst Expert/
 ├── CLAUDE.md                          ← Operating manual (read at every session start)
 ├── README.md                          ← This file
 ├── .claude/settings.json              ← MCP servers + env vars + permissions
-├── .claude/commands/                  ← 60 slash-command wrappers (56 skills + 4 aliases) → point to ai-sa-employee/skills/
+├── .claude/commands/                  ← 63 command files (59 skill wrappers + 4 aliases) → point to ai-sa-employee/skills/
 ├── .claude/skills/plan-analysis/      ← Agent-local, client-scoped evidence planning skill
 ├── .gitignore
 ├── package.json
@@ -504,9 +504,9 @@ Employee System Analyst Expert/
 │   │   ├── deliverables.md            ← SRS/architecture/plan templates + Mermaid patterns
 │   │   ├── integrations.md            ← Memory lanes, DB hook, PDF ingestion, MCP usage
 │   │   └── skill-creator.md           ← How to build new skills
-│   ├── skills/                        ← 56 SA/PM/DBA/delivery/meta skills (flat)
+│   ├── skills/                        ← 59 SA/PM/DBA/delivery/meta skills (flat)
 │   │   ├── skills.md                  ← Master index + interaction protocol + quality checklist
-│   │   └── [56 individual skill files]
+│   │   └── [59 individual skill files]
 │   └── document-skills/               ← Document generation (Anthropic official, Windows-patched)
 │       ├── file-reading/  ✅ Ready
 │       ├── pdf-reading/   ✅ Ready

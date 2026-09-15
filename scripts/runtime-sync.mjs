@@ -8,6 +8,13 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 export const MIN_CONTEXT_TOKENS = 65536;
+export const CANONICAL_SKILL_PATHS = [
+  '.claude/skills/plan-analysis/SKILL.md',
+  'ai-sa-employee/skills/code-behavior-audit.md',
+  'ai-sa-employee/skills/rollback-readiness-test.md',
+  'ai-sa-employee/skills/ollama-agent-runtime.md',
+  'ai-sa-employee/skills/soup-model-preparation.md',
+];
 
 function normalizeHost(host) {
   if (!['claude', 'codex'].includes(host)) throw new Error(`unsupported host: ${host}`);
@@ -66,7 +73,7 @@ export function buildRuntimeEvent({
   sessionId = null,
   phase,
   status = 'UNVERIFIED',
-  skillPaths = [],
+  skillPaths = CANONICAL_SKILL_PATHS,
   mindmapPath = null,
   ponytailStatus = 'UNVERIFIED',
   soupStatus = 'NOT_APPLICABLE',
@@ -85,7 +92,7 @@ export function buildRuntimeEvent({
     session_id: sessionId || null,
     repository: 'Employee-System-Analyst-Expert',
     phase,
-    canonical_skill_paths: [...skillPaths],
+    canonical_skill_paths: [...new Set([...CANONICAL_SKILL_PATHS, ...(skillPaths || [])])],
     mindmap_path: mindmapPath,
     ollama_status: identity.provider === 'ollama' ? (ollama || {}) : 'NOT_APPLICABLE',
     ponytail_status: ponytailStatus,
@@ -117,15 +124,14 @@ function repoRootFromScript() {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 }
 
-export function resolveVaultRoot(repoRoot, explicitVault = process.env.MYPS_VAULT_ROOT) {
-  if (explicitVault) {
-    const explicit = path.resolve(explicitVault);
+export function resolveVaultRoot(repoRoot, explicitVault) {
+  const configuredVault = explicitVault ?? process.env.MYPS_VAULT_ROOT;
+  if (configuredVault) {
+    const explicit = path.resolve(configuredVault);
     return fs.existsSync(explicit) ? explicit : null;
   }
-  const candidates = [];
-  if (explicitVault) candidates.push(explicitVault);
-  candidates.push(path.join(path.dirname(repoRoot), 'Obsidian', 'MYPS_Obsidian_Vault', 'MYPS'));
-  return candidates.map((candidate) => path.resolve(candidate)).find((candidate) => fs.existsSync(candidate)) || null;
+  const sibling = path.join(path.dirname(repoRoot), 'Obsidian', 'MYPS_Obsidian_Vault', 'MYPS');
+  return fs.existsSync(sibling) ? path.resolve(sibling) : null;
 }
 
 function readStdin() {
@@ -208,20 +214,20 @@ export function updateMindmap(vaultRoot, event) {
   return target;
 }
 
-function eventFromInput(args, input) {
+export function eventFromInput(args, input) {
   const host = args.host || (input.host === 'claude' || input.host === 'codex' ? input.host : null);
   const provider = args.provider || input.provider || process.env.RUNTIME_SYNC_PROVIDER || 'native';
   if (!host) throw new Error('host is required: use --host claude or --host codex');
   const phase = args.phase || input.hook_event_name || 'unknown';
+  const model = args.model || input.model || (provider === 'ollama' ? process.env.OLLAMA_MODEL : process.env.NATIVE_MODEL) || null;
   return buildRuntimeEvent({
     host,
     provider,
-    model: args.model || process.env.OLLAMA_MODEL || input.model || null,
+    model,
     sessionId: input.session_id || process.env.RUNTIME_SYNC_SESSION_ID || null,
     phase,
     status: args.status,
     mindmapPath: null,
-    skillPaths: [],
     ponytailStatus: process.env.PONYTAIL_RUNTIME_STATUS || 'UNVERIFIED',
     soupStatus: process.env.SOUP_RUNTIME_STATUS || (provider === 'ollama' ? 'NOT_APPLICABLE' : 'NOT_APPLICABLE'),
   });

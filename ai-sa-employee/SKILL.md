@@ -78,7 +78,7 @@ Available at any time, independent of project phase.
 ## Trigger Table
 
 **Canonical: root `CLAUDE.md` → "Trigger Table"** (RISK-098 #1/ADR-124, 2026-08-27) — the full,
-current 56-skill table with the tie-break rules for overlapping phrases. This section previously
+current 59-skill table with the tie-break rules for overlapping phrases. This section previously
 carried its own shorter, independently-drifting subset (26 rows); removed rather than restated —
 read the canonical table instead.
 
@@ -86,7 +86,7 @@ read the canonical table instead.
 
 ## Skill Chain
 
-Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (56 skills).
+Full inventory and interaction protocol: `ai-sa-employee/skills/skills.md` (59 individual skills).
 
 | Phase | Primary skills | Support skills |
 |---|---|---|
@@ -171,7 +171,8 @@ Claude/Ollama, Codex/native, and Codex/Ollama are separate runtime targets. Load
 skill file rather than injecting the full inventory into every prompt. Require an explicit locally
 installed `OLLAMA_MODEL`; never auto-pull, auto-select, or silently switch models.
 
-Use `.claude/skills/plan-analysis/SKILL.md` for plan-analysis, then read
+Use `ai-sa-employee/skills/skills.md` to route each request, then read only the applicable canonical
+skill. Use `.claude/skills/plan-analysis/SKILL.md` for plan-analysis, then read
 `ai-sa-employee/skills/code-behavior-audit.md` or
 `ai-sa-employee/skills/rollback-readiness-test.md` when those workflows apply. Upstream Ponytail may
 simplify implementation and test choices, but never readiness, authentication, rollback, safety,

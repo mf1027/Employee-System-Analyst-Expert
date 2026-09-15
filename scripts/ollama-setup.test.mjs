@@ -58,6 +58,19 @@ test('setup exposes explicit isolated Soup installation without automatic traini
   }
 });
 
+test('setup delegates Ollama capability checks to the shared verifier', () => {
+  for (const script of [powershell, bash]) {
+    assert.match(script, /verify-ollama-runtime\.mjs/);
+    assert.doesNotMatch(script, /api\/tags|ollama\s+ls/i);
+  }
+});
+
+test('PowerShell setup discovers conventional Windows Ollama installs outside PATH', () => {
+  assert.match(powershell, /OLLAMA_EXE/);
+  assert.match(powershell, /LOCALAPPDATA/);
+  assert.match(powershell, /Programs\\Ollama\\ollama\.exe/);
+});
+
 test('repository runtime instructions preserve canonical skill ownership', () => {
   for (const document of [agents, claude, employeeSkill, skillIndex]) {
     assert.match(document, /OLLAMA_MODEL/);
@@ -67,7 +80,28 @@ test('repository runtime instructions preserve canonical skill ownership', () =>
   }
   assert.match(agents, /\.claude\/skills\/plan-analysis\/SKILL\.md/);
   assert.match(agents, /code-behavior-audit\.md/);
+  assert.match(agents, /ai-sa-employee\/skills\/skills\.md/);
   assert.doesNotMatch(agents, /C:\\Users\\Msi\\\.codex\\skills/);
+});
+
+test('flat canonical skills and Claude wrappers remain in parity', () => {
+  const skillDir = path.join(root, 'ai-sa-employee', 'skills');
+  const wrapperDir = path.join(root, '.claude', 'commands');
+  const skills = fs.readdirSync(skillDir)
+    .filter((name) => name.endsWith('.md') && name !== 'skills.md')
+    .map((name) => name.slice(0, -3))
+    .sort();
+  const wrappers = fs.readdirSync(wrapperDir)
+    .filter((name) => name.endsWith('.md'))
+    .map((name) => name.slice(0, -3))
+    .sort();
+  const aliases = new Set(['board', 'capture-workflow', 'check-improvements', 'check-memory']);
+  assert.deepEqual(wrappers.filter((name) => !aliases.has(name)), skills);
+  assert.match(agents, /rollback-readiness-test\.md/);
+  assert.match(claude, /rollback-readiness-test\.md/);
+  for (const skill of skills) assert.equal(skillIndex.includes(`\`${skill}.md\``), true, `${skill} is not indexed`);
+  assert.equal(fs.existsSync(path.join(root, '.codex', 'skills', 'ponytail')), false);
+  assert.equal(fs.existsSync(path.join(skillDir, 'ponytail.md')), false);
 });
 
 test('runtime and Soup skills are discoverable by both host entry points', () => {
@@ -125,6 +159,16 @@ test('Ollama verifier requires local model, context, and tool calling', async ()
   assert.equal(result.serviceReachable, true);
   assert.equal(result.contextVerified, true);
   assert.equal(result.toolCallingVerified, true);
+  assert.deepEqual(result.availableLocalModels, ['qwen-local:latest']);
+});
+
+test('Ollama verifier reports safe local model names when selection is missing', async () => {
+  const result = await verifyOllama({
+    model: '',
+    fetchImpl: fakeFetch([{ models: [{ name: 'gpt-oss:20b' }, { name: 'qwen3-coder:30b' }] }]),
+  });
+  assert.equal(result.status, 'BLOCKED');
+  assert.deepEqual(result.availableLocalModels, ['gpt-oss:20b', 'qwen3-coder:30b']);
 });
 
 test('Ollama verifier fails closed for cloud and limited models', async () => {

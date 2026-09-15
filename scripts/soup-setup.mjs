@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 export const SOUP_VERSION = '0.75.0';
 export const SOUP_SHA256 = '61AD531DA5C4779E50390B6589202DD1EBA69D93A30156441542DD185C94F029';
+export const TRAINING_PACKAGES = ['torch', 'transformers', 'peft', 'trl', 'datasets', 'bitsandbytes', 'accelerate'];
 
 function parseArgs(argv) {
   const args = { repo: process.cwd(), archive: process.env.SOUP_ARCHIVE || '', install: false, training: false, json: false };
@@ -47,14 +48,41 @@ function pythonCommand() {
   return null;
 }
 
-function soupCommand(repo) {
-  const local = process.platform === 'win32'
+function repoLocalSoupPath(repo) {
+  return process.platform === 'win32'
     ? path.join(repo, '.venv-soup', 'Scripts', 'soup.exe')
     : path.join(repo, '.venv-soup', 'bin', 'soup');
-  if (fs.existsSync(local)) return local;
-  const result = run('soup', ['--version']);
-  if (result.status === 0) return 'soup';
-  return null;
+}
+
+function repoLocalPythonPath(repo) {
+  return process.platform === 'win32'
+    ? path.join(repo, '.venv-soup', 'Scripts', 'python.exe')
+    : path.join(repo, '.venv-soup', 'bin', 'python');
+}
+
+function normalizePackageName(name) {
+  return String(name || '').trim().toLowerCase().replace(/[-_.]+/g, '-');
+}
+
+export function isExpectedSoupVersion(version) {
+  return version === SOUP_VERSION;
+}
+
+export function hasTrainingExtras(packages) {
+  const installed = new Set(Array.from(packages || [], normalizePackageName));
+  return TRAINING_PACKAGES.every((name) => installed.has(normalizePackageName(name)));
+}
+
+function verifyTrainingExtras(repo) {
+  const python = repoLocalPythonPath(repo);
+  if (!fs.existsSync(python)) return false;
+  const probe = [
+    'import importlib.metadata as m, sys',
+    `required = ${JSON.stringify(TRAINING_PACKAGES)}`,
+    'installed = {name.lower().replace("_", "-") for name in m.packages_distributions()}',
+    'sys.exit(1 if any(package not in installed for package in required) else 0)',
+  ].join('\n');
+  return run(python, ['-c', probe]).status === 0;
 }
 
 function hashFile(file) {
@@ -69,6 +97,9 @@ export function inspectSoup(args) {
     archiveFound: fs.existsSync(args.archive),
     archiveHashVerified: false,
     repoLocalAvailable: false,
+    repoLocalVersion: null,
+    repoLocalVersionVerified: false,
+    trainingExtrasVerified: false,
     trainingAvailable: false,
     duplicateInstallations: false,
     status: 'UNAVAILABLE',
@@ -84,18 +115,24 @@ export function inspectSoup(args) {
     result.archiveHashVerified = hashFile(args.archive) === SOUP_SHA256;
     if (!result.archiveHashVerified) result.reasons.push('Soup archive hash mismatch');
   }
-  const localSoup = soupCommand(args.repo);
-  if (localSoup && localSoup !== 'soup') {
-    result.repoLocalAvailable = true;
+  const localSoup = repoLocalSoupPath(args.repo);
+  if (fs.existsSync(localSoup)) {
     const local = run(localSoup, ['--version']);
-    result.trainingAvailable = local.status === 0 && fs.existsSync(path.join(args.repo, '.venv-soup'));
+    result.repoLocalAvailable = local.status === 0;
+    result.repoLocalVersion = soupVersionOf(`${local.stdout}\n${local.stderr}`);
+    result.repoLocalVersionVerified = result.repoLocalAvailable && isExpectedSoupVersion(result.repoLocalVersion);
+    result.trainingExtrasVerified = result.repoLocalVersionVerified && verifyTrainingExtras(args.repo);
+    result.trainingAvailable = result.trainingExtrasVerified;
+    if (result.repoLocalAvailable && !result.repoLocalVersionVerified) result.reasons.push(`repo-local Soup version is not ${SOUP_VERSION}`);
+    if (result.repoLocalVersionVerified && args.training && !result.trainingExtrasVerified) result.reasons.push('repo-local Soup training extras are not verified');
   }
   result.duplicateInstallations = result.globalAvailable && result.repoLocalAvailable;
   if (result.duplicateInstallations) {
     result.reasons.push('global and repo-local Soup installations detected; setup will not remove either one');
   }
-  if (result.globalAvailable && result.globalVersionVerified) result.status = 'VERIFIED';
-  else if (result.repoLocalAvailable) result.status = 'VERIFIED';
+  const baseVerified = result.globalVersionVerified || result.repoLocalVersionVerified;
+  const trainingGate = !args.training || result.trainingExtrasVerified;
+  if (baseVerified && trainingGate) result.status = 'VERIFIED';
   else if (result.archiveFound && result.archiveHashVerified) result.status = 'READY_TO_INSTALL';
   else result.reasons.push(result.archiveFound ? 'Soup 0.75.0 archive is not verified' : 'Soup 0.75.0 archive not found');
   return result;
@@ -103,7 +140,8 @@ export function inspectSoup(args) {
 
 function install(args) {
   const result = inspectSoup(args);
-  if (result.globalAvailable && result.globalVersionVerified) return result;
+  if ((result.globalVersionVerified && !args.training)
+    || (result.repoLocalVersionVerified && (!args.training || result.trainingExtrasVerified))) return result;
   if (!result.archiveFound || !result.archiveHashVerified) {
     result.status = 'BLOCKED';
     result.reasons.push('installation requires the verified Soup archive');
@@ -141,10 +179,7 @@ function install(args) {
     result.reasons.push('Soup installation failed; inspect the isolated environment output');
     return result;
   }
-  result.repoLocalAvailable = true;
-  result.trainingAvailable = args.training;
-  result.status = 'VERIFIED';
-  return result;
+  return inspectSoup(args);
 }
 
 function main(argv) {
@@ -153,10 +188,13 @@ function main(argv) {
   if (args.json) console.log(JSON.stringify(result));
   else {
     console.log(`Soup globally available: ${result.globalAvailable ? 'yes' : 'no'}`);
+    console.log(`Soup global version: ${result.globalVersion || 'unknown'}`);
     console.log(`Soup version verified: ${result.globalVersionVerified ? 'yes' : 'no'}`);
     console.log(`Soup archive found: ${result.archiveFound ? 'yes' : 'no'}`);
     console.log(`Soup archive hash verified: ${result.archiveHashVerified ? 'yes' : 'no'}`);
     console.log(`Soup repo-local environment available: ${result.repoLocalAvailable ? 'yes' : 'no'}`);
+    console.log(`Soup repo-local version verified: ${result.repoLocalVersionVerified ? 'yes' : 'no'}`);
+    console.log(`Soup training extras verified: ${result.trainingExtrasVerified ? 'yes' : 'no'}`);
     console.log(`Soup training extras available: ${result.trainingAvailable ? 'yes' : 'no'}`);
     console.log(`Soup duplicate installations: ${result.duplicateInstallations ? 'yes' : 'no'}`);
     console.log(`Soup status: ${result.status}`);

@@ -180,11 +180,20 @@ $contextModeOK  = $false
 $ponytailClaudeOK = $false
 $ponytailCodexOK  = $false
 $ponytailMarketplaceOK = $false
+$ponytailHooksTrusted = $false
 $duplicateClaudePonytail = @()
 $claudeCLI = Get-Command claude -ErrorAction SilentlyContinue
 $claudeCLIAvailable = $null -ne $claudeCLI
 $codexCLI = Get-Command codex -ErrorAction SilentlyContinue
 $codexCLIAvailable = $null -ne $codexCLI
+$claudeSettingsPath = Join-Path $env:USERPROFILE ".claude\settings.json"
+$ponytailClaudeEnabled = $false
+if (Test-Path $claudeSettingsPath) {
+    try {
+        $claudeSettings = Get-Content $claudeSettingsPath -Raw | ConvertFrom-Json
+        $ponytailClaudeEnabled = $claudeSettings.enabledPlugins.'ponytail@ponytail' -eq $true
+    } catch { Write-WARN "Could not inspect Claude plugin enablement; verify with: claude plugin list" }
+}
 
 if (Test-Path $ipPath) {
     $ip = Get-Content $ipPath -Raw | ConvertFrom-Json
@@ -202,7 +211,7 @@ if ($duplicateClaudePonytail.Count -gt 0) {
 if ($codexCLIAvailable) {
     try {
         $codexPluginList = (& $codexCLI.Source plugin list 2>&1 | Out-String)
-        if ($LASTEXITCODE -eq 0 -and $codexPluginList -match '(?i)ponytail') {
+        if ($LASTEXITCODE -eq 0 -and $codexPluginList -match '(?im)^ponytail@ponytail\s+installed, enabled\b') {
             $ponytailCodexOK = $true
         }
         if ($codexPluginList -match '(?i)engineering-suite-ponytail') {
@@ -213,6 +222,26 @@ if ($codexCLIAvailable) {
     }
 } else {
     Write-WARN "Codex CLI not found - install it separately before using Codex with this repo."
+}
+
+# Hook trust is separate from plugin installation. Check project-trust records
+# when available; never use a bypass flag or edit them during setup.
+$claudeProjectTrustOK = $false
+$claudeProjectStatePath = Join-Path $env:USERPROFILE ".claude.json"
+if (Test-Path $claudeProjectStatePath) {
+    $claudeState = Get-Content $claudeProjectStatePath -Raw
+    $claudePathPattern = [regex]::Escape($root.Replace('\', '/'))
+    $claudeTrustPattern = '(?is)"' + $claudePathPattern + '"\s*:\s*\{.*?"hasTrustDialogAccepted"\s*:\s*true'
+    $claudeProjectTrustOK = $claudeState -match $claudeTrustPattern
+}
+$codexProjectTrustOK = $false
+$codexConfigPath = if ($env:CODEX_HOME) { Join-Path $env:CODEX_HOME "config.toml" } else { Join-Path $env:USERPROFILE ".codex\config.toml" }
+if (Test-Path $codexConfigPath) {
+    $codexState = Get-Content $codexConfigPath -Raw
+    $codexPath = $root.ToLowerInvariant()
+    $codexProjectHeader = "[projects.'$codexPath']"
+    $codexTrustPattern = '(?is)' + [regex]::Escape($codexProjectHeader) + '\s*trust_level\s*=\s*"trusted"'
+    $codexProjectTrustOK = $codexState -match $codexTrustPattern
 }
 
 if ($claudeCLIAvailable) {
@@ -237,8 +266,11 @@ else                { Write-WARN "context-mode NOT installed" }
 if ($ponytailClaudeOK) { Write-OK "Ponytail plugin installed for Claude Code" }
 else                   { Write-WARN "Ponytail plugin NOT installed for Claude Code" }
 
-if ($ponytailCodexOK) { Write-OK "Ponytail plugin detected for Codex" }
+if ($ponytailCodexOK) { Write-OK "Ponytail plugin installed and enabled for Codex" }
 elseif ($codexCLIAvailable) { Write-WARN "Ponytail plugin NOT detected for Codex" }
+
+if ($ponytailClaudeEnabled) { Write-OK "Ponytail enabled for Claude Code" }
+elseif ($ponytailClaudeOK) { Write-WARN "Ponytail installed for Claude Code but not enabled in settings" }
 
 if ($claudeCLIAvailable) { Write-OK "Claude host available" }
 else                    { Write-WARN "Claude host unavailable - install Claude Code separately before using this repo." }
@@ -246,12 +278,15 @@ else                    { Write-WARN "Claude host unavailable - install Claude C
 if ($codexCLIAvailable) { Write-OK "Codex host available" }
 else                   { Write-WARN "Codex host unavailable - install Codex CLI separately before using this repo." }
 
-$ponytailRuntimeOK = $ponytailClaudeOK -and $ponytailCodexOK
+$ponytailRuntimeOK = $ponytailClaudeOK -and $ponytailClaudeEnabled -and $ponytailCodexOK
 if ($ponytailRuntimeOK) { Write-OK "Ponytail runtime verified" }
 else                    { Write-WARN "Ponytail runtime not fully verified" }
 if ($ponytailMarketplaceOK) { Write-OK "Ponytail marketplace available" }
 else                        { Write-WARN "Ponytail marketplace not detected; setup does not add marketplaces automatically" }
-Write-INFO "Ponytail hooks trusted: operator review/trust required; setup does not auto-trust hooks."
+$ponytailHooksTrusted = $ponytailRuntimeOK -and $claudeProjectTrustOK -and $codexProjectTrustOK
+if ($ponytailHooksTrusted) { Write-OK "Ponytail hooks trusted for this project" }
+else { Write-WARN "Ponytail hooks trusted: project trust is not fully verified" }
+Write-INFO "Review any first-run lifecycle-hook prompt in each host. Setup never bypasses hook trust."
 
 if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
     Write-Host ""
@@ -303,66 +338,35 @@ if ($soupExit -eq 0) {
 Write-Step "Checking Ollama local-model runtime"
 
 $ollamaCLI = Get-Command ollama -ErrorAction SilentlyContinue
-$ollamaInstalled = $null -ne $ollamaCLI
-$ollamaServiceOK = $false
-$ollamaModelConfigured = -not [string]::IsNullOrWhiteSpace($env:OLLAMA_MODEL)
-$ollamaModelOK = $false
+$ollamaCandidates = @()
+if ($env:OLLAMA_EXE) { $ollamaCandidates += $env:OLLAMA_EXE }
+if ($env:LOCALAPPDATA) { $ollamaCandidates += (Join-Path $env:LOCALAPPDATA "Programs\Ollama\ollama.exe") }
+if ($env:ProgramFiles) { $ollamaCandidates += (Join-Path $env:ProgramFiles "Ollama\ollama.exe") }
+$ollamaPath = if ($ollamaCLI) { $ollamaCLI.Source } else { $ollamaCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1 }
+$ollamaInstalled = -not [string]::IsNullOrWhiteSpace($ollamaPath)
 $ollamaCapabilityOK = $false
-$ollamaCloudModel = $ollamaModelConfigured -and $env:OLLAMA_MODEL -match '(?i)(^|[-:])cloud($|[-:])'
 $ollamaHost = if ([string]::IsNullOrWhiteSpace($env:OLLAMA_HOST)) { "http://localhost:11434" } else { $env:OLLAMA_HOST.TrimEnd('/') }
 
 if ($ollamaInstalled) {
     Write-OK "Ollama installed"
-    Write-OK "Ollama CLI available"
-    try {
-        Invoke-RestMethod -Uri "$ollamaHost/api/tags" -Method Get -TimeoutSec 3 | Out-Null
-        $ollamaServiceOK = $true
-        Write-OK "Ollama service reachable at $ollamaHost"
-    } catch {
-        Write-WARN "Ollama service not reachable at $ollamaHost - start Ollama before launching an agent"
-    }
-
-    if ($ollamaModelConfigured) {
-        Write-OK "Explicit model configured: $env:OLLAMA_MODEL"
-    } else {
-        Write-WARN "Explicit model not configured"
-    }
-
-    if ($ollamaCloudModel) {
-        Write-WARN "Cloud model names are not allowed for local-runtime verification: $env:OLLAMA_MODEL"
-    } elseif ($ollamaModelConfigured) {
-        $ollamaModels = (& $ollamaCLI.Source ls 2>&1 | Out-String)
-        $ollamaModelOK = ($LASTEXITCODE -eq 0) -and @($ollamaModels -split "`r?`n" | Where-Object {
-            $parts = $_.Trim() -split '\s+'
-            $parts.Count -gt 0 -and $parts[0] -eq $env:OLLAMA_MODEL
-        }).Count -gt 0
-        if ($ollamaModelOK) {
-            Write-OK "Explicit Ollama model installed locally: $env:OLLAMA_MODEL"
-        } else {
-            Write-WARN "OLLAMA_MODEL '$env:OLLAMA_MODEL' is not present in ollama ls"
-        }
-    } else {
-        Write-WARN "OLLAMA_MODEL is not set - local-model verification is incomplete"
-    }
+    Write-OK "Ollama CLI available ($ollamaPath)"
 } else {
     Write-WARN "Ollama not installed - local-model execution is unavailable"
 }
 
-if ($ollamaInstalled -and $ollamaServiceOK -and $ollamaModelOK) {
-    Write-Host "    Read-only Ollama context/tool-calling probe:" -ForegroundColor White
-    $ollamaVerify = Join-Path $PSScriptRoot "verify-ollama-runtime.mjs"
-    & node $ollamaVerify --host $ollamaHost --model $env:OLLAMA_MODEL
-    $ollamaCapabilityOK = $LASTEXITCODE -eq 0
-    Write-INFO "Context capacity and Tool calling verified by verify-ollama-runtime.mjs; see the probe status above."
-    if (-not $ollamaCapabilityOK) {
-        Write-WARN "Ollama context/tool-calling verification did not pass"
-    }
-} else {
-    Write-INFO "Context capacity and Tool calling verified: not run because Ollama, service, or exact model is unavailable."
-    Write-INFO "Ollama context/tool-calling probe skipped until the local service and exact model are verified."
-}
+$ollamaVerify = Join-Path $PSScriptRoot "verify-ollama-runtime.mjs"
+$ollamaVerifyArgs = @($ollamaVerify, "--host", $ollamaHost)
+if (-not [string]::IsNullOrWhiteSpace($env:OLLAMA_MODEL)) { $ollamaVerifyArgs += @("--model", $env:OLLAMA_MODEL) }
+Write-Host "    Read-only Ollama capability verification:" -ForegroundColor White
+$ollamaOutput = (& node @ollamaVerifyArgs 2>&1 | Out-String)
+$ollamaExit = $LASTEXITCODE
+Write-Host $ollamaOutput.TrimEnd()
+$ollamaCapabilityOK = $ollamaExit -eq 0
+Write-INFO "The shared verifier reports: Ollama service reachable, Explicit model configured, Model installed locally, Context capacity, and Tool calling verified."
+Write-INFO "Cloud-only model names are rejected; setup never downloads or selects a model."
+if (-not $ollamaCapabilityOK) { Write-WARN "Ollama runtime verification did not pass; local-agent status remains unverified." }
 
-if (-not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK -or -not $ollamaCapabilityOK) {
+if (-not $ollamaInstalled -or -not $ollamaCapabilityOK) {
     Write-Host "    Configure an explicit local model before verification:" -ForegroundColor White
     Write-Host '      `$env:OLLAMA_MODEL = "<local-model-name>"' -ForegroundColor Yellow
     Write-Host '      ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this' -ForegroundColor Yellow
@@ -405,8 +409,8 @@ Write-Host "  Setup complete" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 
 if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailRuntimeOK -or -not $claudeCLIAvailable -or -not $codexCLIAvailable -or
-    -not $ollamaInstalled -or -not $ollamaServiceOK -or -not $ollamaModelConfigured -or -not $ollamaModelOK -or
-    -not $ollamaCapabilityOK -or
+    -not $ponytailHooksTrusted -or
+    -not $ollamaInstalled -or -not $ollamaCapabilityOK -or
     (($InstallSoup -or $InstallSoupTraining) -and $soupExit -ne 0)) {
     Write-Host "  Action needed: install the missing plugin(s) listed above." -ForegroundColor Yellow
 } else {

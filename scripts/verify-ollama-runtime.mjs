@@ -56,6 +56,7 @@ export async function verifyOllama({
     model: model || null,
     explicitModelConfigured: Boolean(model),
     serviceReachable: false,
+    availableLocalModels: [],
     localModelVerified: false,
     contextCapacity: null,
     contextVerified: false,
@@ -64,11 +65,6 @@ export async function verifyOllama({
     errors: [],
   };
 
-  if (!model) {
-    result.status = 'BLOCKED';
-    result.errors.push('OLLAMA_MODEL is not configured');
-    return result;
-  }
   if (isCloudModel(model)) {
     result.errors.push('cloud model names are not allowed for local verification');
     return result;
@@ -84,6 +80,14 @@ export async function verifyOllama({
   }
 
   const models = Array.isArray(tags.models) ? tags.models : [];
+  result.availableLocalModels = models
+    .map((entry) => entry && entry.name)
+    .filter((name) => typeof name === 'string' && name.length > 0);
+  if (!model) {
+    result.status = 'BLOCKED';
+    result.errors.push('OLLAMA_MODEL is not configured');
+    return result;
+  }
   result.localModelVerified = models.some((entry) => entry && entry.name === model);
   if (!result.localModelVerified) {
     result.errors.push('exact model is not present in /api/tags');
@@ -154,6 +158,7 @@ function printHuman(result) {
   line('Ollama model', result.model || 'NOT CONFIGURED');
   line('Explicit model configured', result.explicitModelConfigured ? 'yes' : 'no');
   line('Ollama service reachable', result.serviceReachable ? 'yes' : 'no');
+  line('Available local models', result.availableLocalModels.length ? result.availableLocalModels.join(', ') : 'none reported');
   line('Model installed locally', result.localModelVerified ? 'yes' : 'no');
   line('Context capacity', result.contextCapacity ?? 'unknown');
   line('Context capacity verified', result.contextVerified ? 'yes' : 'no');

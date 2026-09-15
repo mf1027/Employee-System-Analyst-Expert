@@ -16,6 +16,9 @@ work in this workspace itself).
 3. Read `MYPS/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
 4. For Ollama, Soup, Ponytail, skills, or MYPS readiness work, read
    `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
+5. Read `ai-sa-employee/skills/skills.md` for routing, then read only the one canonical skill
+   required by the request. Read `rollback-readiness-test.md` for readiness, `code-behavior-audit.md`
+   for behavior tracing, and `soup-model-preparation.md` only for an explicit Soup request.
 
 Claude project lifecycle hooks are declared in `.claude/settings.json`. The installed Codex build
 must be checked independently for project-hook support; this repository does not assume a global

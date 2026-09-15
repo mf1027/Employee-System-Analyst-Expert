@@ -258,7 +258,8 @@ else
     warn "Ponytail runtime not fully verified"
 fi
 [ "$PONYTAIL_MARKETPLACE_OK" -eq 1 ] && ok "Ponytail marketplace available" || warn "Ponytail marketplace not detected; setup does not add marketplaces automatically"
-info "Ponytail hooks trusted: operator review/trust required; setup does not auto-trust hooks."
+warn "Ponytail hooks trusted: verify project trust and any first-run lifecycle-hook prompt in each host"
+info "Setup never bypasses hook trust; review the hook commands before accepting them."
 
 if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
     echo ""
@@ -307,11 +308,7 @@ fi
 step "Checking Ollama local-model runtime"
 
 OLLAMA_INSTALLED=0
-OLLAMA_SERVICE_OK=0
-OLLAMA_MODEL_CONFIGURED=0
-OLLAMA_MODEL_OK=0
 OLLAMA_CAPABILITY_OK=0
-OLLAMA_CLOUD_MODEL=0
 OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}"
 OLLAMA_HOST="${OLLAMA_HOST%/}"
 
@@ -319,49 +316,22 @@ if command -v ollama &>/dev/null; then
     OLLAMA_INSTALLED=1
     ok "Ollama installed"
     ok "Ollama CLI available"
-    if command -v curl &>/dev/null && curl -fsS --max-time 3 "$OLLAMA_HOST/api/tags" >/dev/null; then
-        OLLAMA_SERVICE_OK=1
-        ok "Ollama service reachable at $OLLAMA_HOST"
-    else
-        warn "Ollama service not reachable at $OLLAMA_HOST — start Ollama before launching an agent"
-    fi
-
-    if [ -n "${OLLAMA_MODEL:-}" ]; then
-        OLLAMA_MODEL_CONFIGURED=1
-        ok "Explicit model configured: $OLLAMA_MODEL"
-        case "$OLLAMA_MODEL" in
-            *:cloud|*:cloud:*|*-cloud|*-cloud:*) OLLAMA_CLOUD_MODEL=1 ;;
-        esac
-        if [ "$OLLAMA_CLOUD_MODEL" -eq 1 ]; then
-            warn "Cloud model names are not allowed for local-runtime verification: $OLLAMA_MODEL"
-        elif ollama ls 2>/dev/null | awk -v model="$OLLAMA_MODEL" 'NR > 1 && $1 == model { found=1 } END { exit !found }'; then
-            OLLAMA_MODEL_OK=1
-            ok "Explicit Ollama model installed locally: $OLLAMA_MODEL"
-        else
-            warn "OLLAMA_MODEL '$OLLAMA_MODEL' is not present in ollama ls"
-        fi
-    else
-        warn "Explicit model not configured"
-        warn "OLLAMA_MODEL is not set — local-model verification is incomplete"
-    fi
 else
     warn "Ollama not installed — local-model execution is unavailable"
 fi
 
-if [ "$OLLAMA_INSTALLED" -eq 1 ] && [ "$OLLAMA_SERVICE_OK" -eq 1 ] && [ "$OLLAMA_MODEL_OK" -eq 1 ]; then
-    echo "    Read-only Ollama context/tool-calling probe:"
-    if node "$SCRIPT_DIR/verify-ollama-runtime.mjs" --host "$OLLAMA_HOST" --model "$OLLAMA_MODEL"; then
-        OLLAMA_CAPABILITY_OK=1
-    else
-        warn "Ollama context/tool-calling verification did not pass"
-    fi
-    info "Context capacity and Tool calling verified by verify-ollama-runtime.mjs; see the probe status above."
+echo "    Read-only Ollama capability verification:"
+OLLAMA_VERIFY_ARGS=("$SCRIPT_DIR/verify-ollama-runtime.mjs" --host "$OLLAMA_HOST")
+[ -n "${OLLAMA_MODEL:-}" ] && OLLAMA_VERIFY_ARGS+=(--model "$OLLAMA_MODEL")
+if node "${OLLAMA_VERIFY_ARGS[@]}"; then
+    OLLAMA_CAPABILITY_OK=1
 else
-    info "Context capacity and Tool calling verified: not run because Ollama, service, or exact model is unavailable."
-    info "Ollama context/tool-calling probe skipped until the local service and exact model are verified."
+    warn "Ollama runtime verification did not pass; local-agent status remains unverified."
 fi
+info "The shared verifier reports: Ollama service reachable, Explicit model configured, Model installed locally, Context capacity, and Tool calling verified."
+info "Cloud-only model names are rejected; setup never downloads or selects a model."
 
-if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ]; then
+if [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ]; then
     echo "    Configure an explicit local model before verification:"
     echo -e "      ${YELLOW}export OLLAMA_MODEL=\"<local-model-name>\"${NC}"
     echo -e "      ${YELLOW}ollama pull <OLLAMA_MODEL>  # manual operator action; setup never runs this${NC}"
@@ -405,7 +375,7 @@ echo -e "${CYAN}  Setup complete${NC}"
 echo -e "${CYAN}======================================${NC}"
 
 if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ] || [ "$CLAUDE_CLI_OK" -eq 0 ] || [ "$CODEX_CLI_OK" -eq 0 ] ||
-   [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_SERVICE_OK" -eq 0 ] || [ "$OLLAMA_MODEL_CONFIGURED" -eq 0 ] || [ "$OLLAMA_MODEL_OK" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ] ||
+   [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ] ||
    { [ "$INSTALL_SOUP" -eq 1 ] && [ "$SOUP_EXIT" -ne 0 ]; }; then
     echo -e "  ${YELLOW}Action needed: install the missing plugin(s) listed above.${NC}"
 else
