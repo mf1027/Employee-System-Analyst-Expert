@@ -65,8 +65,9 @@ loading, repository tools, permissions, hooks, and agent loops.
      --provider <native|ollama> --model <model-if-ollama> --evidence <safe-evidence.json>
    ```
 
-   Hook mode appends unverified lifecycle observations only. An explicit postflight updates the
-   mind-map only with `--authorize-mindmap`; without it the map is byte-for-byte unchanged.
+   Hook mode appends unverified lifecycle observations only; Claude's `session_end` phase is passive
+   telemetry, not this explicit postflight. An explicit postflight updates the mind-map only with
+   `--authorize-mindmap`; without it the map is byte-for-byte unchanged.
 10. Before completion, reconcile prior tooling/runtime entries, run the related-note freshness checker,
     prepare the map update, and write it only when normal documentation authorization exists.
 

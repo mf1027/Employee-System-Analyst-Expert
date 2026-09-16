@@ -137,6 +137,20 @@ test('runtime events include canonical skill paths and keep Ollama models off na
   }
 });
 
+test('passive session-end telemetry remains blocked without evidence', () => {
+  const event = eventFromInput(
+    { host: 'claude', provider: 'native', phase: 'session_end', authorizeMindmap: false },
+    {},
+    { vaultVerified: true },
+  );
+
+  assert.equal(event.phase, 'session_end');
+  assert.equal(event.ponytail_status, 'UNVERIFIED');
+  assert.equal(event.mindmap_status, 'BLOCKED');
+  assert.equal(event.overall_status, 'BLOCKED');
+  assert.equal(event.evidence, null);
+});
+
 test('records an event and atomically projects the latest status into the mind-map', () => {
   const vault = fs.mkdtempSync(path.join(os.tmpdir(), 'runtime-sync-'));
   const architecture = path.join(vault, '01 - Application Architecture');

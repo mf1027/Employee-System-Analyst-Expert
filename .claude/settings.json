@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase postflight"
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/runtime-sync.mjs\" --hook --host claude --phase session_end"
           }
         ]
       }

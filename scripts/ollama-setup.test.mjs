@@ -127,6 +127,7 @@ test('runtime documentation requires evidence dry-runs and explicit mind-map aut
   }
   assert.match(runtimeSkill, /--evidence/);
   assert.match(runtimeSkill, /--status VERIFIED.*rejected/);
+  for (const document of [agents, runtimeSkill]) assert.match(document, /session_end/);
 });
 
 test('Claude hooks are repository-owned and Codex support is checked honestly', () => {
@@ -137,6 +138,10 @@ test('Claude hooks are repository-owned and Codex support is checked honestly', 
   assert.ok(claudeConfig.hooks.PostToolUse);
   assert.ok(claudeConfig.hooks.Stop);
   assert.match(JSON.stringify(claudeConfig), /runtime-sync\.mjs/);
+  const stopCommands = claudeConfig.hooks.Stop.flatMap((group) => group.hooks.map((hook) => hook.command));
+  assert.equal(stopCommands.length, 1);
+  assert.match(stopCommands[0], /--hook --host claude --phase session_end/);
+  assert.doesNotMatch(claudeSettings, /--phase postflight/);
   assert.match(agents, /Codex project-hook support.*verified|explicit.*runtime-sync/i);
   assert.match(powershell, /Codex project-hook support/);
   assert.match(bash, /Codex project-hook support/);

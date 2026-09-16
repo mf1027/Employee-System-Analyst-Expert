@@ -27,7 +27,8 @@ then use the matching evidence file for any authorised ledger write. `--authoriz
 required in addition to `--postflight` before a mind-map projection. `scripts/session-sync.ps1`
 is only a read-only summary and is not synchronization evidence. `runtime-sync.mjs --verify`
 reports `VAULT_READY` only: it checks vault artifacts and never establishes a live host, tool,
-Ponytail, or Ollama verification result.
+Ponytail, or Ollama verification result. Claude's passive `session_end` hook is lifecycle telemetry
+only; it cannot verify Ponytail, host tools, Ollama, readiness, or update the mind-map.
 
 ## Canonical memory
 
