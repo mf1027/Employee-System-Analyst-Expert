@@ -88,6 +88,32 @@ misreported as Ollama-backed. `runtime-sync.mjs --verify` can report `VAULT_READ
 the vault artifacts and does not verify a host tool, Ponytail hook, or Ollama model. The project
 does not retain broad automatic Claude command approvals; review each requested command.
 
+### After selecting an Ollama model
+
+Selecting a model starts verification; it does not complete it. Use one explicit installed model for
+the whole run, then gather matching evidence from the active host:
+
+```powershell
+$env:OLLAMA_HOST = "http://localhost:11434"
+$env:OLLAMA_MODEL = "qwen3-coder:30b"   # or another installed model you explicitly choose
+$env:RUNTIME_SYNC_PROVIDER = "ollama"
+node scripts/verify-ollama-runtime.mjs --host $env:OLLAMA_HOST --model $env:OLLAMA_MODEL
+ollama launch codex --model $env:OLLAMA_MODEL -- --cd "<repo-root>" --sandbox read-only
+```
+
+Inside the fresh Claude/Ollama or Codex/Ollama task:
+
+1. Read the runtime entry point (`CLAUDE.md` or `AGENTS.md`), `ai-sa-employee/skills/ollama-agent-runtime.md`, and `ai-sa-employee/skills/skills.md`.
+2. Confirm the active host can use Ponytail full mode and that hook trust was accepted in that fresh session.
+3. Execute one harmless read-only repository tool action, such as reading a canonical skill file.
+4. Create a safe evidence JSON outside tracked source. Include the Ollama verifier result, host/provider/model identity, Ponytail installed/trusted/applied status, and the read-only tool completion. Do not include prompts, tool input/output, credentials, or transcripts.
+5. Validate the evidence first with `node scripts/runtime-sync.mjs --postflight --dry-run --host <claude|codex> --provider ollama --model $env:OLLAMA_MODEL --evidence <safe-evidence.json>`.
+6. Only after documentation-write authorization, record it with `node scripts/runtime-sync.mjs --postflight --authorize-mindmap --host <claude|codex> --provider ollama --model $env:OLLAMA_MODEL --evidence <safe-evidence.json>`.
+
+Passive hooks, `session_end` events, `runtime-sync.mjs --verify`, and setup checks are useful
+telemetry, but they cannot produce a verified runtime claim. Soup is not part of this flow unless
+you explicitly ask for model preparation, fine-tuning, export, or Ollama import.
+
 ---
 
 ## How Sessions Work

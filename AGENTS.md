@@ -76,6 +76,11 @@ skill discovery, tools, permissions, hooks, and agent loops. Use an explicit ins
 are `RUNTIME_SYNC_PROVIDER=ollama ollama launch claude --model $OLLAMA_MODEL` and
 `RUNTIME_SYNC_PROVIDER=ollama ollama launch codex --model $OLLAMA_MODEL`.
 Claude/native, Claude/Ollama, Codex/native, and Codex/Ollama are four separate verification targets.
+After an operator selects a model, run `scripts/verify-ollama-runtime.mjs` for that exact model, then
+use a fresh host session to prove skill discovery, Ponytail full-mode use, and one harmless read-only
+tool action. Validate the resulting safe evidence with `runtime-sync.mjs --postflight --dry-run`
+before any ledger write. Only `--postflight --evidence --authorize-mindmap` can project the Agent
+Tooling Mindmap; passive hooks and `--verify` cannot.
 
 - Read `.claude/skills/plan-analysis/SKILL.md` for repository-local plan-analysis.
 - Read `ai-sa-employee/skills/code-behavior-audit.md` for existing-code behavior tracing.

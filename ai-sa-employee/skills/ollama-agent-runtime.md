@@ -71,6 +71,23 @@ loading, repository tools, permissions, hooks, and agent loops.
 10. Before completion, reconcile prior tooling/runtime entries, run the related-note freshness checker,
     prepare the map update, and write it only when normal documentation authorization exists.
 
+## After model selection
+
+When the operator chooses an installed Ollama model, use that exact model for the entire smoke run:
+
+```text
+set OLLAMA_HOST=http://localhost:11434
+set OLLAMA_MODEL=<explicit-installed-model>
+set RUNTIME_SYNC_PROVIDER=ollama
+node scripts/verify-ollama-runtime.mjs --host "$OLLAMA_HOST" --model "$OLLAMA_MODEL"
+ollama launch <claude|codex> --model "$OLLAMA_MODEL"
+```
+
+The fresh host session must read this skill, read the skill index, confirm Ponytail full mode, and
+complete one harmless read-only repository tool action. Only then create the safe evidence file and
+run the dry-run/postflight commands above. Do not invoke Soup in this flow unless the task is
+explicitly about Soup model preparation.
+
 ## Status contract
 
 Use exactly one overall status:
