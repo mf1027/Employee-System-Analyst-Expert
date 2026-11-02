@@ -181,7 +181,7 @@ function Get-SyncText {
     }
 
     # 7. Static DB safety reminder -- always present, never conditional.
-    $lines.Add("- DB SAFETY (revised 2026-08-25): myps_db_dev on 192.168.50.200 via appsettings.Development.json's MYPSDb connection string is now the standing approved target -- myps_db_revision is retired. Never myps_db (any host). The sa/@dmin123 credential remains a tracked, OPEN exposure (RISK-090/091) -- accepted as a known condition of this target, not resolved. No DB mutation without explicit per-task operator override.")
+    $lines.Add("- DB SAFETY (revised 2026-08-25): myps_db_dev on 192.168.50.200 via appsettings.Development.json's MYPSDb connection string is now the standing approved target -- myps_db_revision is retired. Never myps_db (any host). The sa/<redacted> credential remains a tracked, OPEN exposure (RISK-090/091) -- accepted as a known condition of this target, not resolved. No DB mutation without explicit per-task operator override.")
     $lines.Add("- Read the MYPS Obsidian Claude + Codex Real-Time Sync Protocol and Agent Tooling Mindmap before starting relevant backend/database or runtime work. This sync check is a summary, not a substitute.")
 
     return ($lines -join "`n")

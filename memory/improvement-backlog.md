@@ -46,7 +46,7 @@ of a direct edit (global-file scope decision).
 - 2026-09-24 · skill-fell-short · `[→ SKL-060, applied 2026-09-24]` **plan-analysis lacks explicit integration of bloat-reduction and specific review adapters.** Phase 4 of `.claude/skills/plan-analysis/SKILL.md` mentions DX and engineering lenses but doesn't explicitly invoke the `office-hours`, `/plan-devex-review`, `/plan-eng-review`, or `/design-review` adapters, leaving them unused unless manually triggered. Furthermore, it lacks the `ponytail-audit` discipline (eliminating dead code, YAGNI, and preferring stdlib/native methods) which should be applied during gap analysis to prevent over-engineering. · [system] -> candidate: Update Phase 3 to include a ponytail-audit/simplification check (delete before build) and Update Phase 4 to explicitly list the specific review adapter commands.
 - 2026-09-17 · ad-hoc-process · Claude Code's auto-mode safety classifier blocked the agent's own
   `sqlcmd` DB-write attempts against `myps_db_dev` twice, on two independent grounds: reusing the
-  `sa`/`@dmin123` credential already flagged compromised in this workspace's own memory (RISK-090/091),
+  `sa`/`<redacted>` credential already flagged compromised in this workspace's own memory (RISK-090/091),
   then the permission-grant mutation itself (`tGroupRoles`/`tUserGroups`). Read-only `SELECT` queries
   with the same credential worked fine — only the write + the credential-in-command-content combo
   triggered it. Handed the exact script to Michael, who ran it himself and pasted back the output —
