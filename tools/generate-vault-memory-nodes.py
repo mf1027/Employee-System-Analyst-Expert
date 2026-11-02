@@ -25,6 +25,8 @@ from pathlib import Path
 
 WORKSPACE = Path(r"c:\Users\Msi\Desktop\LLM\Employee-System-Analyst-Expert")
 LANE_DIR = WORKSPACE / "memory" / "clients" / "myps" / "myps-system"
+# STALE TOOL (2026-11-02): the vault moved MYPS to '02 - Workspaces/myps' on 2026-10-14 and now has its own live generator, scripts/generate-vault-memory-nodes.py.
+# VAULT_MYPS below is left on the removed path ON PURPOSE so this copy fails loudly ('vault not found') instead of overwriting the vault's Canonical notes.
 VAULT_MYPS = Path(r"C:\Users\Msi\Desktop\LLM\Obsidian\MYPS_Obsidian_Vault\MYPS")
 
 # Generated nodes live in their own subfolders so they are never confused with, and can never

@@ -8,12 +8,12 @@ work in this workspace itself).
 
 ## Read first, every session
 
-1. Resolve `MYPS_VAULT_ROOT` (or the documented sibling Obsidian vault) and read `MYPS/00 - START
-   HERE.md`, the current-state dashboard, and `MYPS/20 - Standards & Conventions/Claude + Codex
+1. Resolve `MYPS_VAULT_ROOT` (or the documented sibling Obsidian vault) and read `02 - Workspaces/myps/00 - START
+   HERE.md`, the current-state dashboard, and `02 - Workspaces/myps/20 - Standards & Conventions/Claude + Codex
    Real-Time Sync Protocol.md` — the canonical startup and completion sources.
 2. Read applicable project memory and decision records only after confirming their paths exist;
    report missing or conflicting startup sources instead of trusting a stale path.
-3. Read `MYPS/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
+3. Read `02 - Workspaces/myps/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
 4. For Ollama, Soup, Ponytail, skills, or MYPS readiness work, read
    `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
 5. Read `ai-sa-employee/skills/skills.md` for routing, then read only the one canonical skill

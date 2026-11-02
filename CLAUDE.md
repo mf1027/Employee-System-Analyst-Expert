@@ -19,7 +19,7 @@ Read this file at the start of every session. No deliverable before the session 
 > *other* clients work and where MYPS's own historical record through ADR-093/RISK-073 lives —
 > it is not being rewritten. But for **MYPS specifically**, going forward: do not mint new
 > `ADR-`/`RISK-`/`ASS-` IDs into `memory/clients/myps/myps-system/decisions.md`/`risks.md`. The
-> Obsidian vault (`MYPS_Obsidian_Vault\MYPS\` — its Technical Decisions and Risks & Tech Debt
+> Obsidian vault (`MYPS_Obsidian_Vault\02 - Workspaces\myps\` — its Technical Decisions and Risks & Tech Debt
 > notes) is now the sole live MYPS ADR/RISK ledger; those two repo files are frozen historical
 > records. Found via a context-resync plan-analysis after the repo's copy drifted ~40 ADRs / ~37
 > RISKs behind the vault, undetected because nothing was writing to the repo copy to reveal the
@@ -90,12 +90,12 @@ Before responding to anything in a new session, in this exact order:
 4. If the task involves a specific client → read `memory/clients/[client-name].md`.
    For MYPS specifically, read the Obsidian MYPS live memory entry points before analysis or
    deliverables:
-   `C:\Users\Msi\Desktop\LLM\Obsidian\MYPS_Obsidian_Vault\MYPS\00 - START HERE.md`,
-   `MYPS/00 - Home & Navigation/MYPS Current State Dashboard.md`, and
-   `MYPS/20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md`.
+   `C:\Users\Msi\Desktop\LLM\Obsidian\MYPS_Obsidian_Vault\02 - Workspaces\myps\00 - START HERE.md`,
+   `02 - Workspaces/myps/00 - Home & Navigation/MYPS Current State Dashboard.md`, and
+   `02 - Workspaces/myps/20 - Standards & Conventions/Claude + Codex Real-Time Sync Protocol.md`.
    For Ollama, Soup, Ponytail, skill, or readiness work, then read
    `ai-sa-employee/skills/ollama-agent-runtime.md` before the task-specific skill.
-   Read `MYPS/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
+   Read `02 - Workspaces/myps/01 - Application Architecture/Agent Tooling Mindmap.md` for the shared runtime map.
 5. **Open-items scan.** Surface any unresolved items from prior sessions: pending client questions,
    open risks, blocked decisions, outstanding deliverables. Format:
    *"Before we start — X open items from last session: [list]."* Do not wait to be asked.
