@@ -3,6 +3,8 @@
 A Claude Code workspace that acts as a **senior AI employee** — System Analyst, Solutions Architect,
 and Project Manager — working directly for you across multiple client projects.
 
+> **Optional portable core:** [`portable-agent/`](portable-agent/README.md) contains a host-neutral analysis and delivery contract with its own workflows, skills, offline checks, and installation guidance. It is an additional, self-contained package; it does **not** replace this workspace's root `CLAUDE.md`, `AGENTS.md`, MYPS/vault authority, existing setup scripts, client-memory boundaries, hooks, or project-specific workflows. To try it, open `portable-agent/` as its own workspace or explicitly read `portable-agent/AGENT.md`; do not assume the current host discovers nested files. Its static checks are not live host/model certification. See its [release status](portable-agent/docs/RELEASE-STATUS.md).
+
 ---
 
 ## What is this?

@@ -1,0 +1,2 @@
+# Skill Authoring
+Create a single canonical skill with name, purpose, trigger, exclusions, prerequisites, inputs, procedure, output contract, safety gates, verification and references. Keep it focused, composable, portable, and short. Avoid duplicate skills; check registry and triggers first. Host adapters must be thin pointers, not copied bodies. Add positive/negative routing fixtures and validator checks.

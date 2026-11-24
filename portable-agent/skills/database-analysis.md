@@ -1,0 +1,2 @@
+# Database Analysis & Safety
+Inspect actual DDL, constraints, indexes, triggers, procedures, views, data distribution, and query plans. Record evidence and environment. Check normalization, null semantics, key/cardinality, cascades, locking, migration compatibility, query performance and data integrity. For proposed mutation: verify target, preview SELECT/count, transaction/backup/rollback, bounded operation, rowcount, and post-check. Never create guessed schema.

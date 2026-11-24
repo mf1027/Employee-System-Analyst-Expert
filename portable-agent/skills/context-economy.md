@@ -1,0 +1,2 @@
+# Context Economy
+Use the smallest sufficient context: source-of-truth pointer, relevant file, task checkpoint, decisions and evidence. Avoid duplicated long summaries, redundant catalogs and second memory systems. Progressive disclosure: load only matching skill/resources. For continuation, checkpoint objective, current state verified, completed evidence, remaining tasks, blockers, next exact action. Never truncate critical constraints.

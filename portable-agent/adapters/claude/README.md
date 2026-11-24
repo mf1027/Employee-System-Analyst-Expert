@@ -1,0 +1,3 @@
+# Claude adapter
+
+This directory contains example pointers, not a verified Claude Code plugin or installed skill bundle. Claude Code direct `AGENTS.md` loading requires v2.1.277 or later and is subject to `CLAUDE.md` precedence and settings. Read `docs/INSTALLATION.md` for the current constraints. Keep this package directory available; if host skill discovery does not resolve these pointers, open `skills/<name>.md` directly from the canonical root. Do not install or overwrite global instructions, settings, hooks, or permissions as part of this manual setup. No live Claude Code runtime behavior is certified by this package.

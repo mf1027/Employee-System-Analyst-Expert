@@ -1,0 +1,2 @@
+# Video Intelligence Analysis
+Analyze audio and visual content together. Preserve timestamps. Separate transcript, on-screen text, UI state, visible action, speaker, inference and uncertainty. Reconcile spoken instructions with what the screen actually shows; note discrepancies. Maintain event timeline and evidence coverage. Do not claim frames or actions not observed. Deliver a precise agent handover, sequence, UI state transitions and open questions.

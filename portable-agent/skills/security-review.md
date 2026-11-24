@@ -1,0 +1,2 @@
+# Security Review
+Threat-model assets, trust boundaries, attacker capabilities, entry points, identity/authentication, authorization, validation, secrets, injection, SSRF, CSRF, XSS, uploads, rate limits, logging/PII, dependencies, configuration, backup and deployment exposure. Prioritize findings by exploitability/impact and provide reproduction/evidence and remediation. Do not test external systems without authorization.

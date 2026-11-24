@@ -1,0 +1,2 @@
+# Architecture & Solution Design
+Design only after problem and constraints are understood. Define components, responsibility boundaries, interfaces, data flow, deployment/runtime assumptions, security, failure behavior, observability, scaling, maintainability, and migration/rollback. Compare viable options using weighted criteria only if the decision warrants it. Prefer the simplest viable design. Record ADR: context, options, decision, consequences, status. Do not invent existing stack details.

@@ -1,0 +1,2 @@
+# System Analysis
+Trace the system end-to-end before recommending changes. Map actors, entry points, processes, components, data stores, external services, boundaries, failure modes, and observability. Describe current state separately from target state. Use artifact evidence and paths/line references where possible. Identify gaps, impact, root cause candidates and validation strategy. Never present inferred architecture as verified.

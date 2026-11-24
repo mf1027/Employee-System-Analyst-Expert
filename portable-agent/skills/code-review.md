@@ -1,0 +1,2 @@
+# Code Review
+Review independently against requirements and risk. Check correctness, security, data integrity, error paths, compatibility, maintainability, performance, tests and observability. Separate blockers/major/minor/nit. Cite file/line and explain consequence; suggest minimal correction. Two passes: (A) standards/technical risk, (B) scope/spec compliance. Do not auto-fix while reviewing unless asked.

@@ -1,0 +1,2 @@
+# Test-Driven Development
+For implementation: state behavior and acceptance. Write a targeted test that fails for the intended reason (RED); capture result. Make the smallest change (GREEN); run focused test and relevant suite. Refactor only with tests still green. Add regression/edge/security coverage. If RED cannot be observed, explain why and choose an alternative evidence method. Never fake test output.

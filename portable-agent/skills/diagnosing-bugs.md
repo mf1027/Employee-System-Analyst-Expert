@@ -1,0 +1,2 @@
+# Diagnosing Bugs
+Do not jump to fixes. 1) Define symptom, expected/actual, environment and exact repro. 2) Reproduce; minimize to smallest failing case. 3) Trace relevant code/data/flow. 4) List competing hypotheses and discriminating evidence. 5) Instrument or run focused experiments. 6) Identify root cause with confidence and evidence. 7) Check downstream impact and regressions. 8) Propose minimal fix and tests; implement only if authorized. Save a concise continuation checkpoint.

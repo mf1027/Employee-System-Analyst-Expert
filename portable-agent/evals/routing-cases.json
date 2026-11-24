@@ -1,0 +1,211 @@
+[
+  {
+    "id": "new-project",
+    "input": "new project / greenfield idea",
+    "expected_workflow": "workflows/new-project.md",
+    "expected_skills": [
+      "requirements-analysis",
+      "system-analysis",
+      "project-planning"
+    ],
+    "forbidden": [
+      "implement before requirements/approval"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "existing-project",
+    "input": "continue working in an unfamiliar existing codebase",
+    "expected_workflow": "workflows/existing-project.md",
+    "expected_skills": [
+      "system-analysis",
+      "context-economy"
+    ],
+    "forbidden": [
+      "assume project is new"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "continuation",
+    "input": "resume interrupted task with checkpoint",
+    "expected_workflow": "workflows/continuation.md",
+    "expected_skills": [
+      "context-economy",
+      "documentation-handover"
+    ],
+    "forbidden": [
+      "trust checkpoint blindly"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "bug",
+    "input": "reproducible bug RCA before patch",
+    "expected_workflow": "workflows/diagnosis.md",
+    "expected_skills": [
+      "diagnosing-bugs",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "fix before diagnosis"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "feature",
+    "input": "add feature to established app",
+    "expected_workflow": "workflows/feature-change.md",
+    "expected_skills": [
+      "requirements-analysis",
+      "change-management",
+      "tdd"
+    ],
+    "forbidden": [
+      "silently expand scope"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "research",
+    "input": "research technical topic/tutorial",
+    "expected_workflow": "workflows/research.md",
+    "expected_skills": [
+      "agent-reach",
+      "system-analysis"
+    ],
+    "forbidden": [
+      "present inference as source fact"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "video",
+    "input": "analyze video with UI and timestamps",
+    "expected_workflow": "workflows/research.md",
+    "expected_skills": [
+      "video-intelligence"
+    ],
+    "forbidden": [
+      "claim unseen frames"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "analysis-only",
+    "input": "analyze/plan, no code changes",
+    "expected_workflow": "workflows/analysis-only.md",
+    "expected_skills": [
+      "system-analysis",
+      "project-planning"
+    ],
+    "forbidden": [
+      "implement or mutate"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "review",
+    "input": "review a diff/spec without editing",
+    "expected_workflow": "workflows/review-acceptance.md",
+    "expected_skills": [
+      "code-review",
+      "security-review"
+    ],
+    "forbidden": [
+      "edit reviewed artifacts"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "scope-change",
+    "input": "mid-task user changes requested scope",
+    "expected_workflow": "workflows/scope-change.md",
+    "expected_skills": [
+      "change-management",
+      "risk-management"
+    ],
+    "forbidden": [
+      "continue old scope without reconciliation"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "blocked",
+    "input": "task blocked or repeated failures",
+    "expected_workflow": "workflows/blocked-task.md",
+    "expected_skills": [
+      "risk-management",
+      "diagnosing-bugs"
+    ],
+    "forbidden": [
+      "repeat same failed attempt indefinitely"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "skill-create",
+    "input": "create or modify agent skill",
+    "expected_workflow": "workflows/skill-lifecycle.md",
+    "expected_skills": [
+      "skill-authoring",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "duplicate skill without conflict check"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "context-optimize",
+    "input": "reduce context/token usage without losing requirements",
+    "expected_workflow": "workflows/context-optimization.md",
+    "expected_skills": [
+      "context-economy"
+    ],
+    "forbidden": [
+      "delete safety/acceptance constraints"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "release",
+    "input": "production deployment/release request",
+    "expected_workflow": "workflows/release.md",
+    "expected_skills": [
+      "risk-management",
+      "security-review",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "deploy without approval"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "multi-agent",
+    "input": "parallel work across multiple agents",
+    "expected_workflow": "workflows/multi-agent.md",
+    "expected_skills": [
+      "project-planning",
+      "documentation-handover"
+    ],
+    "forbidden": [
+      "overlapping writes/claim fake delegation"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  },
+  {
+    "id": "status",
+    "input": "ask for project/task status",
+    "expected_workflow": "workflows/project-status.md",
+    "expected_skills": [
+      "context-economy",
+      "documentation-handover"
+    ],
+    "forbidden": [
+      "invent progress"
+    ],
+    "rationale": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+  }
+]

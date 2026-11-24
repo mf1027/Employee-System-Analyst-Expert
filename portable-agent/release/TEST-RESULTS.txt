@@ -1,0 +1,12 @@
+Sandbox package validation results — version 2.0.0
+
+Executed from package root and repeated from a fresh ZIP extraction:
+  python tools/validate_package.py
+  python tools/test_scenarios.py
+  python -m compileall -q tools
+
+Validation scope: static file/package integrity, manifest and checksum completeness, relative Markdown links, UTF-8/JSON hygiene, adapter pointer parity, route-to-workflow/skill references, fixture consistency, state/workflow contract presence.
+
+`python tools/test_scenarios.py`: 21 tests passed. All are offline structural/contract checks; none invoke an LLM or host agent.
+
+Fresh ZIP extraction: PASS. Live model compliance, host runtime/skill discovery and external integration: NOT TESTED.

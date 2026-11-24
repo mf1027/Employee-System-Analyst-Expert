@@ -1,0 +1,2 @@
+# Domain Modeling
+Establish ubiquitous language. Extract concepts from observed requirements; distinguish entities, value objects, events, states, rules, relationships, and invariants. Resolve naming collisions and lifecycle ambiguity. Validate with examples and edge cases. Do not infer IDs, cardinality, FKs, status enums, or business constraints without evidence. Produce glossary and model/diagram as useful, not automatically.
