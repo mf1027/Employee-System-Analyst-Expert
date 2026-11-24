@@ -1,8 +1,8 @@
 # Production Readiness Remediation — RCA / GAP / Risk Review
 
-**Target:** Employee-System-Analysis-Expert reconstructed portable core, prior version 1.0.0  
-**Remediation version:** 2.0.0  
-**Basis:** package files and the supplied Portable Skills v6 process-flow clipboard  
+**Target:** Employee-System-Analysis-Expert reconstructed portable core, prior version 1.0.0
+**Remediation version:** 2.0.0
+**Basis:** package files and the supplied Portable Skills v6 process-flow clipboard
 **Assessment type:** sandbox artifact audit and remediation; no live agent host was installed or invoked
 
 
@@ -97,7 +97,7 @@ The original package's most important failure was a mismatch between claims and 
 
 ## Acceptance statement
 
-**Package static and fixture acceptance: PASS.**  
-**Agent behavior acceptance: NOT RUN.**  
-**Host/runtime compatibility: NOT RUN.**  
+**Package static and fixture acceptance: PASS.**
+**Agent behavior acceptance: NOT RUN.**
+**Host/runtime compatibility: NOT RUN.**
 **Full original 63-skill restoration: OUT OF SCOPE / SOURCE NOT AVAILABLE.**

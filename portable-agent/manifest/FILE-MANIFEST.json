@@ -253,8 +253,8 @@
     },
     {
       "path": "docs/PRODUCTION-READINESS-REVIEW.md",
-      "sha256": "b63eefb738b8266335582d46079a298dc57de158990f8ff4490965439b5cff6c",
-      "bytes": 9583
+      "sha256": "039111e7e7806ef5b016a051108207ab98f663eb7721bdcb0d8806ccaa72368b",
+      "bytes": 9571
     },
     {
       "path": "docs/RELEASE-STATUS.md",
@@ -428,8 +428,8 @@
     },
     {
       "path": "tools/test_scenarios.py",
-      "sha256": "06e3956ca4188e0ea4d9997fe8ac465335bf0c56a98727676b7fe1f196dd188d",
-      "bytes": 8041
+      "sha256": "da8032c48f84abe5cf4a13b4ea1fcf454bbe0a6b4530cbc4d8a106a1e1ed9c3f",
+      "bytes": 8040
     },
     {
       "path": "tools/validate_package.py",

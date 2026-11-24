@@ -124,4 +124,3 @@ class PackageContractTests(unittest.TestCase):
     self.assertTrue('agent.md' in text or 'agent' in text)
     self.assertTrue('directly' in text or 'open' in text or 'explicitly ask' in text)
     self.assertTrue('no live' in text or 'no runtime' in text or 'not certified' in text or 'does not certify' in text)
-
