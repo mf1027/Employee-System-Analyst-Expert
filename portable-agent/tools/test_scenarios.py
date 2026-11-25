@@ -124,3 +124,20 @@ class PackageContractTests(unittest.TestCase):
     self.assertTrue('agent.md' in text or 'agent' in text)
     self.assertTrue('directly' in text or 'open' in text or 'explicitly ask' in text)
     self.assertTrue('no live' in text or 'no runtime' in text or 'not certified' in text or 'does not certify' in text)
+ def test_canonical_skill_bodies_are_not_hollow_stubs(self):
+  """Every canonical skill must have actionable procedure content, not just a registry-description copy."""
+  canonical=sorted(p.stem for p in (ROOT/'skills').glob('*.md') if p.name not in {'REGISTRY.md','LEGACY-INVENTORY.md'})
+  registry=(ROOT/'skills/REGISTRY.md').read_text(encoding='utf-8')
+  for name in canonical:
+   with self.subTest(skill=name):
+    body=(ROOT/'skills'/f'{name}.md').read_text(encoding='utf-8').strip()
+    lines=body.split('\n')
+    self.assertGreaterEqual(len(lines),10,f'{name} has only {len(lines)} lines (min 10)')
+    self.assertGreaterEqual(len(body),500,f'{name} has only {len(body)} chars (min 500)')
+    self.assertIn('## Purpose',body,f'{name} missing ## Purpose section')
+    self.assertIn('## Procedure',body,f'{name} missing ## Procedure section')
+    # Anti-duplication: body (minus heading) must not be a subset of registry description
+    body_no_heading='\n'.join(lines[1:]).strip()
+    for row in registry.split('\n'):
+     if f'`{name}`' in row and body_no_heading and len(body_no_heading)<300:
+      self.assertNotIn(body_no_heading,row,f'{name} body duplicates its REGISTRY.md description')

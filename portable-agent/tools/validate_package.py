@@ -35,6 +35,23 @@ for fixture,label in ((routes,'routing'),(scenarios,'scenario')):
         for skill in c.get('expected_skills',[]):
             if not (ROOT/'skills'/f'{skill}.md').is_file(): errors.append(f'unknown skill: {skill}')
 if {c['id'] for c in routes} != {c['id'] for c in scenarios}: errors.append('routing/scenario IDs differ')
+# Phase 2: Skill body depth and anti-duplication checks
+registry_text=(ROOT/'skills/REGISTRY.md').read_text(encoding='utf-8')
+for skill_name in canonical:
+    skill_path=ROOT/'skills'/f'{skill_name}.md'
+    body=skill_path.read_text(encoding='utf-8').strip()
+    body_lines=body.split('\n')
+    if len(body_lines)<10: errors.append(f'skill body too thin (<10 lines): {skill_name}')
+    if len(body)<500: errors.append(f'skill body too short (<500 chars): {skill_name}')
+    # Anti-duplication: body (minus heading) should NOT be a substring of the registry row
+    body_no_heading='\n'.join(body_lines[1:]).strip()
+    for row in registry_text.split('\n'):
+        if f'`{skill_name}`' in row and body_no_heading and len(body_no_heading)<300:
+            if body_no_heading in row:
+                errors.append(f'skill body duplicates registry description: {skill_name}')
+    required_sections=['## Purpose','## Procedure','## Output']
+    for section in required_sections:
+        if section not in body: errors.append(f'skill missing {section}: {skill_name}')
 legacy=(ROOT/'skills/LEGACY-INVENTORY.md').read_text(encoding='utf-8')
 if len(re.findall(r'^\| `[^`]+` \|',legacy,re.M))!=63: errors.append('legacy inventory count != 63')
 # Validate all textual formats and relative Markdown links

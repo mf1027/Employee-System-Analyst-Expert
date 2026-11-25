@@ -95,9 +95,74 @@ The original package's most important failure was a mismatch between claims and 
 6. Capture outputs and scoring criteria; distinguish expected/actual behavior, failures, and manual grading.
 7. Do not call host runtime “production validated” until critical gate cases pass in the actual target runtime and failures are triaged.
 
+---
+
+## v2.1.0 Remediation — Skill Body Depth and Validation Hardening
+
+**Date:** 2026-11-25
+**Basis:** Full file-by-file inspection and root cause analysis
+
+### RCA — Hollow skill bodies
+
+**Primary root cause:** 19 of 21 canonical skill files were created by copying each skill's `REGISTRY.md` table-cell description into a standalone file with a heading. This satisfied the structural validator (file exists, name matches registry, adapter pointers resolve) but produced zero additional instructional content beyond what the registry already provides. The validator had no depth or anti-duplication check.
+
+**Contributing causes:**
+1. Validator checked file existence and hash; not body depth.
+2. Tests checked structural contracts and routing; not skill content quality.
+3. Adapter pointers masked hollowness — 42 pointer files created the appearance of a full library.
+4. v2.0.0 PRODUCTION-READINESS-REVIEW mentions "21 authored core skills" without examining body depth.
+
+### Remediation completed (v2.1.0)
+
+| Finding | Remediation | Verification |
+|---|---|---|
+| 19/21 skill files were 2-line registry copies | Authored full procedure bodies for all 21 skills: Purpose, When to use, Prerequisites, numbered Procedure, Output contract, Safety/approval gates, Verification | All 21 files: min 47 lines, min 2,630 chars, 7/7 sections |
+| 2/21 skills had marginal content | Expanded `process-analysis` and `requirements-analysis` to full procedure format | Same depth check passes |
+| Validator had no depth check | Added min 10-line, min 500-char, required-section, and anti-duplication checks to `validate_package.py` | Validator PASS with new checks |
+| Tests had no anti-duplication assertion | Added `test_canonical_skill_bodies_are_not_hollow_stubs` to `test_scenarios.py` | 23 tests PASS (was 22) |
+| `SECURITY.md` was 3 lines | Expanded to 54 lines with threat model, trust boundaries, non-negotiable controls, and repository-level notes | File content verified |
+| Manifest/checksums stale after edits | Regenerated `FILE-MANIFEST.json` and `SHA256SUMS` | Validator integrity PASS |
+
+### v2.1.0 skill body depth evidence
+
+| Skill | Lines | Chars | Sections |
+|---|---|---|---|
+| agent-reach | 50 | 2,630 | 7/7 |
+| api-contract-design | 59 | 3,209 | 7/7 |
+| architecture-design | 70 | 4,037 | 7/7 |
+| change-management | 47 | 2,652 | 7/7 |
+| code-review | 65 | 3,529 | 7/7 |
+| context-economy | 57 | 3,028 | 7/7 |
+| database-analysis | 67 | 4,043 | 7/7 |
+| diagnosing-bugs | 73 | 4,037 | 7/7 |
+| documentation-handover | 65 | 3,615 | 7/7 |
+| domain-modeling | 60 | 3,657 | 7/7 |
+| nfr-review | 53 | 3,450 | 7/7 |
+| process-analysis | 49 | 3,109 | 7/7 |
+| project-planning | 59 | 3,364 | 7/7 |
+| requirements-analysis | 52 | 3,482 | 7/7 |
+| risk-management | 55 | 3,451 | 7/7 |
+| security-review | 59 | 3,645 | 7/7 |
+| skill-authoring | 60 | 3,279 | 7/7 |
+| system-analysis | 57 | 3,341 | 7/7 |
+| tdd | 69 | 3,685 | 7/7 |
+| test-strategy | 58 | 3,368 | 7/7 |
+| video-intelligence | 63 | 3,140 | 7/7 |
+| **Total** | **1,247** | **71,751** | — |
+| **Average** | **59** | **3,416** | **7/7** |
+
+### Updated risk register
+
+| ID | Risk | v2.0 Rating | v2.1 Rating | Change rationale |
+|---|---|---|---|---|
+| R-03 | User expects restored 63 original skill bodies | High | Medium | 21 canonical skills are now fully authored with actionable procedures; remaining 42 remain inventory-only as disclosed |
+| R-10 (new) | Skill bodies regress to hollow stubs | — | Low | Validator depth check + anti-duplication test prevent silent hollowing |
+
 ## Acceptance statement
 
 **Package static and fixture acceptance: PASS.**
+**Skill body depth and anti-duplication: PASS (21/21 skills, 23 tests).**
+**Security documentation: PASS (expanded threat model).**
 **Agent behavior acceptance: NOT RUN.**
 **Host/runtime compatibility: NOT RUN.**
 **Full original 63-skill restoration: OUT OF SCOPE / SOURCE NOT AVAILABLE.**

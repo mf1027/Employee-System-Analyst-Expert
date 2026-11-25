@@ -2,6 +2,36 @@
   "version": "2.0.0",
   "files": [
     {
+      "path": "AGENT.md",
+      "sha256": "892c9e8409c8c9814eaca81631b05f65d8733c0f18044e2b5b4e09b33e230ecd",
+      "bytes": 7987
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "9dd5786876c692de5940ace728d3760f8a85ecf9ea68349f4d663bb0af6add9f",
+      "bytes": 616
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "0919fd71843a8796df0949df81312fbff468db660bb2685d9e450d458ed66096",
+      "bytes": 1627
+    },
+    {
+      "path": "README.md",
+      "sha256": "2b698ba0da7da0252fb2f24eef793a09dd44fd0c00cbf6e4c3f2bea11326e8f3",
+      "bytes": 4791
+    },
+    {
+      "path": "SOUL.md",
+      "sha256": "8e3e5db9992802de8fe6b01df2d2bfda5eb29cfc8b31884a514e38153f75b0a5",
+      "bytes": 610
+    },
+    {
+      "path": "VERSION",
+      "sha256": "c89b87c262e9d5ffd20e73aac74a1772adcc9f5a21682cc33adcf5086e5fef5c",
+      "bytes": 6
+    },
+    {
       "path": "adapters/claude/README.md",
       "sha256": "2e25bc690b4b14703eb1061b57e3a9b289b4ac36ef8b784f60e844d336e073cf",
       "bytes": 631
@@ -227,21 +257,6 @@
       "bytes": 502
     },
     {
-      "path": "AGENT.md",
-      "sha256": "892c9e8409c8c9814eaca81631b05f65d8733c0f18044e2b5b4e09b33e230ecd",
-      "bytes": 7987
-    },
-    {
-      "path": "AGENTS.md",
-      "sha256": "9dd5786876c692de5940ace728d3760f8a85ecf9ea68349f4d663bb0af6add9f",
-      "bytes": 616
-    },
-    {
-      "path": "CHANGELOG.md",
-      "sha256": "e4fc72c7f41673f4053bf723a8012d3f5cb0c046a14c9c48b2a35694f4b42fbe",
-      "bytes": 718
-    },
-    {
       "path": "docs/ARCHITECTURE.md",
       "sha256": "5d55a6b40b665b49d06d310ac596be3b536b3e4c05dd87282705615013a1d474",
       "bytes": 1912
@@ -253,18 +268,18 @@
     },
     {
       "path": "docs/PRODUCTION-READINESS-REVIEW.md",
-      "sha256": "039111e7e7806ef5b016a051108207ab98f663eb7721bdcb0d8806ccaa72368b",
-      "bytes": 9571
+      "sha256": "7313eb5ce87bdcd1ac89cdb42a8c51efb033d591fe8294cb8401e86d9bb5b658",
+      "bytes": 13258
     },
     {
       "path": "docs/RELEASE-STATUS.md",
-      "sha256": "1b5668839b091e9e094ab693b04d9cddceb066affc3241bbdc8ce0be22f25de5",
-      "bytes": 2285
+      "sha256": "da80c9a61182b1d2ed00298303ac5023294efd8c8c993580f5f3da2b2c141d1e",
+      "bytes": 3403
     },
     {
       "path": "docs/SECURITY.md",
-      "sha256": "49737b9bc0967a7d0d83fad40869844726e08bda779b3973ef4d2e938329e944",
-      "bytes": 443
+      "sha256": "d2c8c95b8b1fb9716cf9f25f5b51e94a9bff3873b249bc81c48888cf083b6f77",
+      "bytes": 5070
     },
     {
       "path": "docs/SOURCE-BOUNDARY.md",
@@ -278,8 +293,8 @@
     },
     {
       "path": "docs/VALIDATION-REPORT.md",
-      "sha256": "4f8fe77d7c8bd1b347bd2a4762e70c3e9f04859ad5fac113f5ec1171f42dbbaa",
-      "bytes": 2015
+      "sha256": "46d9d99029165d5c1eb746260bfd0eed974cd10e0d91ae8108ff1afb4a25556d",
+      "bytes": 2897
     },
     {
       "path": "evals/adversarial-cases.json",
@@ -297,64 +312,9 @@
       "bytes": 6355
     },
     {
-      "path": "README.md",
-      "sha256": "2b698ba0da7da0252fb2f24eef793a09dd44fd0c00cbf6e4c3f2bea11326e8f3",
-      "bytes": 4791
-    },
-    {
       "path": "release/TEST-RESULTS.txt",
       "sha256": "ed49b5ddfc058f8dfaf8b0b14340043a4679d8c4fd57c65362de13c8b4a1dbd7",
       "bytes": 718
-    },
-    {
-      "path": "skills/agent-reach.md",
-      "sha256": "c6918dcf194a794a3e3337d0555bbe002b0f4466e2efe44afbdd1b0bd9509534",
-      "bytes": 468
-    },
-    {
-      "path": "skills/api-contract-design.md",
-      "sha256": "c72a7f56bc286b6e4bbd92c310455f2b0c5882dc95d1ec7b9e43fe4146301048",
-      "bytes": 385
-    },
-    {
-      "path": "skills/architecture-design.md",
-      "sha256": "2c5da1bf16bd2320078613e9640656091190f7f678da5ab536b91d538a8cf3a7",
-      "bytes": 501
-    },
-    {
-      "path": "skills/change-management.md",
-      "sha256": "d10f83de6af3eb679e9d19a7849ecddd7e44428d0984e2daa8bf1ec8ba628470",
-      "bytes": 332
-    },
-    {
-      "path": "skills/code-review.md",
-      "sha256": "e473e652f7dc466e1dff763d03f134406b72208c753cfc421191942a383e0bd9",
-      "bytes": 412
-    },
-    {
-      "path": "skills/context-economy.md",
-      "sha256": "dcd341a5014f19a44e12dd8f534e979acefeb4bb375a30da20b67f32b0f46922",
-      "bytes": 442
-    },
-    {
-      "path": "skills/database-analysis.md",
-      "sha256": "bcedad787a6f5e63a0777d606abfb2d09331d2b8c751f2b36d1ee7ce5b915c79",
-      "bytes": 468
-    },
-    {
-      "path": "skills/diagnosing-bugs.md",
-      "sha256": "113ee110f0daa85a3f8363827172e2b9d0dcdcfd835bc9c4f4725015932600f9",
-      "bytes": 489
-    },
-    {
-      "path": "skills/documentation-handover.md",
-      "sha256": "471cd23f4c0cd4a7441503422e824e25e71a929232104441bfda323ad29d1c39",
-      "bytes": 355
-    },
-    {
-      "path": "skills/domain-modeling.md",
-      "sha256": "abe4f330608b7a6d5f1d907c65595c2697913681b620e9459c1c79ac68d7166d",
-      "bytes": 432
     },
     {
       "path": "skills/LEGACY-INVENTORY.md",
@@ -362,84 +322,124 @@
       "bytes": 4815
     },
     {
-      "path": "skills/nfr-review.md",
-      "sha256": "129e0cf609eadbadbd2ae3ed6d96df33ed64f2ca3239cac3cae4c7070ca478a8",
-      "bytes": 396
-    },
-    {
-      "path": "skills/process-analysis.md",
-      "sha256": "c169d3b5c380ab8eafd77db03006092198ec7f90097e40bcbb6240254727fc54",
-      "bytes": 543
-    },
-    {
-      "path": "skills/project-planning.md",
-      "sha256": "7407cfcd9153e86c2a18920c97f77f74ff601778bae2f7ef4d748a387f8a94a9",
-      "bytes": 372
-    },
-    {
       "path": "skills/REGISTRY.md",
       "sha256": "358ee7e14db26b7a3167ab61e4b2d672ef7b90dcaa63df98a6d87a33b1ebb2a3",
       "bytes": 9993
     },
     {
+      "path": "skills/agent-reach.md",
+      "sha256": "bf8ed913a9e0c6f3d219fb431fe02355a198c1ef17af9dd15d294b2becd1d4d4",
+      "bytes": 2685
+    },
+    {
+      "path": "skills/api-contract-design.md",
+      "sha256": "dce4c25071589170478e40fa0fcc752792b6c0219e16b165cb7594332e8733d9",
+      "bytes": 3277
+    },
+    {
+      "path": "skills/architecture-design.md",
+      "sha256": "afa6870b7d95cc75e9058623acb88127d73c7d440ed7c7c944b7ed0b1ab51f4e",
+      "bytes": 4126
+    },
+    {
+      "path": "skills/change-management.md",
+      "sha256": "f92e48ae8cad17c3370799eff87a95fee625fc8f3db08ec391143f0556f008ad",
+      "bytes": 2706
+    },
+    {
+      "path": "skills/code-review.md",
+      "sha256": "0a1aa051ea3d8fa2e8fbd485c13888448023a8b7d623d34006b654317b3f4eb2",
+      "bytes": 3614
+    },
+    {
+      "path": "skills/context-economy.md",
+      "sha256": "ca20aefc91447cc7c15c95177900e51b126458df7479bcdcd94809c9b0ae6fc6",
+      "bytes": 3090
+    },
+    {
+      "path": "skills/database-analysis.md",
+      "sha256": "cf8c07cbe6c7a58a02824c57194a627188a15da295b60cd46b20960977fa841c",
+      "bytes": 4117
+    },
+    {
+      "path": "skills/diagnosing-bugs.md",
+      "sha256": "6695bef2266f960c25009348bfe28d9bcf1968f67b8c61691f64a11319dc344e",
+      "bytes": 4123
+    },
+    {
+      "path": "skills/documentation-handover.md",
+      "sha256": "731a3183d750634876704adc3d8fe531630a83b24d659d534b3baf4fe8830d3c",
+      "bytes": 3691
+    },
+    {
+      "path": "skills/domain-modeling.md",
+      "sha256": "8d540d14dc7834e53bfcd2a5803539710bf09ba8ebaef06c908bc5f68755f242",
+      "bytes": 3728
+    },
+    {
+      "path": "skills/nfr-review.md",
+      "sha256": "d0fbae45f80bc073de570a3c1aabb722c586fd42bb53ab36d1ff32960a040abd",
+      "bytes": 3532
+    },
+    {
+      "path": "skills/process-analysis.md",
+      "sha256": "5facb5bfc4207c5d2a5e85abfd4aba8e6aa90ae1badc45a8e08c4e2c731a183c",
+      "bytes": 3165
+    },
+    {
+      "path": "skills/project-planning.md",
+      "sha256": "0ec8cbb9c082c9d538fb0567b4c492dba7b0a630e5178c1783de11511efadddd",
+      "bytes": 3436
+    },
+    {
       "path": "skills/requirements-analysis.md",
-      "sha256": "c861cacd9550d9ae37d41a4701b17c091484fd3f0b4a23160a74f84ec4f1951b",
-      "bytes": 724
+      "sha256": "cc323fcc4ba8e89f6c8f8d3196650b58660d101d6aca5e52f5974a9df67c0379",
+      "bytes": 3551
     },
     {
       "path": "skills/risk-management.md",
-      "sha256": "48a4345008b81adcc6ad37315c7946c9a903e1208803bff87dbbb435c918a8b6",
-      "bytes": 338
+      "sha256": "0edf562e536d860db825b618fe330f8be1df1c2afa0e100ada67c93905d81ea9",
+      "bytes": 3533
     },
     {
       "path": "skills/security-review.md",
-      "sha256": "d0e91fb2a8e80ae78022c2ca1c81d0620a6d122857f4a100faa21ddc2d15ef35",
-      "bytes": 427
+      "sha256": "4a97517fe71f0a49a5c42a96a196fbdd20b8db8fb11eb7c5696e6232625f404a",
+      "bytes": 3711
     },
     {
       "path": "skills/skill-authoring.md",
-      "sha256": "507064e6154e120021f3f2c8205b08424445f35807d1d4d1e403e36581079a07",
-      "bytes": 411
+      "sha256": "d5103e884f13218e804779cf23c0137488c75e33cb302842f3f44c5ca6461d04",
+      "bytes": 3348
     },
     {
       "path": "skills/system-analysis.md",
-      "sha256": "ec9d061ad1de393a252158a8ce18d50445d4b81a0c781433a8f6f695de91dc62",
-      "bytes": 438
+      "sha256": "ec717fa01bb6c690a0f6e1c1cee0e013a2499b2929bee3292286596da001903f",
+      "bytes": 3403
     },
     {
       "path": "skills/tdd.md",
-      "sha256": "aafc57c036d3c6f585932fc17abcfcbacf51b42d08e727df907a81a240a79d54",
-      "bytes": 411
+      "sha256": "9546b380b26842194026f559ab4a70746bff0e386f81e724cbbf93e389cd49a6",
+      "bytes": 3783
     },
     {
       "path": "skills/test-strategy.md",
-      "sha256": "cb6fba7f277f6560306a16b791a5b302fb158b82bfd2ca929b574887fb16a604",
-      "bytes": 346
+      "sha256": "5ab5cb3adc7f20b5fa9275f30c30e02f84a95a32559e3bbef7824131c46c12c0",
+      "bytes": 3433
     },
     {
       "path": "skills/video-intelligence.md",
-      "sha256": "e3ad6071136386a0d8fa983efb51875b2ce121685464cd153fad775fcc42935d",
-      "bytes": 457
-    },
-    {
-      "path": "SOUL.md",
-      "sha256": "8e3e5db9992802de8fe6b01df2d2bfda5eb29cfc8b31884a514e38153f75b0a5",
-      "bytes": 610
+      "sha256": "1721bcb9333466676614c3369c2fdb36ffc886815623567d461bbe151f03dabc",
+      "bytes": 3208
     },
     {
       "path": "tools/test_scenarios.py",
-      "sha256": "da8032c48f84abe5cf4a13b4ea1fcf454bbe0a6b4530cbc4d8a106a1e1ed9c3f",
-      "bytes": 8040
+      "sha256": "864fb558c7ee41300cff934e04506888dfb291db22bf4506a92d72bd424fa042",
+      "bytes": 9239
     },
     {
       "path": "tools/validate_package.py",
-      "sha256": "d1d59b721eeee160cb86f3d3955bd916fa8434a58291e9840cb7a92cb3dff96f",
-      "bytes": 5296
-    },
-    {
-      "path": "VERSION",
-      "sha256": "c28fcca53637bc88e124af1725df13cb98c69dedefd62fb3cdbe1cdb6b760624",
-      "bytes": 6
+      "sha256": "08e6e6abc9dc6ccb83d4951a66197c68fe9e46263590df440cafbf678dfa69f6",
+      "bytes": 6359
     },
     {
       "path": "workflows/analysis-only.md",
