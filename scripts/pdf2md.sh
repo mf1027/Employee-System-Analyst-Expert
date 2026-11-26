@@ -10,7 +10,7 @@
 #
 # Converter priority:
 #   1. @opendataloader/pdf  (node_modules - primary, best quality)
-#   2. pypdf                (pip install pypdf - fallback, text only)
+#   2. pypdf                (project .venv fallback, text only)
 #
 # Output: <name>.md next to each source PDF (unless a 2nd arg gives a custom output for one file).
 
@@ -30,7 +30,8 @@ warn() { echo -e "${YELLOW}[WARN] $1${NC}"; }
 info() { echo -e "${GRAY}       $1${NC}"; }
 
 ODL_BIN="$ROOT/node_modules/.bin/opendataloader-pdf"
-PY_CMD="$(command -v python3 || command -v python || true)"
+PY_CMD="$ROOT/.venv/bin/python"
+[ -x "$PY_CMD" ] || PY_CMD=""
 TMP_PY="$(mktemp).py"
 trap 'rm -f "$TMP_PY"' EXIT
 PYPDF_CHECKED=0; PYPDF_READY=0
@@ -141,8 +142,8 @@ done
 if [ "$CONVERTED" -eq 0 ] && [ ! -x "$ODL_BIN" ] && [ "$PYPDF_READY" -eq 0 ]; then
     echo ""
     fail "No converter available."
-    echo -e "${YELLOW}    Primary:  npm install   (installs @opendataloader/pdf)${NC}"
-    echo -e "${YELLOW}    Fallback: pip install pypdf${NC}"
+    echo -e "${YELLOW}    Primary:  npm ci   (installs locked @opendataloader/pdf)${NC}"
+    echo -e "${YELLOW}    Fallback: run scripts/setup.sh to create the project .venv${NC}"
     exit 1
 fi
 

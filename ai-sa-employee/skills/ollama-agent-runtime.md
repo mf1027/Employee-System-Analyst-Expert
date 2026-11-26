@@ -54,8 +54,9 @@ loading, repository tools, permissions, hooks, and agent loops.
      --provider <native|ollama> --model <model-if-ollama> --evidence <safe-evidence.json>
    ```
 
-   Status is derived from the evidence; `--status VERIFIED` is rejected. A dry-run validates the
-   safe evidence shape and matching gates, but it is not itself a live host smoke result. Likewise,
+   The status is derived from caller-supplied claims; `--status VERIFIED` is rejected. Even a
+   complete matching evidence JSON produces `CLAIMS-CONSISTENT`, not independent `VERIFIED`.
+   A dry-run validates the safe evidence shape and matching gates, but it is not a live host smoke result. Likewise,
    `runtime-sync.mjs --verify` may report `VAULT_READY` only; it checks vault artifacts, not runtime
    behavior. After normal documentation write authorization, record and project the same validated
    evidence explicitly:
@@ -68,8 +69,9 @@ loading, repository tools, permissions, hooks, and agent loops.
    Hook mode appends unverified lifecycle observations only; Claude's `session_end` phase is passive
    telemetry, not this explicit postflight. An explicit postflight updates the mind-map only with
    `--authorize-mindmap`; without it the map is byte-for-byte unchanged.
-10. Before completion, reconcile prior tooling/runtime entries, run the related-note freshness checker,
-    prepare the map update, and write it only when normal documentation authorization exists.
+10. Mind-map projection authorization is independent of runtime status. A complete claim set may
+    be recorded without projection authorization; an authorized projection may also record an
+    UNVERIFIED/LIMITED result. Neither state grants tool permissions or certifies the host.
 
 ## After model selection
 
@@ -136,7 +138,8 @@ Agent runtime sync:
 - Soup runtime:
 - Canonical skill paths:
 - Mind-map sync:
-- Overall status: VERIFIED / LIMITED / UNVERIFIED / BLOCKED
+- Runtime claim status: CLAIMS-CONSISTENT / LIMITED / UNVERIFIED
+- Mind-map projection: AUTHORIZED / NOT_AUTHORIZED
 ```
 
 For readiness work, also include the rollback skill's `Ponytail discipline` block and its complete

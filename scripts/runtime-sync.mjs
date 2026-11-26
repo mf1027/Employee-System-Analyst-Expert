@@ -44,11 +44,8 @@ export function classifyRuntimeStatus({
   hooksVerified = false,
   ponytailVerified = false,
   skillPathsVerified = true,
-  vaultVerified = false,
-  mindmapWriteAuthorized = false,
 }) {
   if (!['native', 'ollama'].includes(provider)) return 'UNVERIFIED';
-  if (!vaultVerified || !mindmapWriteAuthorized) return 'BLOCKED';
   if (!skillPathsVerified || !hostToolsVerified || !hooksVerified || !ponytailVerified) return 'UNVERIFIED';
   if (provider === 'ollama') {
     const normalizedOllama = {
@@ -63,7 +60,9 @@ export function classifyRuntimeStatus({
     if (required.some((key) => normalizedOllama[key] !== true)) return 'UNVERIFIED';
     if (normalizedOllama.contextVerified !== true) return 'LIMITED';
   }
-  return 'VERIFIED';
+  // Evidence JSON is caller-supplied. This status means only that its claims
+  // are internally complete; it is never an independent runtime attestation.
+  return 'CLAIMS-CONSISTENT';
 }
 
 export function sanitizeEvent(event) {
@@ -92,6 +91,7 @@ export function buildRuntimeEvent({
   ...ignored
 }) {
   const identity = inferRuntimeIdentity({ host, provider, model });
+  const safeStatus = status === 'VERIFIED' ? 'CLAIMED-VERIFIED' : status;
   return sanitizeEvent({
     schema_version: 1,
     event_id: crypto.randomUUID(),
@@ -110,7 +110,9 @@ export function buildRuntimeEvent({
     soup_status: soupStatus,
     evidence: evidenceSummary,
     mindmap_status: mindmapStatus,
-    overall_status: status,
+    runtime_status: safeStatus,
+    mindmap_projection_status: mindmapStatus,
+    overall_status: safeStatus,
   });
 }
 
@@ -166,7 +168,7 @@ function safeOllamaSummary(ollama) {
   return {
     host: safeHost(ollama.host),
     model: ollama.model || null,
-    status: ollama.status || 'UNVERIFIED',
+    status: ollama.status === 'VERIFIED' ? 'CLAIMED-VERIFIED' : (ollama.status || 'UNVERIFIED'),
     explicit_model_configured: ollama.explicitModelConfigured === true,
     service_reachable: ollama.serviceReachable === true,
     local_model_verified: ollama.localModelVerified === true,
@@ -299,7 +301,9 @@ export function updateMindmap(vaultRoot, event) {
     `- Model: ${event.model || 'not reported'}`,
     `- Ponytail: ${event.ponytail_status}`,
     `- Soup: ${event.soup_status}`,
-    `- Overall status: ${event.overall_status}`,
+    `- Runtime status: ${event.runtime_status || event.overall_status}`,
+    `- Mind-map projection: ${event.mindmap_projection_status || event.mindmap_status || 'NOT_RECORDED'}`,
+    '- Evidence trust: caller-supplied claims; not independently attested',
     end,
   ].join('\n');
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`);
@@ -317,7 +321,7 @@ export function updateMindmap(vaultRoot, event) {
   return target;
 }
 
-export function eventFromInput(args, input, { vaultVerified = false, skillPathsVerified = true, evidence = null } = {}) {
+export function eventFromInput(args, input, { skillPathsVerified = true, evidence = null } = {}) {
   const host = args.host || (input.host === 'claude' || input.host === 'codex' ? input.host : null);
   const provider = args.provider || input.provider || process.env.RUNTIME_SYNC_PROVIDER || 'native';
   if (!host) throw new Error('host is required: use --host claude or --host codex');
@@ -339,20 +343,21 @@ export function eventFromInput(args, input, { vaultVerified = false, skillPathsV
     hooksVerified: evidenceResult.hooksVerified,
     ponytailVerified: evidenceResult.ponytailVerified,
     skillPathsVerified,
-    vaultVerified,
-    mindmapWriteAuthorized: args.authorizeMindmap === true,
   });
+  const projectionStatus = args.command === 'postflight'
+    ? (args.authorizeMindmap === true ? 'AUTHORIZED' : 'NOT_AUTHORIZED')
+    : 'NOT_REQUESTED';
   return buildRuntimeEvent({
     ...identity,
     sessionId: input.session_id || process.env.RUNTIME_SYNC_SESSION_ID || null,
     phase,
     status,
     mindmapPath: null,
-    ponytailStatus: evidenceResult.ponytailVerified ? 'VERIFIED' : 'UNVERIFIED',
+    ponytailStatus: evidenceResult.ponytailVerified ? 'CLAIMED-VERIFIED' : 'UNVERIFIED',
     soupStatus: evidenceResult.soupStatus,
     ollama: identity.provider === 'ollama' ? safeOllamaSummary(evidenceResult.ollama) : null,
     evidenceSummary: evidenceResult.summary,
-    mindmapStatus: args.authorizeMindmap === true ? 'AUTHORIZED' : 'BLOCKED',
+    mindmapStatus: projectionStatus,
   });
 }
 
@@ -383,7 +388,7 @@ export async function runRuntimeSync(argv, { repoRoot = repoRootFromScript(), wr
   }
   if (!vaultRoot) throw new Error('MYPS vault could not be resolved');
   if (args.command === 'postflight' && !args.evidence) {
-    throw new Error('--postflight requires --evidence with independently observed host and Ponytail evidence');
+    throw new Error('--postflight requires --evidence; supplied claims are not independently attested');
   }
   const input = args.command === 'hook' ? parseHookInput(readStdin()) : {};
   const evidence = readEvidence(args.evidence);
@@ -392,7 +397,6 @@ export async function runRuntimeSync(argv, { repoRoot = repoRootFromScript(), wr
     { ...args, phase: args.phase || (args.command === 'preflight' ? 'preflight' : args.command === 'postflight' ? 'postflight' : null) },
     input,
     {
-      vaultVerified: fs.existsSync(mindmapPath(vaultRoot)),
       skillPathsVerified: skillPaths.verified,
       evidence,
     },
@@ -403,7 +407,9 @@ export async function runRuntimeSync(argv, { repoRoot = repoRootFromScript(), wr
     if (args.command === 'postflight' && args.authorizeMindmap) updateMindmap(vaultRoot, event);
   }
   writeOutput(JSON.stringify({
-    runtime_sync: event.overall_status,
+    runtime_sync: event.runtime_status,
+    mindmap_projection: event.mindmap_projection_status,
+    evidence_trust: 'CALLER_SUPPLIED_CLAIMS_NOT_ATTESTED',
     event_id: event.event_id,
     host: event.host,
     provider: event.provider,

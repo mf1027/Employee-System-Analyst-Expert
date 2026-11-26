@@ -51,7 +51,7 @@ Drop files here → ingest via `ingest-reference` (tagged `client:[name]`). Syst
 for a conversion project goes in that project's `migration/legacy|target/` instead.
 
 ## Ingestion Log
-| File | Type | Summary | claude-mem entries | Date ingested |
+| File | Type | Summary | canonical project memory entries | Date ingested |
 |---|---|---|---|---|
 ```
 
@@ -165,7 +165,7 @@ After answer — write tech stack to `[client-name].md` and flag known stacks in
 
 Write all gathered context to `memory/clients/[client-name]/[client-name].md`
 using the schema below. Write project entry to the Active Projects table.
-Update the Client Index in `memory/memory.md`.
+Update the canonical Obsidian client index only after confirming the vault path and write authorization; keep the local client lane as the approved working copy.
 
 ---
 
@@ -251,7 +251,7 @@ memory/clients/                        ← gitignored — never pushed
 - [ ] Client `reference/README.md` created with an `## Ingestion Log` table
 - [ ] Project scaffold created immediately after Step 3 (via new-project)
 - [ ] Tech stack written to both client record and decisions.md
-- [ ] Client Index in memory/memory.md updated
+- [ ] Canonical Obsidian client index checked/updated with authorization
 - [ ] All relative dates converted to absolute
 
 ## Failure exit

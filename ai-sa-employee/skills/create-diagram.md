@@ -40,7 +40,7 @@ If missing: ask what to visualise and which project it relates to.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md` — domain
+1. Read current canonical Obsidian/project memory and the relevant client lane — domain
    glossary, actor names, system names, known constraints.
 2. Read the relevant project file (e.g. `requirements.md` for requirement flows,
    `stakeholders.md` for actor diagrams, `database.md` for ERDs, `plan.md` for

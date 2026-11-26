@@ -17,9 +17,9 @@ If missing: ask which client/project and what they asked.
 
 ## Steps
 
-1. Read `memory/memory.md` (decisions log) and the client record at
+1. Read current canonical Obsidian/project memory and the client record at
    `memory/clients/[client-name].md` — comms style, constraints, domain glossary.
-   Search claude-mem for relevant project knowledge: `mem search "[topic]"`.
+   Search canonical Obsidian/project memory and the current project records for relevant knowledge; do not invoke claude-mem.
 2. Read the relevant project files: `requirements.md`, `risks.md`, `decisions.md`.
 3. If the question touches database topics, also read the project `database.md`.
 4. Output a **CONTEXT SUMMARY** — what I read, what's relevant, confidence level.

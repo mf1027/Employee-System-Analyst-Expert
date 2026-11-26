@@ -31,8 +31,7 @@ Default to **Daily** if not specified.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md`. Search claude-mem:
-   `mem search "[project] security"` for any prior security decisions.
+1. Review current canonical Obsidian/project memory and the relevant client lane for prior security decisions. Do not invoke the disabled claude-mem integration.
 2. Read the project's `requirements.md` and `decisions.md`.
 
 3. **Identify the attack surface.** List every entry point:

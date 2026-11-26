@@ -18,9 +18,7 @@ If missing: ask for the project and what they're trying to solve.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md` for domain context,
-   constraints, and the glossary. Search claude-mem: `mem search "[project] requirements"`
-   to retrieve any prior knowledge before starting.
+1. Consult current canonical Obsidian/project memory, the client lane, and existing requirements/glossary records before starting. Do not invoke the disabled claude-mem integration.
 2. **Read before you ask — hard gate.** Read ALL available existing documentation before
    starting interrogation: `requirements.md`, `decisions.md`, meeting notes, and any files in
    `reference/`. Evidence-first principle: quote what you found, identify what is missing, then

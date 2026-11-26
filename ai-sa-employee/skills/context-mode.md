@@ -23,7 +23,7 @@ These five modes represent phases of a project engagement.
 ### 📋 DISCOVER
 **Focus:** Interviewing stakeholders, ingesting documents, extracting requirements, probing gaps.
 **Entry trigger:** "gather requirements", "what do they need", "tell me about the project", "let's do requirements"
-**Reads:** `memory/memory.md`, client record, project `requirements.md` (if exists)
+**Reads:** current canonical Obsidian/project memory, client record, project `requirements.md` (if exists)
 **Writes:** `memory/clients/[client]/[project]/requirements.md` (REQ- entries)
 **Chains to:** `gather-requirements`, `stakeholder-analysis`, `use-case-analysis`, `ingest-reference`, `ingest-meeting-notes`, `web-research` (brightdata — competitive analysis, regulatory lookup, technology research)
 **Behaviour:** Confirm need vs. solution — capture the problem and outcome before any feature.
@@ -35,7 +35,7 @@ testable acceptance criteria. Understanding Check before every new requirement s
 ### 🔍 ANALYZE
 **Focus:** Mental process flow, risk identification, constraint mapping, unknowns surfacing.
 **Entry trigger:** "analyse the system", "map the process", "let's go deeper", "what are the risks?"
-**Reads:** `memory/memory.md`, client record, project `requirements.md`, `risks.md`
+**Reads:** current canonical Obsidian/project memory, client record, project `requirements.md`, `risks.md`
 **Writes:** `memory/clients/[client]/[project]/risks.md` (RISK- entries, flow diagrams, gap analysis)
 **Chains to:** `process-analysis`, `use-case-analysis`, `risk-management`, `nfr-review`
 **Behaviour:** Map as-is before to-be. Quantify pain: time, cost, error rate, handoffs.
@@ -47,7 +47,7 @@ Apply DBA lens — flag data/schema implications even if not asked.
 ### 🏗️ DESIGN
 **Focus:** Architecture, tech stack decisions, solution components, ADRs, integration specs, DB design.
 **Entry trigger:** "design the solution", "architecture", "tech stack", "what would it look like"
-**Reads:** `memory/memory.md`, project `requirements.md`, `decisions.md`
+**Reads:** current canonical Obsidian/project memory, project `requirements.md`, `decisions.md`
 **Writes:** `memory/clients/[client]/[project]/decisions.md` (ADRs, component specs, interface contracts)
 **Chains to:** `solution-design`, `database-admin`, `create-diagram`, `nfr-review`
 **Behaviour:** State architecture style and WHY in one paragraph. Define interfaces and contracts.
@@ -59,7 +59,7 @@ database lens — flag schema risks, HA/DR gaps, performance implications.
 ### ⚡ CHALLENGE
 **Focus:** Scope audit, feasibility check, cut/defer list, "what breaks this plan?"
 **Entry trigger:** "is this realistic?", "challenge this", "puwede ba to?", "ano ba talaga ang scope"
-**Reads:** `memory/memory.md`, project `requirements.md`, `decisions.md`, `risks.md`, `plan.md`
+**Reads:** current canonical Obsidian/project memory, project `requirements.md`, `decisions.md`, `risks.md`, `plan.md`
 **Writes:** `memory/clients/[client]/[project]/decisions.md` (scope decisions, deferred items)
 **Chains to:** `risk-management`, `scope-estimate`, `change-management`
 **Behaviour:** Question every assumption. Force trade-off decisions (scope/time/cost/quality).
@@ -71,7 +71,7 @@ Never soften findings. A senior PM's job is to surface the uncomfortable truth e
 ### 📅 PLAN
 **Focus:** Task breakdown, WBS, scheduling, dependencies, milestones, developer assignments.
 **Entry trigger:** "build the plan", "timeline", "WBS", "gawin na nating plan", "break this down"
-**Reads:** `memory/memory.md`, project `requirements.md`, `risks.md`, `decisions.md`
+**Reads:** current canonical Obsidian/project memory, project `requirements.md`, `risks.md`, `decisions.md`
 **Writes:** `memory/clients/[client]/[project]/plan.md` (phases, milestones, WBS, critical path)
 **Chains to:** `plan-project`, `scope-estimate`, `risk-management`
 **Behaviour:** Build WBS before Gantt. Identify and name the critical path. Three-point estimates
@@ -89,8 +89,8 @@ These modes are available at any time, independent of project phase.
 ### 🗄️ DATABASE
 **Focus:** Database advisory — schema design, migration safety, performance, HA/DR, cost.
 **Entry trigger:** "database", "schema", "migration", "query", "performance", "ERD", "HA/DR"
-**Reads:** `memory/memory.md`, project `decisions.md`, any ingested schema/ERD KB entries
-**Writes:** `decisions.md` (DB ADRs), RISK- entries, REC- entries, claude-mem (category:Database)
+**Reads:** current canonical Obsidian/project memory, project `decisions.md`, any ingested schema/ERD KB entries in the canonical project lane
+**Writes:** `decisions.md` (DB ADRs), RISK- entries, REC- entries, canonical project database decision and knowledge records
 **Chains to:** `database-admin`
 **Behaviour:** Apply full DBA expertise. Flag locking risks, data loss scenarios, compliance gaps.
 Frame all findings in business impact terms — not just technical findings.
@@ -100,7 +100,7 @@ Frame all findings in business impact terms — not just technical findings.
 ### 📊 STATUS
 **Focus:** Status reporting, progress tracking, issue escalation.
 **Entry trigger:** "status update", "progress report", "kamusta na?", "RAG report", "how are we doing"
-**Reads:** `memory/memory.md`, project `plan.md`, `risks.md`, client record
+**Reads:** current canonical Obsidian/project memory, project `plan.md`, `risks.md`, client record
 **Writes:** RAG status report (see `memory/communication.md` template)
 **Chains to:** `status-report`, `project-status`
 **Behaviour:** Lead with RAG colour. Metrics before narrative. Surface RED/AMBER risks.
@@ -111,7 +111,7 @@ Always end with Decisions needed / Open questions / Next steps.
 ### 💬 ADVISORY
 **Focus:** Drafting client-facing recommendations, answers, and communications.
 **Entry trigger:** "advise the client", "what should we tell them", "draft a message"
-**Reads:** `memory/memory.md`, client record, project `requirements.md`, `risks.md`, `decisions.md`
+**Reads:** current canonical Obsidian/project memory, client record, project `requirements.md`, `risks.md`, `decisions.md`
 **Writes:** drafts only — never sends
 **Chains to:** `advise-client`
 **Behaviour:** Plain English, 50–100 words, one clear point per message.
@@ -123,7 +123,7 @@ Draft for the operator to review and send. Never send directly.
 **Focus:** Capturing outcomes, logging lessons, surfacing patterns.
 **Entry trigger:** "done", "task complete", "got feedback", "lessons learned"
 **Reads:** all `memory/` files
-**Writes:** lessons to `memory/memory.md`, claude-mem KB entries, active task updates
+**Writes:** lessons to current canonical Obsidian/project memory, canonical project memory KB entries in the canonical project lane, active task updates
 **Chains to:** `end-of-task`, `learn-from-feedback`
 **Behaviour:** Depth-checked lessons only — root cause + lesson, not just "fixed the bug".
 Surface patterns after 3+ similar incidents.

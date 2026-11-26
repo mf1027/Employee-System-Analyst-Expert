@@ -17,7 +17,7 @@ If missing: ask which project.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md` — preferences,
+1. Read current canonical Obsidian/project memory and the relevant client lane — preferences,
    comms style, who the report goes to.
 2. Read `memory/communication.md` — report format and RAG criteria.
 3. Read the project's `plan.md` (milestones, schedule), `risks.md` (open RISK-

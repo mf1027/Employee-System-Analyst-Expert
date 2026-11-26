@@ -49,8 +49,10 @@ bash scripts/setup.sh
 ```
 
 The script checks and installs:
-- Node.js dependencies (`claude-mem`, `context-mode`, `@opendataloader/pdf`)
-- Python `chromadb` for semantic memory search
+- Locked Node.js dependency `@opendataloader/pdf` (`npm ci`)
+- Pinned Python document dependencies in a project-local `.venv` (never global)
+
+Use `scripts/python.ps1` on Windows or `scripts/python.sh` on Linux/macOS to run repository Python tools with the project environment.
 - Checks for the upstream Ponytail plugin in Claude Code and Codex
 - Checks optional Ollama CLI/service state and the explicitly configured local model
 - Prints Claude Code and Codex Ponytail install commands if needed
@@ -60,6 +62,14 @@ The script checks and installs:
 5. Review/trust Ponytail hooks, then reload Claude Code or open a fresh Codex task
 
 **You're ready.** Open this folder in Claude Code and start a session.
+
+For a distributable production package, build a privacy-filtered archive outside the repository:
+
+```bash
+python scripts/package-release.py --output ../Employee-System-Analysis-Expert-2.3.1.zip
+```
+
+The packager excludes local operator/client memory, reference documents, deliverables, runtime caches, and the quarantined red-team payload; it verifies the ZIP manifest and writes a SHA-256 sidecar.
 
 ### Optional local Ollama model
 
@@ -76,7 +86,7 @@ ollama launch codex --model $env:OLLAMA_MODEL
 ```
 
 The setup scripts check Ollama, service reachability, and the exact model but never pull, select, or
-switch models automatically. For reliable agent work, verify adequate context and read-only tool
+switch models automatically. Runtime-sync evidence is caller-supplied and is labelled `CLAIMS-CONSISTENT` at most; it is not independent certification. For reliable agent work, verify adequate context and read-only tool
 calling with the selected model. Ollama does not make Claude and Codex hooks identical; verify each
 host independently.
 
@@ -122,11 +132,10 @@ you explicitly ask for model preparation, fine-tuning, export, or Ollama import.
 
 Every session starts with a hard gate:
 
-1. **Environment check** — the employee verifies claude-mem and context-mode are responding
-   and announces the active memory tier; if memory is degraded it says so explicitly
-2. Reads `CLAUDE.md` and `memory/memory.md`
-3. Searches claude-mem for recent decisions and open items
-4. Surfaces any open items from the last session before you say anything
+1. **Environment check** — report available host integrations; `claude-mem` is disabled/non-operational and must not be treated as a memory source
+2. Reads `CLAUDE.md` and checks whether the local `memory/memory.md` snapshot exists and is current
+3. Uses the operator's canonical Obsidian/project memory as authority; if it is unavailable or the local snapshot is stale, disclose the limitation and ask for the current source rather than treating stale notes as current
+4. Surfaces only open items supported by current memory or the active conversation
 
 **Understanding Check (tiered)** — anything that creates/modifies files, produces a
 deliverable, is client-facing, or commits to scope/estimates gets a hard gate: the employee
@@ -161,7 +170,7 @@ The employee runs `new-client-setup` which walks you through a short wizard:
 | Mode suggestion | DISCOVER / ingest document first / record only |
 
 All client data is stored under `memory/clients/` which is **gitignored and never pushed**.
-Your client information stays on your machine only.
+Client folders are gitignored and excluded from release archives. Audit existing remote Git history separately; ignore rules do not remove previously committed data.
 
 ---
 
@@ -176,8 +185,8 @@ The employee runs `resume-client`:
 
 1. Scans `memory/clients/` for all client folders
 2. Reads the client record and all project files
-3. Rebuilds the Client Index in `memory/memory.md`
-4. Syncs open risks, decisions, and current phase to claude-mem
+3. Rebuilds a local index only when its source records are current
+4. Keeps open risks, decisions, and current phase in the canonical project memory lane; claude-mem is disabled
 5. Shows a status card per project (phase, next milestone, open risks, open tasks)
 6. Asks what you want to work on next
 
@@ -206,8 +215,7 @@ scripts\backup.ps1 -Destination "D:\Backups" -Keep 20
 bash scripts/backup.sh
 bash scripts/backup.sh /path/to/backups
 ```
-It zips `memory/clients/`, `.claude-mem/`, `reference/`, and `deliverables/` into a
-timestamped archive (default: `Documents/EmployeeBackups/`, keeps the newest 10).
+It archives `memory/clients/`, the legacy top-level `.claude-mem/` store, `reference/`, and `deliverables/`; writes a per-file SHA-256 manifest; verifies every entry and the ZIP CRC; and applies retention only after successful verification (default: `Documents/EmployeeBackups/`, keeps the newest 10). A failed/incomplete run preserves previous backups.
 To restore: extract the zip into a fresh clone's root, then say
 *"I have an ongoing client that I manually inserted"*.
 
@@ -271,8 +279,8 @@ Each PDF produces `<name>.md` next to it. Pass `-Recurse` (PowerShell) / `RECURS
 to include subfolders.
 
 3. Tell the employee: **"ingest this"** (or drop the path)
-4. The employee runs `ingest-reference`: reads the `.md` once → distils to claude-mem as `KB-` entries
-5. Future sessions search claude-mem — the file is not re-read unless it changes
+4. The employee runs `ingest-reference`: reads the `.md` and distils supported facts into the canonical project memory lane as `KB-` entries
+5. Future sessions consult the project memory lane; no claude-mem dependency is assumed
 
 > **Converter quality:** the high-fidelity converter (`@opendataloader/pdf`) needs **Java**,
 > which the **setup script installs for you** (winget / brew / apt). If Java is ever absent,
@@ -326,7 +334,7 @@ Trigger them by saying the phrases in the right column. The most-used are below.
 **Not in the table above:** `plan-analysis` is an agent-local, client-scoped planning skill at
 `.claude/skills/plan-analysis/`. Run it from this employee-agent workspace for any managed
 client/project. Codex exposes only a thin runtime bridge at
-`C:\Users\Msi\.codex\skills\plan-analysis`; the canonical skill is not copied into client
+`%USERPROFILE%\.codex\skills\plan-analysis`; the canonical skill is not copied into client
 application repositories. It defaults to live evidence-backed planning and supports an explicit,
 client-deliverables evidence bundle. See `CLAUDE.md`'s Tie-breaks section for how it relates to
 `deep-analysis`.
@@ -391,8 +399,8 @@ When explicitly requested, setup can install Soup into the ignored repo-local en
 checking the archive hash:
 
 ```powershell
-.\scripts\setup.ps1 -InstallSoup -SoupArchivePath C:\Users\Msi\Downloads\Soup-0.75.0.zip
-.\scripts\setup.ps1 -InstallSoup -InstallSoupTraining -SoupArchivePath C:\Users\Msi\Downloads\Soup-0.75.0.zip
+.\scripts\setup.ps1 -InstallSoup -SoupArchivePath %USERPROFILE%\Downloads\Soup-0.75.0.zip
+.\scripts\setup.ps1 -InstallSoup -InstallSoupTraining -SoupArchivePath %USERPROFILE%\Downloads\Soup-0.75.0.zip
 ```
 
 ```bash
@@ -490,15 +498,15 @@ complete mechanics in `ai-sa-employee/skills/task-board.md`.
 
 | What | Where | Pushed to git? |
 |---|---|---|
-| Operator profile + client index | `memory/memory.md` | Yes |
+| Operator profile + client index snapshot | `memory/memory.md` | **No — local-only; stale snapshots must not be treated as current** |
 | Communication standards | `memory/communication.md` | Yes |
-| Agent self-improvement backlog (`SKL-`/`WFC-` breadcrumbs) | `memory/improvement-backlog.md` | Yes |
+| Agent self-improvement backlog (`SKL-`/`WFC-` breadcrumbs) | `memory/improvement-backlog.md` | **No — local-only** |
 | All client data (records + project files) | `memory/clients/` | **No — gitignored** |
-| Episodic memory (decisions, risks, KB entries) | `.claude-mem/` (local) | **No — gitignored** |
+| Legacy claude-mem store | `.claude-mem/` (historical local residue only; integration disabled) | **No — gitignored** |
 | Client source documents (drop zone) | `reference/` | **No — gitignored** |
 | Generated deliverables | `deliverables/` | **No — gitignored** |
 
-**Rule:** only system files are pushed. No client information ever leaves your machine via git.
+**Privacy boundary:** operator memory, client records, archives, references and generated deliverables are local-only and excluded from release archives. Existing Git history must be reviewed separately; `.gitignore` does not untrack files already committed. Do not claim that no client information has ever left through Git until the actual remote history has been audited.
 
 ### Memory IDs
 
@@ -590,8 +598,8 @@ Employee System Analyst Expert/
 
 | Tool | Required for | Install |
 |---|---|---|
-| Node.js ≥ 20 | claude-mem, context-mode, @opendataloader/pdf | https://nodejs.org |
-| Python ≥ 3.10 | chromadb semantic search | https://python.org |
+| Node.js ≥ 20.19.0 | @opendataloader/pdf (locked) | https://nodejs.org |
+| Python ≥ 3.10 | pinned document libraries in `.venv` | https://python.org |
 | Bun | context-mode hooks | `irm bun.sh/install.ps1 \| iex` (Windows) |
 | LibreOffice | DOCX/PPTX/XLSX creation | Auto-installed by setup script (winget/brew/apt) |
 | Poppler | PDF image conversion | Auto-installed by setup script (winget/brew/apt) |
@@ -610,7 +618,7 @@ The `setup.ps1` / `setup.sh` scripts check and install everything automatically.
 "what are the risks?"                        → RAID log, probability/impact scoring
 "build the plan"                             → WBS, milestones, critical path
 "status update"                              → RAG status report
-"ingest this" [PDF dropped]                  → PDF → MD → claude-mem KB entries
+"ingest this" [PDF dropped]                  → PDF → MD → canonical project-memory KB entries
 "I have an ongoing client I manually inserted" → resume-client: scan, rebuild, status card
 "security review"                            → STRIDE analysis, PII map, RISK-SEC entries
 "research [technology]"                      → web research via brightdata MCP

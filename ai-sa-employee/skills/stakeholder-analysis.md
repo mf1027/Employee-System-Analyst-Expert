@@ -18,9 +18,7 @@ If missing: ask for the project name and a one-sentence description.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md` — organisation
-   context, known stakeholders, domain glossary. Search claude-mem:
-   `mem search "[project] stakeholders"` — retrieve any prior stakeholder knowledge.
+1. Consult current canonical Obsidian/project memory, the client lane, and existing stakeholder records for organisation context and prior stakeholder knowledge. Do not invoke claude-mem.
 2. Read the project's `requirements.md` and `risks.md` — who the requirements
    mention, who owns risks.
 3. Identify all stakeholder groups (individuals or roles, not just titles).

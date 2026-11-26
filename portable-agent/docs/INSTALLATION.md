@@ -59,3 +59,13 @@ For each exact product/version/configuration, use a clean disposable workspace a
 ## Removal
 
 Manual setup creates no package-owned host settings: close the workspace or remove the package directory. If you manually add an instruction pointer in host configuration, remove only the entry you added; do not remove or overwrite pre-existing host/user instructions. The package currently provides no installer or uninstaller.
+
+## Skill Intelligence resolver
+
+The agent classifies the task semantically, then validates its explicit primary intent and optional specialist/support selections with the deterministic resolver:
+
+```bash
+python tools/resolve_skills.py --intent system_analysis --specialist database --decision-json '{"dominant_intent":"system_analysis","primary_deliverable":"Evidence-backed current-state system analysis","trigger_evidence":"The task asks to inspect an existing system","specialist_evidence":{"database":"Actual schema/data flow is in scope"},"support_output_need":{},"excluded_candidates":["implementation"],"uncertainty":"Database scope must be confirmed from artifacts"}'
+```
+
+The resolver requires a structured decision record with evidence for the primary intent, each specialist and each support skill. It returns the workflow and exact skill paths. It does not infer intent from free text, load skills itself, grant tool permissions or certify host behavior. If Python is unavailable, apply the documented one-primary/specialist/support policy manually and disclose that fallback.

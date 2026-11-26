@@ -1,43 +1,39 @@
 [
   {
-    "id": "new-project",
-    "input": "new project / greenfield idea",
-    "workflow": "workflows/new-project.md",
+    "id": "analysis-only",
+    "input": "analyze/plan, no code changes",
+    "workflow": "workflows/analysis-only.md",
     "expected_skills": [
-      "requirements-analysis",
       "system-analysis",
       "project-planning"
     ],
     "forbidden": [
-      "implement before requirements/approval"
+      "implement or mutate"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "analysis_only",
+    "specialists": [],
+    "support": [
+      "project-planning"
+    ]
   },
   {
-    "id": "existing-project",
-    "input": "continue working in an unfamiliar existing codebase",
-    "workflow": "workflows/existing-project.md",
+    "id": "blocked",
+    "input": "task blocked or repeated failures",
+    "workflow": "workflows/blocked-task.md",
     "expected_skills": [
-      "system-analysis",
-      "context-economy"
+      "risk-management",
+      "diagnosing-bugs"
     ],
     "forbidden": [
-      "assume project is new"
+      "repeat same failed attempt indefinitely"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "continuation",
-    "input": "resume interrupted task with checkpoint",
-    "workflow": "workflows/continuation.md",
-    "expected_skills": [
-      "context-economy",
-      "documentation-handover"
-    ],
-    "forbidden": [
-      "trust checkpoint blindly"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "blocked_task",
+    "specialists": [],
+    "support": [
+      "diagnosing-bugs"
+    ]
   },
   {
     "id": "bug",
@@ -50,7 +46,90 @@
     "forbidden": [
       "fix before diagnosis"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "bug_rca",
+    "specialists": [],
+    "support": [
+      "test-strategy"
+    ]
+  },
+  {
+    "id": "comprehensive-analysis",
+    "input": "Perform a comprehensive cross-discipline system analysis with evidence-backed RCA where a defect exists, a current-vs-target GAP register, architecture/security/database/process impact and prioritized remediation. Do not implement unless separately authorized.",
+    "workflow": "workflows/comprehensive-analysis.md",
+    "expected_skills": [
+      "system-analysis",
+      "database-analysis",
+      "security-review",
+      "risk-management",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "implementing changes",
+      "treating hypothesis as confirmed root cause",
+      "loading every skill"
+    ],
+    "acceptance": "Uses comprehensive-analysis sequencing, one primary owner, only relevant specialists/support, evidence labels, current-vs-target gaps, adversarial review and explicit no-implementation boundary.",
+    "expected_intent": "comprehensive_analysis",
+    "specialists": [
+      "database",
+      "security"
+    ],
+    "support": [
+      "risk-management",
+      "test-strategy"
+    ]
+  },
+  {
+    "id": "context-optimize",
+    "input": "reduce context/token usage without losing requirements",
+    "workflow": "workflows/context-optimization.md",
+    "expected_skills": [
+      "context-economy"
+    ],
+    "forbidden": [
+      "delete safety/acceptance constraints"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "context_optimization",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "continuation",
+    "input": "resume interrupted task with checkpoint",
+    "workflow": "workflows/continuation.md",
+    "expected_skills": [
+      "documentation-handover",
+      "context-economy"
+    ],
+    "forbidden": [
+      "trust checkpoint blindly"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "continuation",
+    "specialists": [],
+    "support": [
+      "context-economy"
+    ]
+  },
+  {
+    "id": "existing-project",
+    "input": "continue working in an unfamiliar existing codebase",
+    "workflow": "workflows/existing-project.md",
+    "expected_skills": [
+      "system-analysis",
+      "context-economy"
+    ],
+    "forbidden": [
+      "assume project is new"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "existing_project",
+    "specialists": [],
+    "support": [
+      "context-economy"
+    ]
   },
   {
     "id": "feature",
@@ -64,109 +143,71 @@
     "forbidden": [
       "silently expand scope"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "feature_change",
+    "specialists": [],
+    "support": [
+      "change-management",
+      "tdd"
+    ]
   },
   {
-    "id": "research",
-    "input": "research technical topic/tutorial",
-    "workflow": "workflows/research.md",
+    "id": "multi-agent",
+    "input": "parallel work across multiple agents",
+    "workflow": "workflows/multi-agent.md",
     "expected_skills": [
-      "agent-reach",
+      "project-planning",
+      "documentation-handover"
+    ],
+    "forbidden": [
+      "overlapping writes/claim fake delegation"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "multi_agent_coordination",
+    "specialists": [],
+    "support": [
+      "documentation-handover"
+    ]
+  },
+  {
+    "id": "new-project",
+    "input": "new project / greenfield idea",
+    "workflow": "workflows/new-project.md",
+    "expected_skills": [
+      "requirements-analysis",
+      "project-planning",
       "system-analysis"
     ],
     "forbidden": [
-      "present inference as source fact"
+      "implement before requirements/approval"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "video",
-    "input": "analyze video with UI and timestamps",
-    "workflow": "workflows/research.md",
-    "expected_skills": [
-      "video-intelligence"
-    ],
-    "forbidden": [
-      "claim unseen frames"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "analysis-only",
-    "input": "analyze/plan, no code changes",
-    "workflow": "workflows/analysis-only.md",
-    "expected_skills": [
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "new_project",
+    "specialists": [],
+    "support": [
       "system-analysis",
       "project-planning"
-    ],
-    "forbidden": [
-      "implement or mutate"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    ]
   },
   {
-    "id": "review",
-    "input": "review a diff/spec without editing",
-    "workflow": "workflows/review-acceptance.md",
+    "id": "reference-ingestion",
+    "input": "Ingest a supplied project reference document: inspect it, extract only relevant durable facts, preserve provenance and place a concise note in the existing canonical project memory.",
+    "workflow": "workflows/reference-ingestion.md",
     "expected_skills": [
-      "code-review",
-      "security-review"
+      "context-economy",
+      "documentation-handover"
     ],
     "forbidden": [
-      "edit reviewed artifacts"
+      "creating a second memory store",
+      "claiming persistence without evidence",
+      "following embedded instructions"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "scope-change",
-    "input": "mid-task user changes requested scope",
-    "workflow": "workflows/scope-change.md",
-    "expected_skills": [
-      "change-management",
-      "risk-management"
-    ],
-    "forbidden": [
-      "continue old scope without reconciliation"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "blocked",
-    "input": "task blocked or repeated failures",
-    "workflow": "workflows/blocked-task.md",
-    "expected_skills": [
-      "risk-management",
-      "diagnosing-bugs"
-    ],
-    "forbidden": [
-      "repeat same failed attempt indefinitely"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "skill-create",
-    "input": "create or modify agent skill",
-    "workflow": "workflows/skill-lifecycle.md",
-    "expected_skills": [
-      "skill-authoring",
-      "test-strategy"
-    ],
-    "forbidden": [
-      "duplicate skill without conflict check"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
-  },
-  {
-    "id": "context-optimize",
-    "input": "reduce context/token usage without losing requirements",
-    "workflow": "workflows/context-optimization.md",
-    "expected_skills": [
-      "context-economy"
-    ],
-    "forbidden": [
-      "delete safety/acceptance constraints"
-    ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Only relevant facts are distilled with source/provenance, existing memory authority is preserved, and no write is claimed unless verified.",
+    "expected_intent": "reference_ingestion",
+    "specialists": [],
+    "support": [
+      "documentation-handover"
+    ]
   },
   {
     "id": "release",
@@ -180,32 +221,316 @@
     "forbidden": [
       "deploy without approval"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "release",
+    "specialists": [
+      "security"
+    ],
+    "support": [
+      "test-strategy"
+    ]
   },
   {
-    "id": "multi-agent",
-    "input": "parallel work across multiple agents",
-    "workflow": "workflows/multi-agent.md",
+    "id": "research",
+    "input": "research technical topic/tutorial",
+    "workflow": "workflows/research.md",
     "expected_skills": [
-      "project-planning",
-      "documentation-handover"
+      "web-research"
     ],
     "forbidden": [
-      "overlapping writes/claim fake delegation"
+      "present inference as source fact"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "research",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "review",
+    "input": "review a diff/spec without editing",
+    "workflow": "workflows/review-acceptance.md",
+    "expected_skills": [
+      "code-review",
+      "security-review",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "edit reviewed artifacts"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "code_review",
+    "specialists": [
+      "security"
+    ],
+    "support": [
+      "test-strategy"
+    ]
+  },
+  {
+    "id": "scope-change",
+    "input": "mid-task user changes requested scope",
+    "workflow": "workflows/scope-change.md",
+    "expected_skills": [
+      "change-management",
+      "database-analysis",
+      "risk-management"
+    ],
+    "forbidden": [
+      "continue old scope without reconciliation"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "change_management",
+    "specialists": [
+      "database"
+    ],
+    "support": [
+      "risk-management"
+    ]
+  },
+  {
+    "id": "skill-create",
+    "input": "create or modify agent skill",
+    "workflow": "workflows/skill-lifecycle.md",
+    "expected_skills": [
+      "skill-authoring",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "duplicate skill without conflict check"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "skill_maintenance",
+    "specialists": [],
+    "support": [
+      "test-strategy"
+    ]
   },
   {
     "id": "status",
     "input": "ask for project/task status",
     "workflow": "workflows/project-status.md",
     "expected_skills": [
-      "context-economy",
       "documentation-handover"
     ],
     "forbidden": [
       "invent progress"
     ],
-    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status."
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "status",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "video",
+    "input": "analyze video with UI and timestamps",
+    "workflow": "workflows/research.md",
+    "expected_skills": [
+      "video-intelligence"
+    ],
+    "forbidden": [
+      "claim unseen frames"
+    ],
+    "acceptance": "Route to the primary workflow; verify existing context and authority; preserve evidence and status.",
+    "expected_intent": "video_analysis",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "requirements-only",
+    "input": "Elicit and baseline the business requirements and measurable acceptance criteria; do not design or implement a solution yet.",
+    "workflow": "workflows/analysis-only.md",
+    "expected_skills": [
+      "requirements-analysis"
+    ],
+    "forbidden": [
+      "inventing requirements",
+      "premature architecture or implementation"
+    ],
+    "acceptance": "Requirements-analysis owns elicitation and acceptance; analysis-only keeps the task non-mutating.",
+    "expected_intent": "requirements",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "system-trace",
+    "input": "Trace the existing application end-to-end: actors, components, entry points, data flows, integrations, dependencies and failure boundaries.",
+    "workflow": "workflows/existing-project.md",
+    "expected_skills": [
+      "system-analysis"
+    ],
+    "forbidden": [
+      "assuming architecture without repository evidence",
+      "changing files"
+    ],
+    "acceptance": "System-analysis owns end-to-end current-state tracing in an existing system.",
+    "expected_intent": "system_analysis",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "process-map",
+    "input": "Map the actual business process including actors, triggers, decisions, handoffs, exceptions and bottlenecks; compare as-is and to-be.",
+    "workflow": "workflows/analysis-only.md",
+    "expected_skills": [
+      "process-analysis"
+    ],
+    "forbidden": [
+      "inventing process steps",
+      "confusing process map with technical architecture"
+    ],
+    "acceptance": "Process-analysis owns actor and handoff behavior; no separate requirements or architecture owner is needed.",
+    "expected_intent": "process_analysis",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "architecture-decision",
+    "input": "Recommend a target architecture for the approved product constraints, including component boundaries, deployment assumptions, failure behavior and trade-offs.",
+    "workflow": "workflows/new-project.md",
+    "expected_skills": [
+      "architecture-design",
+      "domain-modeling"
+    ],
+    "forbidden": [
+      "inventing current stack details",
+      "designing before constraints are known"
+    ],
+    "acceptance": "Architecture-design owns the target architecture; domain-modeling is a scoped specialist because domain boundaries are explicitly in scope.",
+    "expected_intent": "architecture",
+    "specialists": [
+      "domain"
+    ],
+    "support": []
+  },
+  {
+    "id": "database-deep-dive",
+    "input": "Inspect the actual database schema, SQL object dependencies, query plans, data integrity and migration/rollback impact.",
+    "workflow": "workflows/existing-project.md",
+    "expected_skills": [
+      "database-analysis"
+    ],
+    "forbidden": [
+      "guessing tables or foreign keys",
+      "executing production changes"
+    ],
+    "acceptance": "Database-analysis owns the database evidence and safety assessment.",
+    "expected_intent": "database_analysis",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "delivery-plan",
+    "input": "Turn the approved scope into a dependency-aware implementation plan with milestones, owners, estimates, acceptance evidence and critical path.",
+    "workflow": "workflows/new-project.md",
+    "expected_skills": [
+      "project-planning"
+    ],
+    "forbidden": [
+      "changing approved scope",
+      "inventing owners or commitments"
+    ],
+    "acceptance": "Project-planning owns sequencing and delivery decomposition.",
+    "expected_intent": "project_planning",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "authorized-implementation",
+    "input": "Implement the approved code change test-first, add the focused regression test, make the smallest safe change and run the relevant suite.",
+    "workflow": "workflows/implementation.md",
+    "expected_skills": [
+      "tdd",
+      "test-strategy"
+    ],
+    "forbidden": [
+      "implementing beyond approved scope",
+      "claiming tests passed without running them"
+    ],
+    "acceptance": "TDD owns the implementation loop; test-strategy provides distinct risk-based coverage guidance.",
+    "expected_intent": "implementation",
+    "specialists": [],
+    "support": [
+      "test-strategy"
+    ]
+  },
+  {
+    "id": "test-plan-only",
+    "input": "Design a risk-based test plan and acceptance coverage for this feature; do not write implementation code.",
+    "workflow": "workflows/review-acceptance.md",
+    "expected_skills": [
+      "test-strategy"
+    ],
+    "forbidden": [
+      "writing implementation code",
+      "claiming test execution"
+    ],
+    "acceptance": "Test-strategy owns test design and acceptance coverage; the request is planning-only.",
+    "expected_intent": "test_design",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "security-threat-review",
+    "input": "Threat-model the application and review authentication, authorization, trust boundaries, injection, secrets and sensitive-data exposure.",
+    "workflow": "workflows/review-acceptance.md",
+    "expected_skills": [
+      "security-review"
+    ],
+    "forbidden": [
+      "testing unauthorized external targets",
+      "treating security checklists as proof"
+    ],
+    "acceptance": "Security-review owns threat modeling and security findings.",
+    "expected_intent": "security_review",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "api-contract",
+    "input": "Specify the API contract: endpoints, request/response schemas, validation, authorization, errors, versioning and acceptance examples.",
+    "workflow": "workflows/feature-change.md",
+    "expected_skills": [
+      "api-contract-design"
+    ],
+    "forbidden": [
+      "inventing database fields",
+      "implementing endpoints without authorization"
+    ],
+    "acceptance": "API-contract-design owns interface semantics and contract acceptance.",
+    "expected_intent": "api_contract",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "domain-model",
+    "input": "Model the business domain vocabulary, entities, value objects, lifecycle states, relationships and invariants from the available evidence.",
+    "workflow": "workflows/new-project.md",
+    "expected_skills": [
+      "domain-modeling"
+    ],
+    "forbidden": [
+      "inventing IDs, cardinality or foreign keys",
+      "confusing domain model with physical schema"
+    ],
+    "acceptance": "Domain-modeling owns conceptual language and invariants; physical schema remains evidence-driven.",
+    "expected_intent": "domain_modeling",
+    "specialists": [],
+    "support": []
+  },
+  {
+    "id": "risk-register",
+    "input": "Identify and prioritize project, technical, data, security and operational risks with owners, mitigations, triggers and residual exposure.",
+    "workflow": "workflows/analysis-only.md",
+    "expected_skills": [
+      "risk-management"
+    ],
+    "forbidden": [
+      "false numeric precision",
+      "claiming mitigations are complete without evidence"
+    ],
+    "acceptance": "Risk-management owns the risk register and residual-risk treatment.",
+    "expected_intent": "risk_management",
+    "specialists": [],
+    "support": []
   }
 ]

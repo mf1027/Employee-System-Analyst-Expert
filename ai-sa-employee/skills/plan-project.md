@@ -18,9 +18,7 @@ If missing: ask for the project name and a one-line scope summary.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md` for constraints
-   (deadlines, budget, resource limits). Search claude-mem:
-   `mem search "[project] plan milestones"` — retrieve prior planning knowledge.
+1. Review current canonical Obsidian/project memory and the client lane for constraints (deadlines, budget, resource limits) and prior planning decisions. Do not invoke claude-mem.
 2. Read the project's `requirements.md` (scope baseline), `risks.md` (known risks
    that affect the schedule), and `database.md` (any DB migration work in scope).
 3. Output a **CONTEXT SUMMARY** — what I read, key constraints, confidence level.

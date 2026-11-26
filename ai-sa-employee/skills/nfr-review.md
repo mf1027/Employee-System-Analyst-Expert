@@ -36,7 +36,7 @@ If missing: ask for the project and a one-line scope description.
 ## Steps
 
 1. Read `memory/clients/[client-name].md` — domain, known constraints, compliance context.
-2. Search claude-mem: `mem search "NFR [project]"` — check for any NFR entries already captured.
+2. Review current canonical Obsidian/project memory and existing project NFR records; do not invoke claude-mem.
 3. Read the project's `requirements.md` — scan existing functional requirements for implied NFRs.
 4. Work through all 7 categories. Ask the key questions for each.
    Skip a category ONLY if provably irrelevant — state the reason explicitly.
@@ -56,7 +56,7 @@ NFR REVIEW: [Project Name]
 Client: [name] | Date: [YYYY-MM-DD]
 ---
 Context: I read [files]. Implied NFRs from existing requirements: [list or "none"].
-Prior NFR entries in claude-mem: [N].
+Prior NFR entries in canonical project records: [N or source unavailable].
 
 Non-Functional Requirements:
 | ID | Category | Requirement | Target | Impact | Source |

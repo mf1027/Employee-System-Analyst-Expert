@@ -81,8 +81,7 @@ active work to raise a proposal — that is the failure mode this design exists 
 ## Steps — `/check-improvements`
 
 1. Read `memory/improvement-backlog.md`. Note `Next-ID` (`SKL-NNN`) and `Next-WFC` (`WFC-NNN`).
-2. Search claude-mem for related lessons (`mem search "[topic]"`) — a recurring root cause already
-   noted as feedback strengthens the case.
+2. Review the local improvement backlog and canonical project records for related lessons; do not invoke claude-mem.
 3. **Lane A — friction.** Cluster *Breadcrumbs* by root cause (five "did X by hand again" lines about
    one gap = ONE proposal). Pull in friction surfaced this session. Write a `SKL-` proposal per
    cluster that clears the threshold. Be honest about effort/payoff — break-even "never" → recommend

@@ -66,10 +66,10 @@ Respect, Courage**. When a value is being violated (e.g. no openness in a retro)
 
 ## Steps
 
-1. **Read context.** Read `memory/memory.md`, `memory/clients/[client]/[client].md`, and the
+1. **Read context.** Read current canonical Obsidian/project memory, `memory/clients/[client]/[client].md` only if current, and the
    project's `tasks.md` (sprint backlog/impediments), `plan.md` (release context),
    `calibration.md` (historical velocity/estimates), `risks.md` (impediments that are risks),
-   and `communication.md` (cadence). Search claude-mem: `mem search "[project] sprint velocity retro"`.
+   and `communication.md` (cadence). Search current canonical project memory for sprint velocity and retrospective decisions; do not invoke claude-mem.
 2. **Detect the framework in use.** Pure Scrum? Kanban? Scrumban? Scaled (SAFe/LeSS/Nexus/Scrum@Scale)?
    Frame everything to what the team actually runs — never impose a framework the client didn't adopt.
 3. **Output a CONTEXT SUMMARY** — what I read, current sprint state, team config, confidence level.

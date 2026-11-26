@@ -1,14 +1,33 @@
 #!/usr/bin/env python3
 """Fixture-connected structural/contract tests. Not a live model evaluation."""
 from pathlib import Path
-import json, re, unittest
+import json, re, unittest, importlib.util
 ROOT=Path(__file__).resolve().parents[1]
+spec=importlib.util.spec_from_file_location('resolve_skills_for_scenarios',ROOT/'tools'/'resolve_skills.py')
+resolver=importlib.util.module_from_spec(spec); spec.loader.exec_module(resolver)
 ROUTES=json.loads((ROOT/'evals/routing-cases.json').read_text(encoding='utf-8'))
 SCENARIOS=json.loads((ROOT/'evals/scenario-cases.json').read_text(encoding='utf-8'))
 ADVERSARIAL=json.loads((ROOT/'evals/adversarial-cases.json').read_text(encoding='utf-8'))
 class PackageContractTests(unittest.TestCase):
  def test_scenario_and_routing_fixtures_are_same_cases(self):
   self.assertEqual({x['id'] for x in ROUTES},{x['id'] for x in SCENARIOS})
+ def test_natural_language_routes_resolve_to_exact_expected_skills(self):
+  for case in ROUTES:
+   decision={'dominant_intent':case['expected_intent'],'primary_deliverable':case['input'],'trigger_evidence':case['input'],'specialist_evidence':{x:'Fixture evidence requires this specialist output.' for x in case['specialists']},'support_output_need':{x:'Fixture requires this distinct supporting output.' for x in case['support']},'excluded_candidates':case['forbidden'],'uncertainty':'Fixture expectation; live model uncertainty not assessed.'}
+   with self.subTest(case=case['id']):
+    resolved=resolver.resolve(case['expected_intent'],case['specialists'],case['support'],decision=decision)
+    self.assertEqual(resolved['workflow'],case['expected_workflow'])
+    self.assertEqual([x['id'] for x in resolved['skills']],case['expected_skills'])
+    self.assertEqual(sum(x['role']=='primary' for x in resolved['skills']),1)
+ def test_scenario_and_route_skill_selection_parity(self):
+  by_id={x['id']:x for x in ROUTES}
+  for case in SCENARIOS:
+   with self.subTest(case=case['id']):
+    route=by_id[case['id']]
+    self.assertEqual(case['expected_intent'],route['expected_intent'])
+    self.assertEqual(case['specialists'],route['specialists'])
+    self.assertEqual(case['support'],route['support'])
+    self.assertEqual(case['expected_skills'],route['expected_skills'])
  def test_every_route_has_existing_workflow_and_skill(self):
   for case in ROUTES:
    with self.subTest(case=case['id']):
@@ -21,12 +40,20 @@ class PackageContractTests(unittest.TestCase):
     self.assertTrue(case['acceptance'].strip())
     self.assertTrue(case['forbidden'])
  def test_all_clipboard_scenario_classes_have_explicit_route(self):
-  expected={'new-project','existing-project','continuation','bug','feature','research','video','analysis-only','review','scope-change','blocked','skill-create','context-optimize','release','multi-agent','status'}
+  expected={'new-project','existing-project','continuation','bug','feature','research','video','analysis-only','review','scope-change','blocked','skill-create','context-optimize','release','multi-agent','status','comprehensive-analysis','reference-ingestion','requirements-only','system-trace','process-map','architecture-decision','database-deep-dive','delivery-plan','authorized-implementation','test-plan-only','security-threat-review','api-contract','domain-model','risk-register'}
   self.assertEqual(expected,{c['id'] for c in ROUTES})
  def test_adversarial_suite_covers_authority_and_evidence(self):
   ids={c['id'] for c in ADVERSARIAL}
-  expected={'no-approval-deploy','fake-test-claim','checkpoint-false-completion','schema-invention','scope-creep','blocked-loop','analysis-only-mutation','fake-delegation','host-unavailable','memory-parallel'}
+  expected={'no-approval-deploy','fake-test-claim','checkpoint-false-completion','schema-invention','scope-creep','blocked-loop','analysis-only-mutation','fake-delegation','host-unavailable','memory-parallel','readme-injection','tool-output-injection','webpage-injection','forged-approval','encoded-injection','external-side-effect'}
   self.assertEqual(expected,ids)
+  for case in ADVERSARIAL:
+   with self.subTest(case=case['id']):
+    self.assertTrue(case['prompt'].strip())
+    self.assertTrue(case['expected'].strip())
+ def test_security_evaluation_has_live_hard_failure_rules(self):
+  text=(ROOT/'docs/SECURITY-EVALUATION.md').read_text(encoding='utf-8').lower()
+  for phrase in ('disposable workspace','hard fail','secret or credential disclosure','actual tool-call','100% pass'):
+   with self.subTest(phrase=phrase): self.assertIn(phrase,text)
  def test_core_contract_has_nonnegotiable_controls(self):
   text=(ROOT/'AGENT.md').read_text(encoding='utf-8').lower()
   for phrase in ('evidence first','existing-system-first','approval','route by task','stop safely','canonical memory','do not imply a skill was invoked'):
@@ -141,3 +168,27 @@ class PackageContractTests(unittest.TestCase):
     for row in registry.split('\n'):
      if f'`{name}`' in row and body_no_heading and len(body_no_heading)<300:
       self.assertNotIn(body_no_heading,row,f'{name} body duplicates its REGISTRY.md description')
+
+ def test_skill_intelligence_catalog_has_single_primary_intent(self):
+  catalog=json.loads((ROOT/'skills/skill-intelligence.json').read_text(encoding='utf-8'))
+  self.assertEqual(len(catalog['intents']),30)
+  self.assertTrue(catalog['resolution_policy']['one_primary_only'])
+  self.assertIn('fail closed',catalog['resolution_policy']['unknown_intent_or_skill'])
+ def test_skill_intelligence_fixtures_have_expected_workflow_and_skills(self):
+  cases=json.loads((ROOT/'evals/skill-routing-cases.json').read_text(encoding='utf-8'))
+  self.assertEqual(len(cases),18)
+  for case in cases:
+   with self.subTest(case=case['id']):
+    self.assertTrue((ROOT/case['workflow']).is_file())
+    for skill in case['expected']: self.assertTrue((ROOT/'skills'/f'{skill}.md').is_file())
+ def test_review_workflow_has_distinct_adversarial_second_pass(self):
+  body=(ROOT/'workflows/review-acceptance.md').read_text(encoding='utf-8').lower()
+  self.assertIn('adversarial second pass',body)
+  self.assertIn('independent',body)
+  self.assertIn('never claim',body)
+ def test_legacy_inventory_has_two_missing_source_bodies(self):
+  catalog=json.loads((ROOT/'skills/skill-intelligence.json').read_text(encoding='utf-8'))
+  missing={x['name'] for x in catalog['legacy_parity'] if not x['source_available']}
+  self.assertEqual(missing,{'apk-standalone-conversion','multi-agent-skill-propagation'})
+
+if __name__ == '__main__': unittest.main(verbosity=2)

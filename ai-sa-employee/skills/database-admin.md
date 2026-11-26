@@ -88,11 +88,10 @@ The loop is a named part of the chain, not an exception. Log the loop-back trigg
 
 ### General workflow (all DBA tasks)
 
-1. **Read context.** `memory/memory.md` and `memory/clients/[client-name].md` — domain
+1. **Read context.** current canonical Obsidian/project memory and the relevant client lane — domain
    and DB context. Then the project's `database.md`, `requirements.md` (NFRs,
    compliance), and `risks.md`.
-2. **Search prior knowledge.** `mem search "[DB topic] [project]"` to retrieve schemas,
-   ERDs, migration scripts, and prior decisions already in claude-mem.
+2. **Search prior knowledge.** Review canonical project memory and the current schema, ERD, migration, and decision records. Do not invoke disabled claude-mem.
 3. **Pick the playbook** for the requested task and read the matching reference file
    (see "Playbooks" below). Read only the one(s) you need — that's the point of the
    split.
@@ -109,8 +108,7 @@ The loop is a named part of the chain, not an exception. Log the loop-back trigg
 7. **Produce the output** in the format below.
 8. **Wait for confirmation.** Do not write to `database.md`, `risks.md`, or `decisions.md`
    until the operator confirms. On confirmation: append new `RISK-` entries to
-   `risks.md`, `REC-` entries to `decisions.md`, and store durable schema/object
-   knowledge in claude-mem (`category:Database`, `source:[file]`).
+   `risks.md`, `REC-` entries to `decisions.md`, and store durable schema/object knowledge in the canonical project documentation with source references.
 
 ### Standing DBA rules (learned from session 2026-06-17/18)
 
@@ -143,7 +141,7 @@ Client: [name] | Project: [name] | Engine: [SQL Server 2019 / Postgres 15 / ...]
 Bottom line (business): [2–4 sentences. What's the user/operational impact, the cost
 of doing nothing, and the headline recommendation. No jargon.]
 
-Context: I read [files]. Prior DB knowledge in claude-mem: [N entries].
+Context: I read [files]. Prior DB knowledge in canonical project records: [summary/source references].
 Assumptions: [engine/version, row counts, concurrency — flag anything you had to assume].
 
 Findings:

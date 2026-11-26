@@ -1,0 +1,280 @@
+[
+  {
+    "id": "architecture-api-domain",
+    "intent": "architecture",
+    "specialists": [
+      "api",
+      "domain"
+    ],
+    "support": [
+      "nfr-review"
+    ],
+    "expected": [
+      "architecture-design",
+      "api-contract-design",
+      "domain-modeling",
+      "nfr-review"
+    ],
+    "workflow": "workflows/new-project.md"
+  },
+  {
+    "id": "bug-with-db-security",
+    "intent": "bug_rca",
+    "specialists": [
+      "database",
+      "security"
+    ],
+    "support": [
+      "risk-management"
+    ],
+    "expected": [
+      "diagnosing-bugs",
+      "database-analysis",
+      "security-review",
+      "risk-management"
+    ],
+    "workflow": "workflows/diagnosis.md"
+  },
+  {
+    "id": "comprehensive-analysis",
+    "intent": "comprehensive_analysis",
+    "specialists": [
+      "database",
+      "security"
+    ],
+    "support": [
+      "risk-management",
+      "test-strategy"
+    ],
+    "expected": [
+      "system-analysis",
+      "database-analysis",
+      "security-review",
+      "risk-management",
+      "test-strategy"
+    ],
+    "workflow": "workflows/comprehensive-analysis.md"
+  },
+  {
+    "id": "continuation",
+    "intent": "continuation",
+    "specialists": [],
+    "support": [
+      "context-economy"
+    ],
+    "expected": [
+      "documentation-handover",
+      "context-economy"
+    ],
+    "workflow": "workflows/continuation.md"
+  },
+  {
+    "id": "db-migration",
+    "intent": "database_analysis",
+    "specialists": [
+      "security"
+    ],
+    "support": [
+      "change-management",
+      "test-strategy"
+    ],
+    "expected": [
+      "database-analysis",
+      "security-review",
+      "change-management",
+      "test-strategy"
+    ],
+    "workflow": "workflows/existing-project.md"
+  },
+  {
+    "id": "implementation-tdd",
+    "intent": "implementation",
+    "specialists": [
+      "implementation_tdd"
+    ],
+    "support": [
+      "test-strategy"
+    ],
+    "expected": [
+      "tdd",
+      "test-strategy"
+    ],
+    "workflow": "workflows/implementation.md"
+  },
+  {
+    "id": "process-with-requirements",
+    "intent": "process_analysis",
+    "specialists": [
+      "domain"
+    ],
+    "support": [
+      "requirements-analysis"
+    ],
+    "expected": [
+      "process-analysis",
+      "domain-modeling",
+      "requirements-analysis"
+    ],
+    "workflow": "workflows/analysis-only.md"
+  },
+  {
+    "id": "reference-ingestion",
+    "intent": "reference_ingestion",
+    "specialists": [],
+    "support": [
+      "documentation-handover"
+    ],
+    "expected": [
+      "context-economy",
+      "documentation-handover"
+    ],
+    "workflow": "workflows/reference-ingestion.md"
+  },
+  {
+    "id": "release",
+    "intent": "release",
+    "specialists": [
+      "security",
+      "database"
+    ],
+    "support": [
+      "test-strategy"
+    ],
+    "expected": [
+      "risk-management",
+      "database-analysis",
+      "security-review",
+      "test-strategy"
+    ],
+    "workflow": "workflows/release.md"
+  },
+  {
+    "id": "req-basic",
+    "intent": "requirements",
+    "specialists": [],
+    "support": [],
+    "expected": [
+      "requirements-analysis"
+    ],
+    "workflow": "workflows/analysis-only.md"
+  },
+  {
+    "id": "research-video-support",
+    "intent": "video_analysis",
+    "specialists": [
+      "research"
+    ],
+    "support": [
+      "documentation-handover"
+    ],
+    "expected": [
+      "video-intelligence",
+      "agent-reach",
+      "documentation-handover"
+    ],
+    "workflow": "workflows/research.md"
+  },
+  {
+    "id": "review",
+    "intent": "code_review",
+    "specialists": [
+      "security"
+    ],
+    "support": [
+      "test-strategy"
+    ],
+    "expected": [
+      "code-review",
+      "security-review",
+      "test-strategy"
+    ],
+    "workflow": "workflows/review-acceptance.md"
+  },
+  {
+    "id": "scope-change",
+    "intent": "change_management",
+    "specialists": [
+      "database"
+    ],
+    "support": [
+      "risk-management"
+    ],
+    "expected": [
+      "change-management",
+      "database-analysis",
+      "risk-management"
+    ],
+    "workflow": "workflows/scope-change.md"
+  },
+  {
+    "id": "security-audit-db",
+    "intent": "security_review",
+    "specialists": [
+      "database"
+    ],
+    "support": [
+      "risk-management"
+    ],
+    "expected": [
+      "security-review",
+      "database-analysis",
+      "risk-management"
+    ],
+    "workflow": "workflows/review-acceptance.md"
+  },
+  {
+    "id": "skill-maintenance",
+    "intent": "skill_maintenance",
+    "specialists": [],
+    "support": [
+      "test-strategy"
+    ],
+    "expected": [
+      "skill-authoring",
+      "test-strategy"
+    ],
+    "workflow": "workflows/skill-lifecycle.md"
+  },
+  {
+    "id": "status",
+    "intent": "status",
+    "specialists": [],
+    "support": [
+      "risk-management"
+    ],
+    "expected": [
+      "documentation-handover",
+      "risk-management"
+    ],
+    "workflow": "workflows/project-status.md"
+  },
+  {
+    "id": "system-with-database",
+    "intent": "system_analysis",
+    "specialists": [
+      "database"
+    ],
+    "support": [],
+    "expected": [
+      "system-analysis",
+      "database-analysis"
+    ],
+    "workflow": "workflows/existing-project.md"
+  },
+  {
+    "id": "test-plan",
+    "intent": "test_design",
+    "specialists": [
+      "security"
+    ],
+    "support": [
+      "database-analysis"
+    ],
+    "expected": [
+      "test-strategy",
+      "security-review",
+      "database-analysis"
+    ],
+    "workflow": "workflows/review-acceptance.md"
+  }
+]

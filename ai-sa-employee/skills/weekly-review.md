@@ -10,7 +10,7 @@ own gate compliance — all in one cross-client RAG digest.
 Invoke when the operator says "weekly review", "portfolio check",
 "sweep all projects", "lingguhang review", or "Monday review".
 Also suggest it proactively if no weekly review has run in the last 7 days
-(check claude-mem for the last `type:weekly-review` entry).
+(check canonical project memory for the last `type:weekly-review` entry).
 
 ## Minimum context required
 - At least one client in `memory/clients/`. If none: report system health only (Part B).
@@ -42,9 +42,9 @@ For EVERY active project under `memory/clients/[client]/[project]/`:
 
 ### Part B — System self-audit (gate compliance)
 
-1. `memory/memory.md` → Working Memory + Last Session updated within 7 days?
-2. claude-mem reachable? Announce active memory tier if degraded.
-3. Spot-check: do decisions/risks mentioned in recent claude-mem entries have
+1. canonical operator/project memory → Working Memory + Last Session updated within 7 days?
+2. Canonical Obsidian/project memory available and current? If unavailable, disclose the limitation and do not infer project status.
+3. Spot-check: do decisions/risks mentioned in recent canonical project memory entries have
    matching IDs in the lane files? Flag any chat-only items.
 4. Backup age: when was the last `employee-client-data_*.zip` created?
    (Check the backup folder; if > 7 days or never → recommend `scripts/backup.ps1`.)
@@ -56,8 +56,8 @@ For EVERY active project under `memory/clients/[client]/[project]/`:
 
 ### Part C — Digest
 
-Output one cross-client digest (format below), store a summary in claude-mem
-tagged `type:weekly-review`, and update Working Memory in `memory/memory.md`.
+Output one cross-client digest (format below), store a summary in canonical project memory
+tagged `type:weekly-review`, and update Working Memory in canonical operator/project memory.
 
 ---
 
@@ -78,7 +78,7 @@ PORTFOLIO ([N] clients / [N] projects)
 
 SYSTEM HEALTH
   Working memory:  [fresh / stale Nd]
-  Memory tier:     [Tier 2 / degraded → reason]
+  Memory source:   [canonical vault / unavailable → reason]
   Untracked items: [N chat-only decisions found — or "none"]
   Last backup:     [Nd ago / NEVER → run scripts/backup.ps1]
   Calibration:     [ratio status or "no data yet"]
@@ -94,7 +94,7 @@ TOP 3 THIS WEEK
 ## Quality checklist
 - [ ] Every active project swept — none skipped
 - [ ] Every flag has a concrete recommended action, not just a mention
-- [ ] Digest stored in claude-mem (`type:weekly-review`)
+- [ ] Digest stored in canonical project memory (`type:weekly-review`)
 - [ ] Working Memory updated with review date
 - [ ] Backup age checked and reported
 

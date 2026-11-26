@@ -1,0 +1,1220 @@
+{
+  "schema_version": 2,
+  "purpose": "Deterministic validation and ordering for skills selected by the agent reasoning layer. This catalog does not classify free text or grant tool permissions.",
+  "classification_contract": {
+    "classifier": "agent reasoning",
+    "must_select_exactly_one_primary_intent": true,
+    "must_select_specialists_only_when_trigger_is_evidenced": true,
+    "must_select_support_skills_only_when_their_distinct_output_is_needed": true,
+    "must_not_use_keyword_matching_as_authority": true,
+    "required_decision_fields": [
+      "dominant_intent",
+      "primary_deliverable",
+      "trigger_evidence",
+      "specialist_evidence",
+      "support_output_need",
+      "excluded_candidates",
+      "uncertainty"
+    ],
+    "ambiguous_task_behavior": "ask one focused clarification or choose the safest dominant workflow and record uncertainty; never load all skills",
+    "classification_evidence": "The agent must explain the task evidence for each selected specialist/support skill before resolution."
+  },
+  "resolution_policy": {
+    "order": [
+      "primary",
+      "specialists",
+      "support"
+    ],
+    "one_primary_only": true,
+    "deduplicate_by_skill_id": true,
+    "unknown_intent_or_skill": "fail closed with an actionable error",
+    "specialist_behavior": "additive scoped expertise; never silently replaces the primary task owner",
+    "support_behavior": "bounded secondary procedure; never becomes a second primary",
+    "loading": "resolver emits paths; the agent reads only emitted skills",
+    "max_specialists": 3,
+    "max_support_skills": 2,
+    "max_unique_skills": 6,
+    "redundant_selection": "deduplicate and record suppressed role with the winning role",
+    "selection_overflow": "fail closed with configured limits; do not truncate silently"
+  },
+  "intents": {
+    "requirements": {
+      "primary_skill": "requirements-analysis",
+      "workflow": "analysis-only"
+    },
+    "system_analysis": {
+      "primary_skill": "system-analysis",
+      "workflow": "existing-project"
+    },
+    "process_analysis": {
+      "primary_skill": "process-analysis",
+      "workflow": "analysis-only"
+    },
+    "bug_rca": {
+      "primary_skill": "diagnosing-bugs",
+      "workflow": "diagnosis"
+    },
+    "architecture": {
+      "primary_skill": "architecture-design",
+      "workflow": "new-project"
+    },
+    "database_analysis": {
+      "primary_skill": "database-analysis",
+      "workflow": "existing-project"
+    },
+    "project_planning": {
+      "primary_skill": "project-planning",
+      "workflow": "new-project"
+    },
+    "implementation": {
+      "primary_skill": "tdd",
+      "workflow": "implementation"
+    },
+    "test_design": {
+      "primary_skill": "test-strategy",
+      "workflow": "review-acceptance"
+    },
+    "code_review": {
+      "primary_skill": "code-review",
+      "workflow": "review-acceptance"
+    },
+    "security_review": {
+      "primary_skill": "security-review",
+      "workflow": "review-acceptance"
+    },
+    "api_contract": {
+      "primary_skill": "api-contract-design",
+      "workflow": "feature-change"
+    },
+    "domain_modeling": {
+      "primary_skill": "domain-modeling",
+      "workflow": "new-project"
+    },
+    "research": {
+      "primary_skill": "web-research",
+      "workflow": "research"
+    },
+    "video_analysis": {
+      "primary_skill": "video-intelligence",
+      "workflow": "research"
+    },
+    "skill_maintenance": {
+      "primary_skill": "skill-authoring",
+      "workflow": "skill-lifecycle"
+    },
+    "change_management": {
+      "primary_skill": "change-management",
+      "workflow": "scope-change"
+    },
+    "risk_management": {
+      "primary_skill": "risk-management",
+      "workflow": "analysis-only"
+    },
+    "continuation": {
+      "primary_skill": "documentation-handover",
+      "workflow": "continuation"
+    },
+    "context_optimization": {
+      "primary_skill": "context-economy",
+      "workflow": "context-optimization"
+    },
+    "release": {
+      "primary_skill": "risk-management",
+      "workflow": "release"
+    },
+    "status": {
+      "primary_skill": "documentation-handover",
+      "workflow": "project-status"
+    },
+    "comprehensive_analysis": {
+      "primary_skill": "system-analysis",
+      "workflow": "comprehensive-analysis"
+    },
+    "reference_ingestion": {
+      "primary_skill": "context-economy",
+      "workflow": "reference-ingestion"
+    },
+    "analysis_only": {
+      "primary_skill": "system-analysis",
+      "workflow": "analysis-only"
+    },
+    "blocked_task": {
+      "primary_skill": "risk-management",
+      "workflow": "blocked-task"
+    },
+    "existing_project": {
+      "primary_skill": "system-analysis",
+      "workflow": "existing-project"
+    },
+    "feature_change": {
+      "primary_skill": "requirements-analysis",
+      "workflow": "feature-change"
+    },
+    "multi_agent_coordination": {
+      "primary_skill": "project-planning",
+      "workflow": "multi-agent"
+    },
+    "new_project": {
+      "primary_skill": "requirements-analysis",
+      "workflow": "new-project"
+    }
+  },
+  "specialists": {
+    "database": {
+      "skill": "database-analysis",
+      "when": "Actual schema, SQL objects, data integrity, query plans or migrations are in scope."
+    },
+    "security": {
+      "skill": "security-review",
+      "when": "A security threat, trust boundary, authorization or sensitive-data concern is in scope."
+    },
+    "api": {
+      "skill": "api-contract-design",
+      "when": "An API or integration contract is materially affected."
+    },
+    "domain": {
+      "skill": "domain-modeling",
+      "when": "Domain concepts, lifecycle states, invariants or relationships need explicit modeling."
+    },
+    "process": {
+      "skill": "process-analysis",
+      "when": "Actors, handoffs, decisions or business-process behavior are in scope."
+    },
+    "testing": {
+      "skill": "test-strategy",
+      "when": "A risk-based test plan or acceptance coverage is needed."
+    },
+    "implementation_tdd": {
+      "skill": "tdd",
+      "when": "An authorized implementation change is being made test-first."
+    },
+    "research": {
+      "skill": "agent-reach",
+      "when": "The task requires an explicit capability/permission boundary assessment before external retrieval."
+    },
+    "video": {
+      "skill": "video-intelligence",
+      "when": "Audio/video content, timestamps or visible UI behavior must be reconciled."
+    }
+  },
+  "canonical_skills": [
+    "agent-reach",
+    "api-contract-design",
+    "architecture-design",
+    "change-management",
+    "code-review",
+    "context-economy",
+    "database-analysis",
+    "diagnosing-bugs",
+    "documentation-handover",
+    "domain-modeling",
+    "nfr-review",
+    "process-analysis",
+    "project-planning",
+    "requirements-analysis",
+    "risk-management",
+    "security-review",
+    "skill-authoring",
+    "system-analysis",
+    "tdd",
+    "test-strategy",
+    "video-intelligence",
+    "web-research"
+  ],
+  "legacy_parity": [
+    {
+      "name": "advise-client",
+      "disposition": "MERGE",
+      "targets": [
+        "requirements-analysis",
+        "process-analysis",
+        "project-planning"
+      ],
+      "source_path": "ai-sa-employee/skills/advise-client.md",
+      "source_available": true,
+      "rationale": "Client advice is a composition of requirements, process and planning; no separate durable procedure owner is needed."
+    },
+    {
+      "name": "api-contract-design",
+      "disposition": "REPLACE",
+      "targets": [
+        "api-contract-design"
+      ],
+      "source_path": "ai-sa-employee/skills/api-contract-design.md",
+      "source_available": true,
+      "rationale": "The portable canonical skill is the focused owner and is already fully authored."
+    },
+    {
+      "name": "apk-standalone-conversion",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [],
+      "source_path": null,
+      "source_available": false,
+      "rationale": "No source body is present; Android packaging/signing/build behavior is platform- and toolchain-specific."
+    },
+    {
+      "name": "calibration-review",
+      "disposition": "MERGE",
+      "targets": [
+        "test-strategy",
+        "risk-management"
+      ],
+      "source_path": "ai-sa-employee/skills/calibration-review.md",
+      "source_available": true,
+      "rationale": "Calibration belongs in evaluation design and risk interpretation; no distinct portable procedure is evidenced."
+    },
+    {
+      "name": "change-management",
+      "disposition": "REPLACE",
+      "targets": [
+        "change-management"
+      ],
+      "source_path": "ai-sa-employee/skills/change-management.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "claude-mem",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "context-economy"
+      ],
+      "source_path": "ai-sa-employee/skills/claude-mem.md",
+      "source_available": true,
+      "rationale": "Legacy memory integration is tied to a host service; canonical project memory must remain authoritative."
+    },
+    {
+      "name": "code-behavior-audit",
+      "disposition": "MERGE",
+      "targets": [
+        "system-analysis",
+        "diagnosing-bugs",
+        "code-review"
+      ],
+      "source_path": "ai-sa-employee/skills/code-behavior-audit.md",
+      "source_available": true,
+      "rationale": "Trace behavior, diagnose deviations, and review findings are distinct phases owned by existing canonical skills."
+    },
+    {
+      "name": "codex-behavior-parity",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "agent-reach",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/codex-behavior-parity.md",
+      "source_available": true,
+      "rationale": "Requires actual Codex runtime/version and host-specific evidence."
+    },
+    {
+      "name": "context-mode",
+      "disposition": "REPLACE",
+      "targets": [
+        "context-economy"
+      ],
+      "source_path": "ai-sa-employee/skills/context-mode.md",
+      "source_available": true,
+      "rationale": "The canonical context-economy skill owns progressive loading and continuation context."
+    },
+    {
+      "name": "conversion-analysis",
+      "disposition": "MERGE",
+      "targets": [
+        "system-analysis",
+        "architecture-design",
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/conversion-analysis.md",
+      "source_available": true,
+      "rationale": "Conversion is a system/data migration analysis, not a separate general-purpose owner."
+    },
+    {
+      "name": "create-diagram",
+      "disposition": "MERGE",
+      "targets": [
+        "architecture-design",
+        "domain-modeling",
+        "process-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/create-diagram.md",
+      "source_available": true,
+      "rationale": "Diagrams are outputs of the owning analysis, not a separate skill boundary."
+    },
+    {
+      "name": "create-pr-timesheet",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "documentation-handover"
+      ],
+      "source_path": "ai-sa-employee/skills/create-pr-timesheet.md",
+      "source_available": true,
+      "rationale": "PR/time-sheet automation depends on repository and tracker integrations."
+    },
+    {
+      "name": "data-migration-playbook",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "change-management",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/data-migration-playbook.md",
+      "source_available": true,
+      "rationale": "Migration safety is consolidated into DBA analysis, change control and validation."
+    },
+    {
+      "name": "database-admin",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/database-admin.md",
+      "source_available": true,
+      "rationale": "Actual administration requires verified DB tools, environment, permissions and operator authorization."
+    },
+    {
+      "name": "dba-cross-domain-impact",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "system-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-cross-domain-impact.md",
+      "source_available": true,
+      "rationale": "Cross-domain blast-radius analysis becomes a required DBA procedure with system-level tracing."
+    },
+    {
+      "name": "dba-data-flow-trace",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "system-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-data-flow-trace.md",
+      "source_available": true,
+      "rationale": "Data lineage is part of schema/object and end-to-end flow analysis."
+    },
+    {
+      "name": "dba-execution-plan",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-execution-plan.md",
+      "source_available": true,
+      "rationale": "Execution-plan interpretation is a database-analysis procedure."
+    },
+    {
+      "name": "dba-index-strategy",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-index-strategy.md",
+      "source_available": true,
+      "rationale": "Index selection is a database-analysis procedure grounded in workload and plan evidence."
+    },
+    {
+      "name": "dba-performance-baseline",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-performance-baseline.md",
+      "source_available": true,
+      "rationale": "Baseline capture and regression measurement belong to DBA analysis and test strategy."
+    },
+    {
+      "name": "dba-process-interview",
+      "disposition": "MERGE",
+      "targets": [
+        "process-analysis",
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-process-interview.md",
+      "source_available": true,
+      "rationale": "Interview-derived data rules are process analysis inputs, validated by DBA analysis."
+    },
+    {
+      "name": "dba-schema-changelog",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "change-management"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-schema-changelog.md",
+      "source_available": true,
+      "rationale": "Schema change evidence belongs to database analysis and controlled change management."
+    },
+    {
+      "name": "dba-schema-drill",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "diagnosing-bugs"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-schema-drill.md",
+      "source_available": true,
+      "rationale": "Schema/object drills are diagnostic procedures within DBA analysis."
+    },
+    {
+      "name": "dba-schema-ingest",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "context-economy"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-schema-ingest.md",
+      "source_available": true,
+      "rationale": "Schema ingestion is a bounded evidence-capture procedure, not a separate owner."
+    },
+    {
+      "name": "dba-schema-review",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "code-review"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-schema-review.md",
+      "source_available": true,
+      "rationale": "Schema review belongs to DBA analysis; general review criteria remain in code-review."
+    },
+    {
+      "name": "dba-security-audit",
+      "disposition": "MERGE",
+      "targets": [
+        "security-review",
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-security-audit.md",
+      "source_available": true,
+      "rationale": "Database security is a scoped specialist pass combining security and schema evidence."
+    },
+    {
+      "name": "dba-sql-object-chain",
+      "disposition": "MERGE",
+      "targets": [
+        "database-analysis",
+        "system-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/dba-sql-object-chain.md",
+      "source_available": true,
+      "rationale": "SQL dependency tracing is part of DBA and system-flow analysis."
+    },
+    {
+      "name": "deep-analysis",
+      "disposition": "MERGE",
+      "targets": [
+        "system-analysis",
+        "diagnosing-bugs",
+        "risk-management",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/deep-analysis.md",
+      "source_available": true,
+      "rationale": "Deep analysis is a rigor profile combining existing skills and workflows, not another skill owner."
+    },
+    {
+      "name": "developer-handoff",
+      "disposition": "MERGE",
+      "targets": [
+        "documentation-handover",
+        "project-planning",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/developer-handoff.md",
+      "source_available": true,
+      "rationale": "Implementation handoff is a deliverable flow using planning, acceptance and handover."
+    },
+    {
+      "name": "document-specialist-skill",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "documentation-handover"
+      ],
+      "source_path": "ai-sa-employee/skills/document-specialist-skill.md",
+      "source_available": true,
+      "rationale": "Document generation depends on the installed document skills and runtime tools."
+    },
+    {
+      "name": "employee-system-analyst",
+      "disposition": "RETIRE",
+      "targets": [
+        "AGENT.md",
+        "SOUL.md"
+      ],
+      "source_path": "ai-sa-employee/SKILL.md",
+      "source_available": true,
+      "rationale": "Umbrella identity is defined by the canonical agent contract and soul; it should not be a competing skill."
+    },
+    {
+      "name": "end-of-task",
+      "disposition": "MERGE",
+      "targets": [
+        "documentation-handover",
+        "context-economy"
+      ],
+      "source_path": "ai-sa-employee/skills/end-of-task.md",
+      "source_available": true,
+      "rationale": "Completion reporting and continuation checkpoint are covered by handover/context procedures."
+    },
+    {
+      "name": "gather-requirements",
+      "disposition": "REPLACE",
+      "targets": [
+        "requirements-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/gather-requirements.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "ingest-meeting-notes",
+      "disposition": "MERGE",
+      "targets": [
+        "requirements-analysis",
+        "change-management",
+        "risk-management",
+        "documentation-handover"
+      ],
+      "source_path": "ai-sa-employee/skills/ingest-meeting-notes.md",
+      "source_available": true,
+      "rationale": "Meeting ingestion extracts candidates; formal owners validate and record each item."
+    },
+    {
+      "name": "ingest-reference",
+      "disposition": "MERGE",
+      "targets": [
+        "context-economy",
+        "documentation-handover"
+      ],
+      "source_path": "ai-sa-employee/skills/ingest-reference.md",
+      "source_available": true,
+      "rationale": "Local reference intake is source classification, distillation and canonical handover; use web-research only when external discovery is needed."
+    },
+    {
+      "name": "learn-from-feedback",
+      "disposition": "MERGE",
+      "targets": [
+        "skill-authoring",
+        "change-management",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/learn-from-feedback.md",
+      "source_available": true,
+      "rationale": "Feedback becomes a proposed change, regression fixture and governed skill update."
+    },
+    {
+      "name": "memory-hygiene",
+      "disposition": "MERGE",
+      "targets": [
+        "context-economy",
+        "documentation-handover"
+      ],
+      "source_path": "ai-sa-employee/skills/memory-hygiene.md",
+      "source_available": true,
+      "rationale": "Canonical memory hygiene is a context and handover concern; no parallel memory authority."
+    },
+    {
+      "name": "multi-agent-skill-propagation",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "skill-authoring"
+      ],
+      "source_path": null,
+      "source_available": false,
+      "rationale": "No source body; propagation requires actual host/agent installation and synchronization capability."
+    },
+    {
+      "name": "new-client-setup",
+      "disposition": "MERGE",
+      "targets": [
+        "new-project workflow",
+        "project-planning",
+        "requirements-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/new-client-setup.md",
+      "source_available": true,
+      "rationale": "Client onboarding is a project lifecycle workflow, not a skill owner."
+    },
+    {
+      "name": "new-project",
+      "disposition": "MERGE",
+      "targets": [
+        "new-project workflow",
+        "requirements-analysis",
+        "architecture-design",
+        "project-planning"
+      ],
+      "source_path": "ai-sa-employee/skills/new-project.md",
+      "source_available": true,
+      "rationale": "New-project lifecycle is owned by workflow orchestration and canonical specialists."
+    },
+    {
+      "name": "new-skill",
+      "disposition": "REPLACE",
+      "targets": [
+        "skill-authoring"
+      ],
+      "source_path": "ai-sa-employee/skills/new-skill.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "nfr-review",
+      "disposition": "REPLACE",
+      "targets": [
+        "nfr-review"
+      ],
+      "source_path": "ai-sa-employee/skills/nfr-review.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "ollama-agent-runtime",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "agent-reach",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/ollama-agent-runtime.md",
+      "source_available": true,
+      "rationale": "Runtime setup is host/model/provider-specific and requires live environment checks."
+    },
+    {
+      "name": "plan-analysis",
+      "disposition": "REFERENCE",
+      "targets": [
+        "comprehensive-analysis workflow",
+        "analysis-only workflow",
+        "system-analysis",
+        "requirements-analysis",
+        "risk-management"
+      ],
+      "source_path": ".claude/skills/plan-analysis/SKILL.md",
+      "source_available": true,
+      "rationale": "Native Claude skill is available in .claude; portable behavior is composed from the workflow and canonical skills."
+    },
+    {
+      "name": "plan-project",
+      "disposition": "REPLACE",
+      "targets": [
+        "project-planning"
+      ],
+      "source_path": "ai-sa-employee/skills/plan-project.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "process-analysis",
+      "disposition": "REPLACE",
+      "targets": [
+        "process-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/process-analysis.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "project-status",
+      "disposition": "MERGE",
+      "targets": [
+        "project-status workflow",
+        "documentation-handover",
+        "risk-management"
+      ],
+      "source_path": "ai-sa-employee/skills/project-status.md",
+      "source_available": true,
+      "rationale": "Status reporting is a workflow and evidence-backed handover."
+    },
+    {
+      "name": "resume-client",
+      "disposition": "MERGE",
+      "targets": [
+        "continuation",
+        "continuation-contract workflows",
+        "context-economy"
+      ],
+      "source_path": "ai-sa-employee/skills/resume-client.md",
+      "source_available": true,
+      "rationale": "Continuation is a workflow with checkpoint reconciliation, not a duplicate skill."
+    },
+    {
+      "name": "risk-management",
+      "disposition": "REPLACE",
+      "targets": [
+        "risk-management"
+      ],
+      "source_path": "ai-sa-employee/skills/risk-management.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "rollback-readiness-test",
+      "disposition": "MERGE",
+      "targets": [
+        "release workflow",
+        "database-analysis",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/rollback-readiness-test.md",
+      "source_available": true,
+      "rationale": "Rollback readiness combines release gates, data safety and validation."
+    },
+    {
+      "name": "scope-estimate",
+      "disposition": "MERGE",
+      "targets": [
+        "project-planning",
+        "change-management",
+        "risk-management"
+      ],
+      "source_path": "ai-sa-employee/skills/scope-estimate.md",
+      "source_available": true,
+      "rationale": "Estimation is a planning procedure with uncertainty and scope-change controls."
+    },
+    {
+      "name": "scrum-master",
+      "disposition": "MERGE",
+      "targets": [
+        "project-planning",
+        "change-management",
+        "project-status workflow"
+      ],
+      "source_path": "ai-sa-employee/skills/scrum-master.md",
+      "source_available": true,
+      "rationale": "Coordination practices belong to planning/change/status; no new project-management layer."
+    },
+    {
+      "name": "security-review",
+      "disposition": "REPLACE",
+      "targets": [
+        "security-review"
+      ],
+      "source_path": "ai-sa-employee/skills/security-review.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "self-improvement",
+      "disposition": "MERGE",
+      "targets": [
+        "skill-authoring",
+        "test-strategy",
+        "evals"
+      ],
+      "source_path": "ai-sa-employee/skills/self-improvement.md",
+      "source_available": true,
+      "rationale": "Improvements require evidence, a bounded change and regression coverage."
+    },
+    {
+      "name": "solution-design",
+      "disposition": "MERGE",
+      "targets": [
+        "architecture-design",
+        "domain-modeling",
+        "api-contract-design"
+      ],
+      "source_path": "ai-sa-employee/skills/solution-design.md",
+      "source_available": true,
+      "rationale": "Solution design is composed from existing design owners."
+    },
+    {
+      "name": "soup-model-preparation",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "agent-reach",
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/soup-model-preparation.md",
+      "source_available": true,
+      "rationale": "Depends on a particular local-model runtime, hardware and setup tools."
+    },
+    {
+      "name": "stakeholder-analysis",
+      "disposition": "MERGE",
+      "targets": [
+        "requirements-analysis",
+        "process-analysis",
+        "risk-management"
+      ],
+      "source_path": "ai-sa-employee/skills/stakeholder-analysis.md",
+      "source_available": true,
+      "rationale": "Stakeholder mapping is part of elicitation and process/risk context."
+    },
+    {
+      "name": "status-report",
+      "disposition": "MERGE",
+      "targets": [
+        "project-status workflow",
+        "documentation-handover"
+      ],
+      "source_path": "ai-sa-employee/skills/status-report.md",
+      "source_available": true,
+      "rationale": "Status output is a workflow deliverable."
+    },
+    {
+      "name": "system-drill",
+      "disposition": "MERGE",
+      "targets": [
+        "system-analysis",
+        "diagnosing-bugs",
+        "database-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/system-drill.md",
+      "source_available": true,
+      "rationale": "Drill-down is a diagnostic technique inside existing system/DB analysis."
+    },
+    {
+      "name": "task-board",
+      "disposition": "HOST-DEPENDENT",
+      "targets": [
+        "project-planning",
+        "project-status workflow"
+      ],
+      "source_path": "ai-sa-employee/skills/task-board.md",
+      "source_available": true,
+      "rationale": "A live board requires a supported tracker integration; the agent must not invent one."
+    },
+    {
+      "name": "test-strategy",
+      "disposition": "REPLACE",
+      "targets": [
+        "test-strategy"
+      ],
+      "source_path": "ai-sa-employee/skills/test-strategy.md",
+      "source_available": true,
+      "rationale": "Direct canonical equivalent exists."
+    },
+    {
+      "name": "use-case-analysis",
+      "disposition": "MERGE",
+      "targets": [
+        "requirements-analysis",
+        "domain-modeling",
+        "process-analysis"
+      ],
+      "source_path": "ai-sa-employee/skills/use-case-analysis.md",
+      "source_available": true,
+      "rationale": "Use cases are requirements/process/domain artifacts, not a separate owner."
+    },
+    {
+      "name": "web-research",
+      "disposition": "REPLACE",
+      "targets": [
+        "web-research"
+      ],
+      "source_path": "ai-sa-employee/skills/web-research.md",
+      "source_available": true,
+      "rationale": "Canonical retrieval and source-integrity skill exists."
+    },
+    {
+      "name": "weekly-review",
+      "disposition": "MERGE",
+      "targets": [
+        "project-status workflow",
+        "risk-management",
+        "context-economy"
+      ],
+      "source_path": "ai-sa-employee/skills/weekly-review.md",
+      "source_available": true,
+      "rationale": "Periodic review is a cadence/workflow using existing project records."
+    }
+  ],
+  "ownership_clusters": [
+    {
+      "id": "requirements-and-stakeholders",
+      "owner": "requirements-analysis",
+      "support": [
+        "process-analysis",
+        "domain-modeling"
+      ],
+      "legacy": [
+        "gather-requirements",
+        "stakeholder-analysis",
+        "use-case-analysis",
+        "advise-client"
+      ]
+    },
+    {
+      "id": "system-tracing-and-rca",
+      "owner": "system-analysis",
+      "defect_owner": "diagnosing-bugs",
+      "support": [
+        "database-analysis",
+        "domain-modeling"
+      ],
+      "legacy": [
+        "deep-analysis",
+        "code-behavior-audit",
+        "system-drill"
+      ]
+    },
+    {
+      "id": "architecture-and-solution-design",
+      "owner": "architecture-design",
+      "support": [
+        "domain-modeling",
+        "api-contract-design",
+        "nfr-review"
+      ],
+      "legacy": [
+        "solution-design",
+        "conversion-analysis",
+        "create-diagram"
+      ]
+    },
+    {
+      "id": "database-and-dba",
+      "owner": "database-analysis",
+      "support": [
+        "system-analysis",
+        "security-review",
+        "test-strategy"
+      ],
+      "legacy": [
+        "data-migration-playbook",
+        "database-admin",
+        "dba-cross-domain-impact",
+        "dba-data-flow-trace",
+        "dba-execution-plan",
+        "dba-index-strategy",
+        "dba-performance-baseline",
+        "dba-process-interview",
+        "dba-schema-changelog",
+        "dba-schema-drill",
+        "dba-schema-ingest",
+        "dba-schema-review",
+        "dba-security-audit",
+        "dba-sql-object-chain",
+        "rollback-readiness-test"
+      ]
+    },
+    {
+      "id": "planning-and-delivery",
+      "owner": "project-planning",
+      "support": [
+        "change-management",
+        "risk-management",
+        "documentation-handover"
+      ],
+      "legacy": [
+        "plan-project",
+        "scope-estimate",
+        "scrum-master",
+        "developer-handoff",
+        "new-project"
+      ]
+    },
+    {
+      "id": "quality-and-verification",
+      "owner": "test-strategy",
+      "implementation_owner": "tdd",
+      "review_owner": "code-review",
+      "legacy": [
+        "test-strategy",
+        "calibration-review",
+        "rollback-readiness-test"
+      ]
+    },
+    {
+      "id": "research-and-ingestion",
+      "owner": "web-research",
+      "video_owner": "video-intelligence",
+      "legacy": [
+        "web-research",
+        "ingest-reference",
+        "ingest-meeting-notes"
+      ],
+      "access_boundary_owner": "agent-reach",
+      "reference_ingestion_owner": "context-economy",
+      "meeting_ingestion_owner": "documentation-handover"
+    },
+    {
+      "id": "memory-and-continuity",
+      "owner": "context-economy",
+      "handover_owner": "documentation-handover",
+      "legacy": [
+        "claude-mem",
+        "context-mode",
+        "memory-hygiene",
+        "resume-client",
+        "end-of-task"
+      ]
+    }
+  ],
+  "skill_contracts": {
+    "agent-reach": {
+      "purpose": "Retrieve authorized external information when local sources are insufficient.",
+      "owns": "Primary-source research, source dates, evidence quality and untrusted-content handling.",
+      "excludes": "Credential bypass, unauthorized scraping or following page instructions as authority.",
+      "output": "Cited research findings and retrieval limitations.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "api-contract-design": {
+      "purpose": "Define API and integration contracts.",
+      "owns": "Endpoint semantics, authz, payloads, errors, versioning and contract acceptance.",
+      "excludes": "Implementing endpoints or inventing persistence structures.",
+      "output": "API contract and example tests.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "architecture-design": {
+      "purpose": "Design the simplest viable target architecture.",
+      "owns": "Component boundaries, interfaces, deployment assumptions, security, failure behavior and migration.",
+      "excludes": "Requirements elicitation, detailed DBA operations or coding.",
+      "output": "Architecture decision and trade-offs.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "change-management": {
+      "purpose": "Govern changes against an approved baseline.",
+      "owns": "Scope delta, impact, options, decision, traceability and baseline updates.",
+      "excludes": "Approving changes on behalf of the operator.",
+      "output": "Change assessment and decision record.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "code-review": {
+      "purpose": "Review implementation independently and report findings.",
+      "owns": "Correctness, security, compatibility, data integrity, error paths and maintainability.",
+      "excludes": "Auto-fixing without authorization or pretending same-model review is independent.",
+      "output": "Prioritized findings with file/line evidence.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "context-economy": {
+      "purpose": "Load and preserve only sufficient context.",
+      "owns": "Progressive disclosure, canonical-source pointers, checkpoint recovery and token/context minimization.",
+      "excludes": "Creating a second memory authority or omitting critical constraints.",
+      "output": "Minimal context set and continuation checkpoint.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "database-analysis": {
+      "purpose": "Analyze real database structures, behavior, integrity and performance.",
+      "owns": "Schema/object inspection, SQL dependencies, data flow, query plans, indexes, migration, rollback and DB security evidence.",
+      "excludes": "Assuming schema or executing production mutations without approval.",
+      "output": "DB evidence, impact, safe change/rollback and validation plan.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "diagnosing-bugs": {
+      "purpose": "Establish evidence-backed causes of observed defects.",
+      "owns": "Reproduction, hypotheses, execution-path trace, experiments, causal chain and regression proposal.",
+      "excludes": "Feature design, broad requirements elicitation or unauthorized fixes.",
+      "output": "RCA with confidence, evidence and minimal correction.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "documentation-handover": {
+      "purpose": "Produce an accurate operational handover.",
+      "owns": "Decisions, changed scope, setup, evidence, limitations, risks, rollback and next actions.",
+      "excludes": "Creating duplicate memory or claiming persistence without evidence.",
+      "output": "Concise handover/checkpoint.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "domain-modeling": {
+      "purpose": "Model domain concepts and invariants.",
+      "owns": "Entities, value objects, events, states, relationships, terminology and invariants.",
+      "excludes": "Inventing schema keys/FKs or owning process/requirements discovery.",
+      "output": "Domain glossary/model and unresolved semantics.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "nfr-review": {
+      "purpose": "Translate relevant quality attributes into measurable constraints.",
+      "owns": "Security, reliability, performance, accessibility, maintainability, interoperability and operations targets.",
+      "excludes": "Adding irrelevant checklist items or owning security testing.",
+      "output": "Scoped NFRs and measurable acceptance.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "process-analysis": {
+      "purpose": "Analyze business and operational processes.",
+      "owns": "Actors, triggers, inputs/outputs, decisions, handoffs, exceptions and bottlenecks.",
+      "excludes": "Requirements ownership, system architecture or database mutation.",
+      "output": "Process map, pain points and control gaps.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "project-planning": {
+      "purpose": "Sequence approved work into deliverable slices.",
+      "owns": "Dependencies, owners, estimates, critical path, acceptance and delivery sequencing.",
+      "excludes": "Changing scope without approval or owning technical architecture.",
+      "output": "Dependency-aware plan and task breakdown.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "requirements-analysis": {
+      "purpose": "Elicit and baseline user/business needs and acceptance.",
+      "owns": "Requirement elicitation, ambiguity resolution, traceability and acceptance criteria.",
+      "excludes": "System architecture, detailed process maps or technical implementation.",
+      "output": "Requirements baseline and open-question register.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "risk-management": {
+      "purpose": "Identify, prioritize and manage uncertainty and exposure.",
+      "owns": "Risk causes, likelihood/impact, owners, mitigations, triggers and residual risk.",
+      "excludes": "Owning technical diagnosis or inventing numerical certainty.",
+      "output": "Risk register and mitigation decisions.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "security-review": {
+      "purpose": "Threat-model and assess security boundaries.",
+      "owns": "Assets, trust boundaries, authn/authz, input validation, secrets, injection, exposure and remediation.",
+      "excludes": "Testing external targets without authorization or overriding host security.",
+      "output": "Threat findings and scoped remediation.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "skill-authoring": {
+      "purpose": "Create and govern focused reusable skill procedures.",
+      "owns": "Trigger/exclusion design, overlap checks, metadata, routing tests, adapters and lifecycle updates.",
+      "excludes": "Creating duplicate skills or changing host setup without evidence.",
+      "output": "Canonical skill plus routing/validation coverage.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "system-analysis": {
+      "purpose": "Trace current and target system behavior end to end.",
+      "owns": "System boundaries, actors, components, data flows, dependencies, failure modes and system-level gaps.",
+      "excludes": "Defect-only RCA, detailed DBA administration or solution implementation.",
+      "output": "Evidence-backed current/target model, gaps and validation plan.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "tdd": {
+      "purpose": "Implement authorized changes test-first.",
+      "owns": "RED/GREEN/REFACTOR loop, focused regression tests and smallest safe implementation.",
+      "excludes": "Planning-only requests, release approval or independent review claims.",
+      "output": "Code change with captured test evidence.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "test-strategy": {
+      "purpose": "Design risk-based verification.",
+      "owns": "Test levels, coverage, data, oracles, environments, regression and release gates.",
+      "excludes": "Writing implementation code or claiming tests ran.",
+      "output": "Test strategy and measurable acceptance coverage.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "video-intelligence": {
+      "purpose": "Reconcile spoken and visible audiovisual evidence.",
+      "owns": "Timestamped transcript, on-screen text, visible action, UI states, inference and uncertainty.",
+      "excludes": "Claiming unseen frames/actions or treating transcript as sole truth.",
+      "output": "Timestamped evidence timeline and handover.",
+      "load_rule": "Load only when this capability contributes materially to the selected task."
+    },
+    "web-research": {
+      "purpose": "Conduct structured, evidence-led external research.",
+      "owns": "External source discovery, evidence quality, synthesis, comparison and decision-relevant research findings.",
+      "excludes": "Permission/capability assessment, project requirements approval, legal advice and unauthorized scraping.",
+      "output": "Cited findings with dates, comparison/implications, counter-evidence and limitations.",
+      "load_rule": "Load when the task materially depends on current or external sources."
+    }
+  },
+  "host_compatibility": {
+    "claude": {
+      "adapter_root": "adapters/claude/skills",
+      "resolution": "Return pointer path when present; canonical skill remains source of truth.",
+      "status": "pointer-only; native discovery unverified"
+    },
+    "codex": {
+      "adapter_root": "adapters/codex/skills",
+      "resolution": "Return pointer path when present; canonical skill remains source of truth.",
+      "status": "pointer-only; native discovery unverified"
+    },
+    "generic": {
+      "adapter_root": null,
+      "resolution": "Return canonical skill path for explicit/manual loading.",
+      "status": "manual fallback; host discovery unknown"
+    }
+  }
+}

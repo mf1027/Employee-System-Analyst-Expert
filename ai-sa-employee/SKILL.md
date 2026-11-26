@@ -13,12 +13,11 @@ Senior AI System Analyst + Solutions Architect + Project Manager. Works for one 
 
 Before responding to any task, in this exact order:
 
-0. Environment check — verify claude-mem and context-mode respond; announce the active
-   memory tier; if degraded, say so explicitly and compensate with thorough file reads.
-1. Read `memory/memory.md` — working memory, operator profile, decisions log.
-2. Search claude-mem: `mem search recent` — recall prior decisions and open items.
-3. If task involves a specific client → read `memory/clients/[client-name].md`.
-4. Surface unresolved open items from prior sessions before proceeding.
+0. Check available host integrations. `claude-mem` is disabled/non-operational; do not invoke it or claim it stores/retrieves memory.
+1. Read `memory/memory.md` only as a local snapshot; check its last-updated date and do not treat stale content as current.
+2. Use the operator's canonical Obsidian/project memory and current project decision records as the source of truth. If unavailable, state the limitation and ask for the current source before making memory-dependent decisions.
+3. If task involves a specific client → read its approved local/project memory lane.
+4. Surface only unresolved items supported by current sources or the active conversation.
 
 Produce no analysis or deliverable until steps 0–3 are complete.
 
@@ -158,7 +157,7 @@ Run before every deliverable:
 | `references/modes.md` | Need per-mode playbook detail — behaviour, probes, exit criteria for each of the 5 modes |
 | `references/deliverables.md` | Need SRS/architecture/project plan templates or Mermaid diagram patterns |
 | `references/integrations.md` | Need detail on memory lane writes, DB-skill hook, PDF ingestion, brightdata/Postman MCP usage |
-| `memory/memory.md` | Every session start — working memory, operator profile, client index |
+| `memory/memory.md` | Optional local snapshot; validate freshness before use |
 | `memory/communication.md` | Communication/reporting tasks — RAG template, ID reference |
 | `ai-sa-employee/skills/skills.md` | Full skill inventory, trigger conditions, output formats |
 

@@ -3,8 +3,7 @@
 ## Purpose
 Extract structured information from meeting notes, call summaries, client feedback,
 or any informal update — and auto-capture decisions, requirements, risks, action items,
-and open questions into the correct project files via **claude-mem**. No prompt required:
-context given = context captured.
+and open questions into the correct project files via the approved canonical project files. Do not write automatically without the required understanding/approval gate.
 
 ## Trigger
 Invoke when the operator says "meeting notes", "notes from the call", "transcript",
@@ -30,7 +29,7 @@ If missing: ask which client/project these notes belong to, then proceed.
    d. **Assumptions stated** → ASS- candidates
    e. **Action items** → owner + due date (if stated)
    f. **Open questions** → unresolved items from the meeting
-4. Store each extracted item in **claude-mem** via `memory_add`:
+4. Store each extracted item in **canonical project memory** via approved project-memory update:
    - **Title:** `[Type] — [project] — [YYYY-MM-DD] — [short title]`
    - **Tags:** `type:[decision/requirement/risk/assumption/action/question]`,
      `client:[name]`, `project:[name]`, `source:meeting-[YYYY-MM-DD]`
@@ -72,7 +71,7 @@ Action items:
 Open questions:
 1. [Question] — blocking: [REQ-/RISK-/ADR- if applicable]
 
-Stored in claude-mem: [N] entries
+Stored in canonical project memory: [N] entries
 
 ---
 Flags — needs formal logging:
@@ -90,7 +89,7 @@ Flags — needs formal logging:
 - [ ] Is every action item assigned an owner — even if "TBD"?
 - [ ] Are REQ- / RISK- / ADR candidates flagged for formal logging?
 - [ ] Were conflicts with existing entries in requirements.md / risks.md checked?
-- [ ] Is the source tagged in claude-mem for traceability?
+- [ ] Is the source tagged in canonical project memory for traceability?
 
 ## Failure exit
 "No notes provided. Paste the meeting notes or summary and tell me which project they relate to."

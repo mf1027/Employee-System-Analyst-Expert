@@ -15,7 +15,7 @@ Invoke when the operator says "how long will X take", "estimate this",
 If missing: ask for the description and constraints.
 
 ## Steps
-1. Read `memory/memory.md` and search claude-mem for past estimates (`mem search "estimate"`), then read the
+1. Consult current canonical Obsidian/project memory for prior estimates, then read the
    project's `requirements.md`, `risks.md`, and `plan.md`.
 2. If the work touches database topics, also read the project's `database.md`.
 3. Output a CONTEXT SUMMARY — what I read, relevant risk factors, confidence.

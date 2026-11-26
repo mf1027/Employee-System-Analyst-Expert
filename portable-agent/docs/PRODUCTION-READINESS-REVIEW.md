@@ -1,7 +1,7 @@
 # Production Readiness Remediation — RCA / GAP / Risk Review
 
 **Target:** Employee-System-Analysis-Expert reconstructed portable core, prior version 1.0.0
-**Remediation version:** 2.0.0
+**Historical review baseline:** 2.3.0; current remediation is 2.3.1 (see `PRODUCTION-READINESS-REMEDIATION-2.3.1.md`).
 **Basis:** package files and the supplied Portable Skills v6 process-flow clipboard
 **Assessment type:** sandbox artifact audit and remediation; no live agent host was installed or invoked
 
@@ -76,7 +76,7 @@ The original package's most important failure was a mismatch between claims and 
 |---|---|---|---|
 | R-01 | Agent ignores or misroutes a workflow | High | Live prompt evaluations and host routing smoke tests are required; static fixtures alone cannot close this |
 | R-02 | Host fails to discover root instructions or skill pointers | High | Host-specific installation smoke test and version capture required |
-| R-03 | User expects restored 63 original skill bodies | High | Explicit source boundary: only 21 authored core skills; 63 historical entries are inventory-only |
+| R-03 | User expects restored 63 original skill bodies | High | Superseded by v2.2.0: 61 historical source bodies available in archive (59 procedure files + umbrella + native plan-analysis); 2 absent; 63-entry parity map implemented |
 | R-04 | Checkpoint stale/incorrect | High | Resume must reconcile files/diff/tests and downgrade unsupported completion |
 | R-05 | Unauthorized production/destructive action | Critical | Explicit action-target approval, preflight, rollback and abort gates; live adversarial tests still required |
 | R-06 | Multiple agents conflict on shared files | High | Ownership, partitioned work, serialized writes, integration coordinator |
@@ -104,7 +104,7 @@ The original package's most important failure was a mismatch between claims and 
 
 ### RCA — Hollow skill bodies
 
-**Primary root cause:** 19 of 21 canonical skill files were created by copying each skill's `REGISTRY.md` table-cell description into a standalone file with a heading. This satisfied the structural validator (file exists, name matches registry, adapter pointers resolve) but produced zero additional instructional content beyond what the registry already provides. The validator had no depth or anti-duplication check.
+**Primary root cause:** 19 of 22 canonical skill files were created by copying each skill's `REGISTRY.md` table-cell description into a standalone file with a heading. This satisfied the structural validator (file exists, name matches registry, adapter pointers resolve) but produced zero additional instructional content beyond what the registry already provides. The validator had no depth or anti-duplication check.
 
 **Contributing causes:**
 1. Validator checked file existence and hash; not body depth.
@@ -155,7 +155,7 @@ The original package's most important failure was a mismatch between claims and 
 
 | ID | Risk | v2.0 Rating | v2.1 Rating | Change rationale |
 |---|---|---|---|---|
-| R-03 | User expects restored 63 original skill bodies | High | Medium | 21 canonical skills are now fully authored with actionable procedures; remaining 42 remain inventory-only as disclosed |
+| R-03 | User expects restored 63 original skill bodies | High | Medium | 22 portable canonical skills plus 63-entry source-backed parity map; three source bodies absent and host-specific capabilities remain unverified |
 | R-10 (new) | Skill bodies regress to hollow stubs | — | Low | Validator depth check + anti-duplication test prevent silent hollowing |
 
 ## Acceptance statement
@@ -166,3 +166,44 @@ The original package's most important failure was a mismatch between claims and 
 **Agent behavior acceptance: NOT RUN.**
 **Host/runtime compatibility: NOT RUN.**
 **Full original 63-skill restoration: OUT OF SCOPE / SOURCE NOT AVAILABLE.**
+
+
+## v2.2.0 Remediation — Skill Intelligence and Conflict Resolution
+
+**Date:** 2026-11-26
+
+The previous report's statement that 42 historical skill bodies were unavailable was incorrect for the uploaded archive. The archive contains 59 historical procedure files, one umbrella employee skill and the native Claude `plan-analysis` skill; two historical entries have no matching source body.
+
+Implemented: machine-readable skill contracts and ownership clusters; one-primary deterministic resolution; explicit specialist and support roles; fail-closed unknown IDs; 18 routing fixtures; 13 resolver tests; source-backed dispositions for all 63 historical names; consolidated DBA procedures; corrected inventory/source-boundary/release docs; and duplicate nested Godmode content reduced to a pointer to the top-level canonical path.
+
+**v2.2.0 evidence (historical):** 40 portable Python tests and 67 parent npm tests passed. The package was not live-runtime-certified.
+
+
+## v2.3.0 Remediation — Routing Consistency and Selection Governance
+
+**Date:** 2026-11-26
+
+### New RCA findings from independent re-execution
+
+- The deterministic resolver accepted unbounded specialist/support lists despite the written bounded-loading policy.
+- The natural-language routing fixtures and the skill-intelligence fixtures were separately tested; they could disagree while both suites passed. Research and generic release exposed this drift.
+- The resolver validated IDs but not the complete catalog contract, package path containment, or a structured rationale for each selected role.
+- The previous 40-test suite did not score a real model's semantic classification.
+
+### Remediation
+
+- Added explicit intent mappings for all natural-language routing cases.
+- Made each natural-language fixture run through the same resolver and assert exact workflow and ordered skill output.
+- Added hard limits: one primary, at most three specialists, at most two support skills, six unique skills maximum. Overflow fails closed.
+- Required a decision record with dominant intent, primary deliverable, trigger evidence, specialist evidence, support-output need, excluded candidates and uncertainty. Evidence keys must match selected IDs exactly.
+- Added catalog integrity checks for canonical skills, contracts, intents, workflows, specialist definitions, host profiles, adapter roots and package path containment.
+- Added explicit suppressed-selection output when the same canonical skill is selected under multiple roles.
+- Added `evaluate_classification.py` so saved output from a real host/model can be scored against the natural-language fixtures without manually editing the output.
+- Quarantined the high-risk legacy Godmode skill in root `CLAUDE.md` and `AGENTS.md`; added four regression checks. The skill remains present and host discovery is still unverified.
+
+### Verification
+
+- Portable Python regression suite: **61/61 passed**.
+- Parent repository Node suite: **67/67 passed**.
+- Package validator, Python compilation, fresh ZIP extraction and post-extraction tests: to be recorded in the final 2.3.0 release results.
+- Live semantic model evaluation, host discovery, permissions, prompt-injection behavior, persistence and delegation remain **NOT RUN / UNVERIFIED**.

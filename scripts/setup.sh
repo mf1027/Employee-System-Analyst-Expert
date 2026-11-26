@@ -49,10 +49,11 @@ step "Checking prerequisites"
 if command -v node &>/dev/null; then
     NODE_VER=$(node --version)
     NODE_MAJOR=$(echo "$NODE_VER" | sed 's/v\([0-9]*\)\..*/\1/')
-    if [ "$NODE_MAJOR" -ge 20 ]; then
+    NODE_MINOR=$(echo "$NODE_VER" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
+    if [ "$NODE_MAJOR" -gt 20 ] || { [ "$NODE_MAJOR" -eq 20 ] && [ "$NODE_MINOR" -ge 19 ]; }; then
         ok "Node.js $NODE_VER"
     else
-        fail "Node.js $NODE_VER detected — need >= 20. Get it: https://nodejs.org"
+        fail "Node.js $NODE_VER detected — need >= 20.19.0. Get it: https://nodejs.org"
     fi
 else
     fail "Node.js not found. Get it: https://nodejs.org"
@@ -92,10 +93,10 @@ fi
 
 # -- 2. Node dependencies ------------------------------------------------------
 
-step "Installing Node.js dependencies (npm install)"
+step "Installing locked Node.js dependencies (npm ci)"
 cd "$ROOT"
-npm install
-ok "node_modules ready (claude-mem + context-mode + @opendataloader/pdf included)"
+npm ci
+ok "locked Node.js dependencies ready"
 
 # Verify @opendataloader/pdf binary
 ODL_BIN="$ROOT/node_modules/.bin/opendataloader-pdf"
@@ -105,22 +106,23 @@ else
     warn "@opendataloader/pdf binary not found — pdf2md.sh will fall back to pypdf"
 fi
 
-# -- 3. Python dependencies ----------------------------------------------------
+# -- 3. Isolated Python document dependencies ---------------------------------
 
-step "Installing Python dependencies"
-if "$PY_CMD" -m pip install chromadb --quiet 2>/dev/null; then
-    CHROMA_VER=$("$PY_CMD" -c "import chromadb; print(chromadb.__version__)" 2>/dev/null || echo "installed")
-    ok "chromadb $CHROMA_VER"
+step "Installing pinned Python document dependencies into .venv"
+if [ -n "$PY_CMD" ]; then
+    if "$PY_CMD" -m venv "$ROOT/.venv"; then
+        VENV_PY="$ROOT/.venv/bin/python"
+        [ -x "$VENV_PY" ] || VENV_PY="$ROOT/.venv/bin/python3"
+        if [ -x "$VENV_PY" ] && "$VENV_PY" -m pip install --disable-pip-version-check -r "$ROOT/requirements-docs.txt" --quiet; then
+            ok "pinned document dependencies installed in .venv"
+        else
+            warn "Python document dependencies failed — document skills may be limited"
+        fi
+    else
+        warn "Could not create .venv — no global Python packages were changed"
+    fi
 else
-    warn "chromadb install failed — semantic memory search will fall back to keyword mode"
-fi
-
-# Document-skills packages (docx/pptx/xlsx/pdf generation + reading)
-if "$PY_CMD" -m pip install defusedxml lxml openpyxl pdf2image pdfplumber pillow pypdf --quiet 2>/dev/null \
-   && "$PY_CMD" -c "import defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf" 2>/dev/null; then
-    ok "document-skills Python packages (7) ready"
-else
-    warn "document-skills packages failed — docx/pptx/xlsx/pdf skills may not work"
+    warn "Python unavailable — Python-backed document skills are unavailable"
 fi
 
 # -- 3b. Document engines: LibreOffice + Poppler (Phase 2) ----------------------
@@ -172,7 +174,6 @@ fi
 step "Checking Claude Code plugins"
 
 IP_PATH="$HOME/.claude/plugins/installed_plugins.json"
-CLAUDE_MEM_OK=0
 CONTEXT_MODE_OK=0
 PONYTAIL_CLAUDE_OK=0
 PONYTAIL_CODEX_OK=0
@@ -181,14 +182,6 @@ CLAUDE_CLI_OK=0
 CODEX_CLI_OK=0
 
 if [ -f "$IP_PATH" ]; then
-    if "$PY_CMD" -c "
-import json
-d = json.load(open('$IP_PATH'))
-plugins = d.get('plugins', {})
-exit(0 if 'claude-mem@thedotmack' in plugins else 1)
-" 2>/dev/null; then
-        CLAUDE_MEM_OK=1
-    fi
     if "$PY_CMD" -c "
 import json
 d = json.load(open('$IP_PATH'))
@@ -245,7 +238,6 @@ if command -v claude &>/dev/null; then
     fi
 fi
 
-[ "$CLAUDE_MEM_OK" -eq 1 ]   && ok   "claude-mem plugin installed"   || warn "claude-mem NOT installed"
 [ "$CONTEXT_MODE_OK" -eq 1 ] && ok   "context-mode plugin installed" || warn "context-mode NOT installed"
 [ "$PONYTAIL_CLAUDE_OK" -eq 1 ] && ok "Ponytail plugin installed for Claude Code" || warn "Ponytail plugin NOT installed for Claude Code"
 [ "$PONYTAIL_CODEX_OK" -eq 1 ] && ok "Ponytail plugin detected for Codex" || { [ "$CODEX_CLI_OK" -eq 1 ] && warn "Ponytail plugin NOT detected for Codex"; }
@@ -261,11 +253,9 @@ fi
 warn "Ponytail hook trust verified by fresh-host smoke: NOT VERIFIED by setup"
 info "Setup never bypasses hook trust; review the hook commands before accepting them."
 
-if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
+if [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ]; then
     echo ""
     echo -e "    ${BOLD}Open Claude Code in this directory and run:${NC}"
-    [ "$CLAUDE_MEM_OK" -eq 0 ]   && echo -e "      ${YELLOW}/plugin marketplace add thedotmack/claude-mem${NC}"
-    [ "$CLAUDE_MEM_OK" -eq 0 ]   && echo -e "      ${YELLOW}/plugin install claude-mem@thedotmack${NC}"
     [ "$CONTEXT_MODE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin marketplace add mksglu/context-mode${NC}"
     [ "$CONTEXT_MODE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin install context-mode@context-mode${NC}"
     [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] && echo -e "      ${YELLOW}/plugin marketplace add DietrichGebert/ponytail${NC}"
@@ -374,7 +364,7 @@ echo -e "${CYAN}======================================${NC}"
 echo -e "${CYAN}  Setup complete${NC}"
 echo -e "${CYAN}======================================${NC}"
 
-if [ "$CLAUDE_MEM_OK" -eq 0 ] || [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ] || [ "$CLAUDE_CLI_OK" -eq 0 ] || [ "$CODEX_CLI_OK" -eq 0 ] ||
+if [ "$CONTEXT_MODE_OK" -eq 0 ] || [ "$PONYTAIL_CLAUDE_OK" -eq 0 ] || [ "$PONYTAIL_CODEX_OK" -eq 0 ] || [ "$CLAUDE_CLI_OK" -eq 0 ] || [ "$CODEX_CLI_OK" -eq 0 ] ||
    [ "$OLLAMA_INSTALLED" -eq 0 ] || [ "$OLLAMA_CAPABILITY_OK" -eq 0 ] ||
    { [ "$INSTALL_SOUP" -eq 1 ] && [ "$SOUP_EXIT" -ne 0 ]; }; then
     echo -e "  ${YELLOW}Action needed: install the missing plugin(s) listed above.${NC}"

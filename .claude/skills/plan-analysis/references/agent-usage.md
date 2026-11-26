@@ -1,6 +1,6 @@
 # Agent-local usage
 
-`plan-analysis` is maintained only in this employee-agent repository at `.claude/skills/plan-analysis/`. Run it while the Employee System Analyst Expert workspace is active. The allowed Codex-facing surface is the thin bridge at `C:\Users\Msi\.codex\skills\plan-analysis\`, which loads this canonical source at runtime; do not copy the canonical skill, its references, or its scripts into another global location or a client application repository.
+`plan-analysis` is maintained only in this employee-agent repository at `.claude/skills/plan-analysis/`. Run it while the Employee System Analyst Expert workspace is active. The allowed Codex-facing surface is the thin bridge at `%USERPROFILE%\.codex\skills\plan-analysis\`, which loads this canonical source at runtime; do not copy the canonical skill, its references, or its scripts into another global location or a client application repository.
 
 ## Invocation model
 

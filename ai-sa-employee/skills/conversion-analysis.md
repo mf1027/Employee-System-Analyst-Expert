@@ -41,9 +41,7 @@ If missing: ask "Which project, and what's the from→to stack (e.g. PHP/Laravel
 
 ## Steps
 
-1. **Read context.** `memory/memory.md`, `memory/clients/[client]/[client].md`, and the project's
-   `README.md`, `requirements.md`, `decisions.md`, `risks.md`, `database.md`. Search claude-mem:
-   `mem search "[project] legacy target parity"` (filter `system:legacy` vs `system:target`).
+1. **Read context.** Consult current canonical Obsidian/project memory, `memory/clients/[client]/[client].md` when current, and the project's `README.md`, `requirements.md`, `decisions.md`, `risks.md`, and `database.md`. Do not invoke claude-mem.
 2. **Confirm the conversion profile** — source stack → target stack, and the *reason* for converting
    (EOL stack, performance, hiring pool, cost, scalability). Log the reason as an `ADR-` (it frames
    every later trade-off).

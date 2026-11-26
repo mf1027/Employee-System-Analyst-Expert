@@ -8,7 +8,7 @@
 
 **Tech Stack:** Markdown instruction/workflow/skill files; Python standard-library package validation and deterministic tests; host-specific native instruction/skill configuration only where supported and verified; optional shell/PowerShell packaging or setup only if current repository conventions and target-host requirements justify it.
 
-**Spec:** User request (2026-10-29): work from `C:\Users\Msi\Downloads\Employee-System-Analysis-Expert`, update the repository branch named `Enhanced` later, do not run Git commands in the repository for now, make the package work as a standalone agent rather than only inside Hermes, support VS Code/Claude and other relevant hosts, and keep `AGENT.md` as the real source of truth with other model/host instruction entry points redirecting to it. Repository evidence: `AGENT.md`; `README.md`; `docs/ARCHITECTURE.md`; `docs/INSTALLATION.md`; `docs/PRODUCTION-READINESS-REVIEW.md`; `docs/RELEASE-STATUS.md`; `docs/SECURITY.md`; `docs/SOURCE-BOUNDARY.md`; `skills/REGISTRY.md`; `workflows/routing.md`; `tools/validate_package.py`; `tools/test_scenarios.py`; `evals/*.json`; adapter READMEs and pointer files.
+**Spec:** User request (2026-10-29): work from `<workspace-root>/Employee-System-Analysis-Expert`, update the repository branch named `Enhanced` later, do not run Git commands in the repository for now, make the package work as a standalone agent rather than only inside Hermes, support VS Code/Claude and other relevant hosts, and keep `AGENT.md` as the real source of truth with other model/host instruction entry points redirecting to it. Repository evidence: `AGENT.md`; `README.md`; `docs/ARCHITECTURE.md`; `docs/INSTALLATION.md`; `docs/PRODUCTION-READINESS-REVIEW.md`; `docs/RELEASE-STATUS.md`; `docs/SECURITY.md`; `docs/SOURCE-BOUNDARY.md`; `skills/REGISTRY.md`; `workflows/routing.md`; `tools/validate_package.py`; `tools/test_scenarios.py`; `evals/*.json`; adapter READMEs and pointer files.
 
 ## Global Constraints
 
@@ -41,14 +41,14 @@
 
 ### Verified repository state
 
-- The package is currently version `2.0.0`; it describes itself as a portable operating-contract/workflow package.
+- This document originally described version `2.0.0`; current package version is `2.3.1`.
 - Root `AGENT.md` names itself the operating contract and directs routing through workflows and `skills/REGISTRY.md`. It states that canonical skill procedures are in `skills/*.md` and adapter files are pointers only.
 - `docs/ARCHITECTURE.md` calls `AGENT.md` the only authoritative operating contract. `SOUL.md` is described as optional behavioral framing, not competing policy.
 - `adapters/claude/` and `adapters/codex/` contain one `SKILL.md` pointer per canonical skill; README files explicitly say these are examples, not verified host configuration bundles. `adapters/generic/README.md` is guidance only.
 - `docs/INSTALLATION.md` requires manually configuring each host and checking current host/version discovery. It does not provide verified VS Code installation or host-specific packaged config.
 - `README.md`, `docs/RELEASE-STATUS.md`, `docs/VALIDATION-REPORT.md`, and `docs/PRODUCTION-READINESS-REVIEW.md` explicitly say host auto-discovery, live model behavior, and actual runtime integration are unverified. Static and fixture checks are not LLM behavior tests.
 - `tools/validate_package.py` currently validates Claude/Codex pointer parity, routes, scenarios, links, manifest/checksums and file hygiene. `tools/test_scenarios.py` exercises structural/contract fixtures; neither invokes a live host/model.
-- The current repository contains 21 canonical skills, 16 routing/scenario cases, and an inventory of 63 historical skill names; the source-boundary document says the original historical skill bodies and host runtime assets are unavailable.
+- The current repository contains 22 canonical skills, 30 natural-language routing/scenario cases and 18 low-level deterministic skill-routing cases, and an inventory of 63 historical skill names; the source-boundary document says historical source procedures are present for 61 of 63 names; runtime assets remain host-dependent.
 - User-supplied intent expands the target to standalone operation, VS Code/Claude and other applicable agent hosts. The exact VS Code agent products and supported host/version matrix are **not yet verified** and must be decided from current official host documentation before implementation.
 
 ### In-scope outcomes
@@ -301,7 +301,7 @@ No actual target files beyond this saved plan are changed in plan mode.
 - [ ] Document setup, confirmation of root/skill loading, first safe test, permissions, uninstall/rollback, troubleshooting, workspace trust, relative paths, context limits and common discovery failures.
 - [ ] Clearly distinguish available portable-core behaviors from host-dependent web, memory, hooks, MCP, subagents, file generation and resume functionality.
 - [ ] State that plan/analysis mode remains non-mutating and implementation/external side effects remain authorization-gated.
-- [ ] Keep historical reconstruction/source limitations visible and avoid presenting inventory-only skills as delivered.
+- [ ] Keep the source-backed parity dispositions visible; do not claim verbatim restoration for MERGE/REFERENCE/HOST-DEPENDENT entries.
 
 #### Task 4.2: Update release claims, evidence, and package metadata
 
@@ -345,7 +345,7 @@ No actual target files beyond this saved plan are changed in plan mode.
 | R-08 | A passing run on one model/product is generalized to all hosts | High | Product/version/provider-specific matrix and per-row status. |
 | R-09 | Untrusted workspace instructions override user or canonical safety | Critical | Treat artifacts as data, host precedence review, injection cases on each host. |
 | R-10 | Regression to all-skills-loaded or duplicated context cost | Medium | Preserve registry-based selective routing; test only relevant skills are loaded where runtime evidence exists. |
-| R-11 | Historical inventory creates false promise of 63 skill bodies | High | Preserve source boundary and explicit inventory-only labeling. |
+| R-11 | Historical inventory creates false promise of 63 portable canonical skill bodies | High | Preserve source-backed parity map and explicit dispositions. |
 | R-12 | Manifest/checksum drift makes package incomplete or unverifiable | Medium | Run validator, regenerate manifests last, fresh archive/extraction test. |
 | R-13 | OS path, symlink, shell, archive or encoding differences break standalone setup | Medium/High | Test each declared OS and avoid unsupported assumptions; explicit fallback. |
 | R-14 | Privacy-sensitive live transcripts/evidence are committed or retained unnecessarily | High | Synthetic workspace, minimum evidence, redaction/consent policy, no private user/client data by default. |

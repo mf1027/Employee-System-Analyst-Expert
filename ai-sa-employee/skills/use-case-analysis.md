@@ -19,8 +19,7 @@ If missing: run gather-requirements first, or ask for at least a scope descripti
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md`. Search claude-mem:
-   `mem search "[project] use cases"` to retrieve prior analysis.
+1. Consult current canonical Obsidian/project memory and existing requirements/use-case records for prior analysis. Do not invoke the disabled claude-mem integration.
 2. Read the project's `requirements.md` and `stakeholders.md` (actors come from
    the stakeholder register).
 3. Identify **actors** — primary (directly interact with the system) and secondary

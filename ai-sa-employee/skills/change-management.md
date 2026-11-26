@@ -18,7 +18,7 @@ If missing: ask for the change description and which project it relates to.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md`.
+1. Read current canonical Obsidian/project memory and the relevant client lane.
 2. Read the project's `requirements.md` (baseline), `plan.md` (current schedule),
    `risks.md`, and `database.md` (if the change affects data).
 3. Assign the next Change Request ID: `CR-NNN`.

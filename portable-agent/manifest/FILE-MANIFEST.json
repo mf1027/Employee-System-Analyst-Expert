@@ -1,36 +1,6 @@
 {
-  "version": "2.0.0",
+  "version": "2.3.1",
   "files": [
-    {
-      "path": "AGENT.md",
-      "sha256": "892c9e8409c8c9814eaca81631b05f65d8733c0f18044e2b5b4e09b33e230ecd",
-      "bytes": 7987
-    },
-    {
-      "path": "AGENTS.md",
-      "sha256": "9dd5786876c692de5940ace728d3760f8a85ecf9ea68349f4d663bb0af6add9f",
-      "bytes": 616
-    },
-    {
-      "path": "CHANGELOG.md",
-      "sha256": "0919fd71843a8796df0949df81312fbff468db660bb2685d9e450d458ed66096",
-      "bytes": 1627
-    },
-    {
-      "path": "README.md",
-      "sha256": "2b698ba0da7da0252fb2f24eef793a09dd44fd0c00cbf6e4c3f2bea11326e8f3",
-      "bytes": 4791
-    },
-    {
-      "path": "SOUL.md",
-      "sha256": "8e3e5db9992802de8fe6b01df2d2bfda5eb29cfc8b31884a514e38153f75b0a5",
-      "bytes": 610
-    },
-    {
-      "path": "VERSION",
-      "sha256": "c89b87c262e9d5ffd20e73aac74a1772adcc9f5a21682cc33adcf5086e5fef5c",
-      "bytes": 6
-    },
     {
       "path": "adapters/claude/README.md",
       "sha256": "2e25bc690b4b14703eb1061b57e3a9b289b4ac36ef8b784f60e844d336e073cf",
@@ -140,6 +110,11 @@
       "path": "adapters/claude/skills/video-intelligence/SKILL.md",
       "sha256": "41e911170d092e06ddfff38170b0168189bfb46284f2296e2add41a27153e4e3",
       "bytes": 303
+    },
+    {
+      "path": "adapters/claude/skills/web-research/SKILL.md",
+      "sha256": "ab6b58c917c9ffbdd8a1cfa277dd4812a1beebb9113737db01c9545f33385e1f",
+      "bytes": 299
     },
     {
       "path": "adapters/codex/README.md",
@@ -252,79 +227,119 @@
       "bytes": 303
     },
     {
+      "path": "adapters/codex/skills/web-research/SKILL.md",
+      "sha256": "ab6b58c917c9ffbdd8a1cfa277dd4812a1beebb9113737db01c9545f33385e1f",
+      "bytes": 299
+    },
+    {
       "path": "adapters/generic/README.md",
       "sha256": "d037e55e74d40f2fb90a7b428d3a3cdce645628f93aecc8a557991b367cfa696",
       "bytes": 502
     },
     {
+      "path": "AGENT.md",
+      "sha256": "f576700baf26f88da852867597b4d2e76e24e4501f28ca2bbc86fcb0d81734fd",
+      "bytes": 12427
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "9dd5786876c692de5940ace728d3760f8a85ecf9ea68349f4d663bb0af6add9f",
+      "bytes": 616
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "d613ccecef5fbdd7203e1bd4de32042171aacc714e5db6f56c155e48bd702e47",
+      "bytes": 5098
+    },
+    {
       "path": "docs/ARCHITECTURE.md",
-      "sha256": "5d55a6b40b665b49d06d310ac596be3b536b3e4c05dd87282705615013a1d474",
-      "bytes": 1912
+      "sha256": "fd506eb4546436dd81c18185e3c04cfafcc4e398a562b6f933d314fec5cb605d",
+      "bytes": 3221
+    },
+    {
+      "path": "docs/CLASSIFICATION-EVALUATION.md",
+      "sha256": "e4d27a7503c3659dd22837421921bd0b3afa347c53342f748b3c69cb4c3f8652",
+      "bytes": 2705
     },
     {
       "path": "docs/INSTALLATION.md",
-      "sha256": "e33bb2cf772cc3b049b6633f918589aa6d6366be36b1b1193ce203aaac135811",
-      "bytes": 6975
+      "sha256": "86b95cfb423b31149dbe382cbe7327cdc547425c5ffeb2c50c1cd128ce2873a4",
+      "bytes": 8065
+    },
+    {
+      "path": "docs/PRODUCTION-READINESS-REMEDIATION-2.3.1.md",
+      "sha256": "a35fa391ed34ac52e2ca410dfe8fdaba40fe0b5da9a2b81e62387f565ff994c1",
+      "bytes": 9936
     },
     {
       "path": "docs/PRODUCTION-READINESS-REVIEW.md",
-      "sha256": "7313eb5ce87bdcd1ac89cdb42a8c51efb033d591fe8294cb8401e86d9bb5b658",
-      "bytes": 13258
+      "sha256": "1a31c8287edac01a22aaf3ac339cfdcb8ac0aee4e2f781ac20e740e9801a0caa",
+      "bytes": 16702
     },
     {
       "path": "docs/RELEASE-STATUS.md",
-      "sha256": "da80c9a61182b1d2ed00298303ac5023294efd8c8c993580f5f3da2b2c141d1e",
-      "bytes": 3403
+      "sha256": "f9ab35d7906619a89bd933fcec241e1d9b8441304d4cee3a9e5e83ca1ee8a7d9",
+      "bytes": 4166
+    },
+    {
+      "path": "docs/SECURITY-EVALUATION.md",
+      "sha256": "25fabd7b6f385a2036fded5454fee352299394c3093b94e9853b1d15852d1e1a",
+      "bytes": 2626
     },
     {
       "path": "docs/SECURITY.md",
-      "sha256": "d2c8c95b8b1fb9716cf9f25f5b51e94a9bff3873b249bc81c48888cf083b6f77",
-      "bytes": 5070
+      "sha256": "c5eb0bb6285bc622eb19edfff27402e9db35ed0ecc90f7ed8948e923eef00a25",
+      "bytes": 5930
+    },
+    {
+      "path": "docs/SKILL-PARITY-CONFLICT-AUDIT.md",
+      "sha256": "49cba29e8e8ab6c597c9654aabf6bef5a13b1ad1b3c08e78b45137d5dc0cb519",
+      "bytes": 28354
     },
     {
       "path": "docs/SOURCE-BOUNDARY.md",
-      "sha256": "c7614cab192c497b187af469a9c860c7c81a2b92697dbcce548490ea2a3b9696",
-      "bytes": 798
+      "sha256": "c08dc80a13719e956567490dbcb9fbb3ee10c2a1b264d865bcef6970b8b47813",
+      "bytes": 1621
     },
     {
       "path": "docs/STANDALONE-AGENT-PLAN.md",
-      "sha256": "956ecd5f420735171fc94ca0590168e740f59a63709a083c9ff6cd4f6dcdf4f1",
-      "bytes": 44875
+      "sha256": "69fdddb4cca30d8b12b8d0639cd54deaaad0c96233b7e5b94c5148ee98caeea1",
+      "bytes": 44965
     },
     {
       "path": "docs/VALIDATION-REPORT.md",
-      "sha256": "46d9d99029165d5c1eb746260bfd0eed974cd10e0d91ae8108ff1afb4a25556d",
-      "bytes": 2897
+      "sha256": "387f08ddea52edbc14b8b922894e460c64a7e7c77fa6d4a1adb69a19d94c7c07",
+      "bytes": 3543
     },
     {
       "path": "evals/adversarial-cases.json",
-      "sha256": "29a402c827736b8bfc56cda8ae07a0b760c3cb7020b52ba43bb5818cc61fa930",
-      "bytes": 1936
+      "sha256": "2abbcf7b579978e5163231244819eb29d2debdc316f45c89b9b82bd2c936c0a6",
+      "bytes": 3840
     },
     {
       "path": "evals/routing-cases.json",
-      "sha256": "a3713af22fb104c575cb891800a8db812569ec7c07b77551b5766359d0fabfe1",
-      "bytes": 6483
+      "sha256": "dd84fc14df46a7391d62145b7348419d5f66c926ea9853545726a8e262743bad",
+      "bytes": 17574
     },
     {
       "path": "evals/scenario-cases.json",
-      "sha256": "6364787e14840faab02df012e0cb322eee0a07be8cbbfc937ff947e500c6e392",
-      "bytes": 6355
+      "sha256": "a96e29bc183ad260cc5104e56bf0d554910580841c7cfa11499c1642ac5e654c",
+      "bytes": 17227
+    },
+    {
+      "path": "evals/skill-routing-cases.json",
+      "sha256": "5fbdc6297d6edd868ea8c3b85e58a42dcd54a3512e16446f99782a8c3b01fe39",
+      "bytes": 5490
+    },
+    {
+      "path": "README.md",
+      "sha256": "48bcab4f0ebf567ab23dd5a2286bae37b9de16680d644058b3bda83fc5309843",
+      "bytes": 5894
     },
     {
       "path": "release/TEST-RESULTS.txt",
-      "sha256": "ed49b5ddfc058f8dfaf8b0b14340043a4679d8c4fd57c65362de13c8b4a1dbd7",
-      "bytes": 718
-    },
-    {
-      "path": "skills/LEGACY-INVENTORY.md",
-      "sha256": "806f5b0a2b764bf437b4e2d4c7933c829db733fc01e30ce26a9c9c61c2493398",
-      "bytes": 4815
-    },
-    {
-      "path": "skills/REGISTRY.md",
-      "sha256": "358ee7e14db26b7a3167ab61e4b2d672ef7b90dcaa63df98a6d87a33b1ebb2a3",
-      "bytes": 9993
+      "sha256": "c6041e9f483d10dd112833db61c87c1cbfb2b437866122331badcfd3446a790c",
+      "bytes": 3619
     },
     {
       "path": "skills/agent-reach.md",
@@ -358,8 +373,8 @@
     },
     {
       "path": "skills/database-analysis.md",
-      "sha256": "cf8c07cbe6c7a58a02824c57194a627188a15da295b60cd46b20960977fa841c",
-      "bytes": 4117
+      "sha256": "1bb34120dd39c573cc021a453857326b4260c41470714d460eeec13e9b7ab1a6",
+      "bytes": 13082
     },
     {
       "path": "skills/diagnosing-bugs.md",
@@ -377,6 +392,11 @@
       "bytes": 3728
     },
     {
+      "path": "skills/LEGACY-INVENTORY.md",
+      "sha256": "73a5c7dafb31a683fa27def99b937a284a42486b4bdf101f08e436512792c3fb",
+      "bytes": 6872
+    },
+    {
       "path": "skills/nfr-review.md",
       "sha256": "d0fbae45f80bc073de570a3c1aabb722c586fd42bb53ab36d1ff32960a040abd",
       "bytes": 3532
@@ -390,6 +410,11 @@
       "path": "skills/project-planning.md",
       "sha256": "0ec8cbb9c082c9d538fb0567b4c492dba7b0a630e5178c1783de11511efadddd",
       "bytes": 3436
+    },
+    {
+      "path": "skills/REGISTRY.md",
+      "sha256": "ac695ec97a702532c6c0e9a67eb9fb51be5100c3b4a98d155de970f1550918ad",
+      "bytes": 11754
     },
     {
       "path": "skills/requirements-analysis.md",
@@ -412,6 +437,11 @@
       "bytes": 3348
     },
     {
+      "path": "skills/skill-intelligence.json",
+      "sha256": "95fa63d182db5bfbeafc91f3840a90fee0dda3a0525ca1cf1030d6d4b6c6755a",
+      "bytes": 43708
+    },
+    {
       "path": "skills/system-analysis.md",
       "sha256": "ec717fa01bb6c690a0f6e1c1cee0e013a2499b2929bee3292286596da001903f",
       "bytes": 3403
@@ -432,14 +462,54 @@
       "bytes": 3208
     },
     {
+      "path": "skills/web-research.md",
+      "sha256": "281a25c2ff66e034bafc1097ad537da098dafb91176e4d4a268e8091689e3341",
+      "bytes": 4203
+    },
+    {
+      "path": "SOUL.md",
+      "sha256": "524d5fc0aab9903f3aa2f12e4b974a23c1ca3f7aea71d33a724a120d47fafa6c",
+      "bytes": 6357
+    },
+    {
+      "path": "tools/build_manifest.py",
+      "sha256": "fbb6a9c04dc44c9ccf38d514fd643773935f75eb1ad338a12ed6e0987759ba82",
+      "bytes": 1272
+    },
+    {
+      "path": "tools/evaluate_classification.py",
+      "sha256": "357cd9a5c02f62e3f06b252a671d507a76211250f41e322248afc5ecbe17d4d2",
+      "bytes": 4067
+    },
+    {
+      "path": "tools/resolve_skills.py",
+      "sha256": "dbf374a149e09dfceb442d97c3b5619f97788544b110c5c801ec7ea1a463ba88",
+      "bytes": 14829
+    },
+    {
+      "path": "tools/test_classification_evaluation.py",
+      "sha256": "790e3c4874d852a69fdcacf9c17f73618bcf01018f964ec173b52d688d1fca00",
+      "bytes": 2463
+    },
+    {
       "path": "tools/test_scenarios.py",
-      "sha256": "864fb558c7ee41300cff934e04506888dfb291db22bf4506a92d72bd424fa042",
-      "bytes": 9239
+      "sha256": "8d036885e86516985b3e4caab1fae8e1a9eafd8f3cf609b963bb801ece1d5eaf",
+      "bytes": 13126
+    },
+    {
+      "path": "tools/test_skill_intelligence.py",
+      "sha256": "89ba3e6b28e05d17f49c1864b6178aeba1446a8f6e443a365663eaf8e7721716",
+      "bytes": 12607
     },
     {
       "path": "tools/validate_package.py",
-      "sha256": "08e6e6abc9dc6ccb83d4951a66197c68fe9e46263590df440cafbf678dfa69f6",
-      "bytes": 6359
+      "sha256": "d796843c13c37def2245e9711caf5cc193b55183184d0224f5468d35bb0e0457",
+      "bytes": 12648
+    },
+    {
+      "path": "VERSION",
+      "sha256": "ad8650bc9057d9dfd809961b69dbad640c288d809fa44437d44d83d3b118c821",
+      "bytes": 6
     },
     {
       "path": "workflows/analysis-only.md",
@@ -455,6 +525,11 @@
       "path": "workflows/blocked-task.md",
       "sha256": "f50edf75a9c1031bd9b3c65bc2ae6ff84dcb8086b4fdf5a729888d6c01869071",
       "bytes": 885
+    },
+    {
+      "path": "workflows/comprehensive-analysis.md",
+      "sha256": "f611aebf488f8e4a0aa8442ee7121a71922a9a627004a902491a07bb1b323575",
+      "bytes": 4276
     },
     {
       "path": "workflows/context-optimization.md",
@@ -512,6 +587,11 @@
       "bytes": 256
     },
     {
+      "path": "workflows/reference-ingestion.md",
+      "sha256": "b3a274a648147d8d5c715308748d8292addae3f5072c2a94e6ef010eb2a09f13",
+      "bytes": 3088
+    },
+    {
       "path": "workflows/release.md",
       "sha256": "3682172427e0ebc8ad3f01b35934c96b42e985f0d1c73f739fdd0f64cfcecccf",
       "bytes": 1656
@@ -523,13 +603,13 @@
     },
     {
       "path": "workflows/review-acceptance.md",
-      "sha256": "753e69db0e87fea4a6e5cb33c51cdf8c01ca2ebbd13265cb65ba09ec018acb91",
-      "bytes": 467
+      "sha256": "12faa56d1c51e8fc804e222dae898bd9832f451bee92e65bf97c51ff06c8bda8",
+      "bytes": 1306
     },
     {
       "path": "workflows/routing.md",
-      "sha256": "0458aec143aff9f336d27dba346a922d644c0d600aa49930750638339b865e72",
-      "bytes": 1626
+      "sha256": "97e3444f649988e069d9b1301ef252473d3b54280c582340215c9e83212c8459",
+      "bytes": 2854
     },
     {
       "path": "workflows/scope-change.md",

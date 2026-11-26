@@ -3,8 +3,7 @@
 ## Purpose
 Register an existing client folder that was manually copied into `memory/clients/`
 (e.g., from another machine or backup). Reads all existing project files, rebuilds
-the client index in `memory/memory.md`, syncs key context to claude-mem, and
-surfaces the current project status so work can resume immediately.
+the local index only when its source is current, and surfaces current project status from the canonical project records. It does not sync to a secondary memory service.
 
 ## Trigger
 Invoke when the operator says:
@@ -73,11 +72,10 @@ If a file is missing → create an empty scaffold silently, flag as `[TBC]`.
 
 ### Step 4 — Rebuild memory (Tier 0, corrected 2026-08-24 — SKL-050)
 
-1. Update **Client Index** in `memory/memory.md` — add or update the client row
-2. Write **Last Session** section in `memory/memory.md` with today's date and "Client resumed from copied folder"
+1. Update the canonical Obsidian client index only when its location and write authorization are confirmed.
+2. Record the resume event in the canonical project status/decision record when appropriate.
 3. This system runs at **Tier 0 — file memory only** (`CLAUDE.md` Memory Tiers, ADR-111).
-   claude-mem is confirmed dead — do not attempt to sync to it. Steps 1-2 above (the lane files +
-   `memory/memory.md`) **are** the durable record; there is no separate sync step. If context-mode
+   claude-mem is disabled — do not attempt to sync to it. The canonical Obsidian/project lane files are the durable record; the repository `memory/memory.md` snapshot is stale and not authoritative. If context-mode
    (`ctx_search`) is available, it may pick up this session's activity automatically, but its
    absence is not a failure and it is never the system of record.
 
@@ -121,7 +119,7 @@ Ask:
 |---|---|
 | `[name]/[name].md` missing | Rebuild from project files — prompt to confirm reconstruction |
 | Project files missing | Create empty scaffolds silently, flag all fields as `[TBC]` |
-| Client already in `memory/memory.md` | Update the index row — do not duplicate |
+| Client already in the canonical Obsidian index | Update the index row — do not duplicate |
 | Multiple clients copied at once | Register all, show combined status card per client |
 | Folder name doesn't match client record name inside | Use the folder name as the client identifier, note the mismatch |
 
@@ -132,8 +130,8 @@ Ask:
 - [ ] All client folders in `memory/clients/` detected?
 - [ ] Client record read or reconstructed?
 - [ ] All 7 project files read per project?
-- [ ] Client Index in `memory/memory.md` updated?
-- [ ] `memory/memory.md` Last Session written (this IS the durable record — Tier 0, no claude-mem step)
+- [ ] Canonical Obsidian client index checked/updated only with authorization?
+- [ ] Canonical Obsidian/project memory freshness checked; local snapshot not treated as authority
 - [ ] Status card shows open risks, tasks, and next milestone?
 - [ ] Missing files scaffolded silently?
 

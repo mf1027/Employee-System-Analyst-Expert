@@ -40,43 +40,35 @@ test('identifies native and Ollama-backed Claude/Codex sessions independently', 
 });
 
 test('classifies Ollama and Ponytail gates without manufacturing success', () => {
-  assert.equal(classifyRuntimeStatus({ provider: 'unknown', vaultVerified: true, mindmapWriteAuthorized: true }), 'UNVERIFIED');
+  assert.equal(classifyRuntimeStatus({ provider: 'unknown' }), 'UNVERIFIED');
   assert.equal(classifyRuntimeStatus({
     provider: 'ollama',
     ollama: { installed: true, serviceReachable: true, modelConfigured: true, modelInstalled: true, contextVerified: true, toolCallingVerified: true },
     hostToolsVerified: true,
     hooksVerified: true,
     ponytailVerified: true,
-    vaultVerified: true,
-    mindmapWriteAuthorized: true,
-  }), 'VERIFIED');
+  }), 'CLAIMS-CONSISTENT');
   assert.equal(classifyRuntimeStatus({
     provider: 'ollama',
     ollama: { installed: true, serviceReachable: true, modelConfigured: true, modelInstalled: true, contextVerified: false, toolCallingVerified: true },
     hostToolsVerified: true,
     hooksVerified: true,
     ponytailVerified: true,
-    vaultVerified: true,
-    mindmapWriteAuthorized: true,
   }), 'LIMITED');
   assert.equal(classifyRuntimeStatus({
     provider: 'native',
     hostToolsVerified: true,
     hooksVerified: false,
     ponytailVerified: false,
-    vaultVerified: true,
-    mindmapWriteAuthorized: false,
-  }), 'BLOCKED');
+  }), 'UNVERIFIED');
 });
 
-test('requires verified canonical skill paths before any runtime can be VERIFIED', () => {
+test('requires canonical skill paths before caller claims can be considered complete', () => {
   assert.equal(classifyRuntimeStatus({
     provider: 'native',
     hostToolsVerified: true,
     hooksVerified: true,
     ponytailVerified: true,
-    vaultVerified: true,
-    mindmapWriteAuthorized: true,
     skillPathsVerified: false,
   }), 'UNVERIFIED');
 });
@@ -88,7 +80,8 @@ test('event payload keeps four-mode identity and excludes sensitive hook fields'
     model: 'gpt-oss:20b',
     sessionId: 'session-1',
     phase: 'postflight',
-    status: 'VERIFIED',
+    status: 'CLAIMS-CONSISTENT',
+    mindmapStatus: 'NOT_AUTHORIZED',
     prompt: 'do not store this',
     toolResponse: { secret: 'do not store this' },
   });
@@ -97,10 +90,11 @@ test('event payload keeps four-mode identity and excludes sensitive hook fields'
   assert.equal(event.launch_mode, 'ollama-native');
   assert.equal(event.model, 'gpt-oss:20b');
   assert.equal(event.phase, 'postflight');
-  assert.equal(event.overall_status, 'VERIFIED');
+  assert.equal(event.overall_status, 'CLAIMS-CONSISTENT');
   assert.equal('prompt' in event, false);
   assert.equal('toolResponse' in event, false);
   assert.deepEqual(sanitizeEvent(event), event);
+  assert.equal(buildRuntimeEvent({ host: 'codex', provider: 'native', phase: 'test', status: 'VERIFIED' }).overall_status, 'CLAIMED-VERIFIED');
 });
 
 test('does not fall back when an explicit vault root is unavailable', () => {
@@ -146,8 +140,8 @@ test('passive session-end telemetry remains blocked without evidence', () => {
 
   assert.equal(event.phase, 'session_end');
   assert.equal(event.ponytail_status, 'UNVERIFIED');
-  assert.equal(event.mindmap_status, 'BLOCKED');
-  assert.equal(event.overall_status, 'BLOCKED');
+  assert.equal(event.mindmap_status, 'NOT_REQUESTED');
+  assert.equal(event.overall_status, 'UNVERIFIED');
   assert.equal(event.evidence, null);
 });
 
@@ -156,14 +150,14 @@ test('records an event and atomically projects the latest status into the mind-m
   const architecture = path.join(vault, '01 - Application Architecture');
   fs.mkdirSync(architecture, { recursive: true });
   fs.writeFileSync(path.join(architecture, 'Agent Tooling Mindmap.md'), '# Agent Tooling Mindmap\n\n## Change log\n', 'utf8');
-  const event = buildRuntimeEvent({ host: 'codex', provider: 'native', phase: 'postflight', status: 'VERIFIED' });
+  const event = buildRuntimeEvent({ host: 'codex', provider: 'native', phase: 'postflight', status: 'CLAIMS-CONSISTENT', mindmapStatus: 'AUTHORIZED' });
   appendEvent(vault, event);
   updateMindmap(vault, event);
   const ledger = fs.readFileSync(path.join(architecture, 'Agent Runtime Sync Ledger.jsonl'), 'utf8');
   const map = fs.readFileSync(path.join(architecture, 'Agent Tooling Mindmap.md'), 'utf8');
   assert.equal(JSON.parse(ledger).provider, 'native');
   assert.match(map, /codex\/native/);
-  assert.match(map, /Overall status: VERIFIED/);
+  assert.match(map, /Runtime status: CLAIMS-CONSISTENT/);
 });
 
 function verifiedCodexOllamaEvidence(model = 'qwen3-coder:30b') {
@@ -198,13 +192,13 @@ function createVault() {
   return vault;
 }
 
-test('requires matching independently verified evidence instead of caller-supplied VERIFIED status', () => {
+test('labels caller-supplied evidence as claims, never independent verification', () => {
   const evidence = verifiedCodexOllamaEvidence();
   const result = validateRuntimeEvidence({ host: 'codex', provider: 'ollama', model: 'qwen3-coder:30b' }, evidence);
   assert.equal(result.hostToolsVerified, true);
   assert.equal(result.hooksVerified, true);
   assert.equal(result.ponytailVerified, true);
-  assert.equal(result.ollama.status, 'VERIFIED');
+  assert.equal(result.summary.ollama.status, 'CLAIMED-VERIFIED');
   assert.equal('prompt' in result.summary, false);
   assert.equal('tool_response' in result.summary, false);
 
@@ -241,7 +235,7 @@ test('dry-run validates evidence without appending a ledger event or changing th
     '--model', 'qwen3-coder:30b', '--vault', vault, '--evidence', evidencePath,
   ], { writeOutput: (line) => output.push(line) });
 
-  assert.equal(result.event.overall_status, 'VERIFIED');
+  assert.equal(result.event.overall_status, 'CLAIMS-CONSISTENT');
   assert.equal(fs.existsSync(path.join(architecture, 'Agent Runtime Sync Ledger.jsonl')), false);
   assert.equal(fs.readFileSync(mapPath, 'utf8'), before);
   assert.equal(output.length, 1);
@@ -258,12 +252,26 @@ test('postflight leaves the mind-map byte-identical until --authorize-mindmap is
   const args = ['--postflight', '--host', 'codex', '--provider', 'ollama', '--model', 'gpt-oss:20b', '--vault', vault, '--evidence', evidencePath];
 
   const blocked = await runRuntimeSync(args, { writeOutput: () => {} });
-  assert.equal(blocked.event.overall_status, 'BLOCKED');
+  assert.equal(blocked.event.overall_status, 'CLAIMS-CONSISTENT');
+  assert.equal(blocked.event.mindmap_projection_status, 'NOT_AUTHORIZED');
   assert.equal(fs.readFileSync(mapPath, 'utf8'), before);
 
   const authorized = await runRuntimeSync([...args, '--authorize-mindmap'], { writeOutput: () => {} });
-  assert.equal(authorized.event.overall_status, 'VERIFIED');
-  assert.match(fs.readFileSync(mapPath, 'utf8'), /Overall status: VERIFIED/);
+  assert.equal(authorized.event.overall_status, 'CLAIMS-CONSISTENT');
+  assert.equal(authorized.event.mindmap_projection_status, 'AUTHORIZED');
+  assert.match(fs.readFileSync(mapPath, 'utf8'), /Runtime status: CLAIMS-CONSISTENT/);
+});
+
+test('runtime claim status is independent of vault projection authorization', () => {
+  const evidence = verifiedCodexOllamaEvidence();
+  const identity = { host: 'codex', provider: 'ollama', model: 'qwen3-coder:30b' };
+  const unapproved = eventFromInput({ ...identity, command: 'postflight', authorizeMindmap: false }, {}, { evidence, skillPathsVerified: true });
+  const approved = eventFromInput({ ...identity, command: 'postflight', authorizeMindmap: true }, {}, { evidence, skillPathsVerified: true });
+  assert.equal(unapproved.runtime_status, 'CLAIMS-CONSISTENT');
+  assert.equal(approved.runtime_status, 'CLAIMS-CONSISTENT');
+  assert.equal(unapproved.mindmap_projection_status, 'NOT_AUTHORIZED');
+  assert.equal(approved.mindmap_projection_status, 'AUTHORIZED');
+  assert.notEqual(unapproved.runtime_status, 'VERIFIED');
 });
 
 test('vault verification reports vault readiness, not live runtime verification', async () => {

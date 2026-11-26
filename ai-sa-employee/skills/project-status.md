@@ -9,10 +9,10 @@ Invoke when the operator says "what are we working on", "status update",
 "what's in progress", "where are we?", or "give me a status report".
 
 ## Minimum context required
-None — reads `memory/memory.md` and active client records.
+None — reads current canonical Obsidian/project records and active client records.
 
 ## Steps
-1. Read `memory/memory.md` → Working Memory section (current sprint/tasks).
+1. Read the canonical project status, plan, and task records for the current sprint/tasks.
 2. Read each active client record in `memory/clients/` for project status.
 3. Read each active project's `plan.md` and `risks.md` to surface RED/AMBER items.
 4. Report grouped by RAG colour. Flag any task blocked for longer than expected.
@@ -51,4 +51,4 @@ Next steps:
 ```
 
 ## Failure exit
-"No active work found in memory/memory.md or client records."
+"No active work found in current canonical project or client records."

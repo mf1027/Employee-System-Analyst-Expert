@@ -3,7 +3,7 @@ node_modules/
 .venv-soup/
 .tools/soup/
 
-# Project-local episodic memory (stays on machine, never pushed)
+# Legacy claude-mem store (disabled; preserve local residue only, never pushed)
 .claude-mem/
 
 # Runtime memory files (fresh on every clone)
@@ -11,7 +11,10 @@ node_modules/
 .claude/ONBOARDING.md
 .claude/memory/
 
-# Client data — confidential, never pushed
+# Local operator/client memory — confidential, never pushed
+memory/memory.md
+memory/improvement-backlog.md
+memory/archive/
 memory/clients/
 
 # Client source documents — temp drop zone and per-client reference
@@ -49,3 +52,6 @@ tmp-*.txt
 .DS_Store
 Thumbs.db
 *.log
+
+# Local Python environment
+.venv/

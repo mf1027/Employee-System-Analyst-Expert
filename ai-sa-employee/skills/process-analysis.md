@@ -18,7 +18,7 @@ If missing: ask which process and which client/project.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md` — domain context,
+1. Read current canonical Obsidian/project memory and the relevant client lane — domain context,
    glossary, known pain points.
 2. Read the project's `requirements.md` — any requirements that reference this process.
 3. **Official vs real process check** — before mapping, ask: "Is the process I'm

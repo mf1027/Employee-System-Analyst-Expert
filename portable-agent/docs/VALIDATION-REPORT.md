@@ -1,43 +1,47 @@
-# Validation report — reconstructed core
+# Validation Report — 2.3.1
 
-## v2.1.0 validation results (2026-11-25)
+**Validation date:** 2026-11-26
+**Scope:** v2.3.0 source baseline, independent production-readiness review, targeted 2.3.1 remediation, sandbox tests and fresh release extraction.
 
-- `python tools/validate_package.py`: PASS (109 manifest entries, 21 canonical skills with depth/section/anti-duplication checks, 16 routes, 63 legacy entries).
-- `python -m unittest tools.test_scenarios -v`: PASS (23 tests, including `test_canonical_skill_bodies_are_not_hollow_stubs`).
-- `python -m compileall -q tools`: PASS.
+## Parent repository regression suite
 
-### Skill body depth verification
+- `npm test`: **PASS — 73 Node tests, 0 failed**.
+- `python -m unittest discover -s scripts -p 'test_backup.py' -v`: **PASS — 4 tests**.
+- Bash syntax: **PASS** for every packaged `.sh` script.
+- Hook simulation: **PASS** — reminder output contains no permission decision; read marker sanitizes session IDs.
+- Backup lifecycle: **PASS** — manifest/hash/CRC verification, disposable restore, successful retention and failed-verification preservation.
+- Release packager: **PASS** — local/private data and quarantined red-team payload excluded; ZIP manifest and hashes verified.
 
-All 21 canonical skills pass new depth checks:
-- Minimum depth: 47 lines, 2,630 chars (agent-reach).
-- Maximum depth: 73 lines, 4,043 chars (diagnosing-bugs/database-analysis).
-- Average: 59 lines, 3,416 chars per skill.
-- All 21 skills have 7/7 required sections (Purpose, When to use, Prerequisites, Procedure, Output contract, Safety/approval gates, Verification).
-- No skill body is a duplicate of its REGISTRY.md description (anti-duplication check PASS).
+## Portable-agent validation
 
-### Security documentation
+- `python tools/validate_package.py`: **PASS** — 22 canonical skills, 30 natural-language routes, 63 historical parity entries, adapter pointers, fixtures, path containment, manifest and checksums.
+- `python -m unittest discover -s tools -p 'test_*.py' -v`: **PASS — 61 tests**.
+- `python -m compileall -q tools`: **PASS**.
+- Route-to-resolver parity: **PASS — 30/30**.
+- Adversarial fixture inventory: **16 cases structurally validated**; no live model execution.
 
-`docs/SECURITY.md` expanded from 3 lines to 54 lines:
-- Threat model with 4 trust boundaries.
-- 7 threat categories with specific AGENT.md section references.
-- 8 non-negotiable safety controls.
-- Repository-level security notes.
+## 2.3.1 remediation evidence
 
-## v2.0.0 validation results (prior)
+- Shell files normalized to LF; syntax gate added to default tests.
+- PreToolUse memory reminder no longer returns `permissionDecision: allow`.
+- Runtime status now reports `CLAIMS-CONSISTENT` at most; caller-supplied claims are not represented as independent `VERIFIED`. Mind-map projection authorization is a separate field.
+- Node install is lockfile-driven (`npm ci`); exact Python package versions are installed only into `.venv`.
+- Backup archives carry per-file SHA-256 manifests and are verified before retention pruning.
+- Godmode moved outside active host skill-discovery roots and is omitted from production release archives.
+- Local operator/client memory and other private workspace data are excluded from production release archives; the stale working-memory snapshot is marked and not distributed.
 
-- `python tools/validate_package.py`: PASS (109 manifest entries, 21 canonical skills, 16 routes, 63 legacy entries).
-- `python tools/test_scenarios.py`: PASS (22 tests).
-- `python -m compileall -q tools`: PASS.
-- Fresh ZIP archive extraction followed by `python tools/validate_package.py`: PASS.
+## Dependency-installation limitation
 
-## Validation boundaries
+- `npm ci --offline` could not complete because `commander@14.0.3` was not in the sandbox npm cache (`ENOTCACHED`) and registry access was unavailable.
+- Python dependency installation into a clean venv was not run because package registry access was unavailable. Versions are exact-pinned; wheel hashes are not yet locked.
 
-These are offline structural/contract checks. They do not invoke a model, prove live host discovery, guarantee instruction compliance, or certify host integration.
+- Fresh release ZIP: **523 packaged files + release manifest; 524 ZIP members**. CRC, manifest, SHA-256, credential-pattern scan, and fresh extraction: **PASS**. Post-extraction suites: 73 Node + 4 backup Python + 61 portable Python tests; portable validator: PASS.
 
-Static package validation checks canonical skill existence, registry links, adapter pointers, inventory count, package hashes, format hygiene, links and fixture structure. Scenario tests exercise deterministic contract/fixture structure, including optional capability fallback documentation, host support claim boundaries, and skill body depth/anti-duplication. They do not measure model behavior.
+## Not tested / not certified
 
-Official host documentation was reviewed for Claude Code, VS Code GitHub Copilot and Codex. Local CLI versions observed: Claude Code 2.1.317 and Codex 0.154.0; VS Code was present but Copilot/Claude extensions were not identified or tested. No host/runtime/model smoke test was run. Root `AGENTS.md` is a bootstrap pointer to root `AGENT.md`; live host discovery remains untested, so use explicit manual loading unless discovery is confirmed in the active host.
+- No live LLM was invoked to classify natural-language tasks or complete realistic analyst workflows.
+- No Claude Code, Codex, Hermes or VS Code host was used to certify instruction/skill discovery or first-write permission prompts.
+- Host permissions, sandboxing, prompt-injection resilience, actual Obsidian persistence, real delegation, Windows PowerShell behavior, Git remote history, database access and deployment boundaries remain unverified.
+- Passing instruction/fixture tests do not prove model obedience or prevent host-level tool execution.
 
-## Not tested
-
-Live discovery/invocation in Claude Code CLI or extension, Codex, VS Code GitHub Copilot, Hermes, model routing outcomes, persistence/session resume, and external tool capabilities were not tested. Fresh archive extraction was tested; live host setup from the archive was not.
+See [the 2.3.1 remediation report](PRODUCTION-READINESS-REMEDIATION-2.3.1.md) for the full RCA/GAP reconciliation and remaining owner gates.

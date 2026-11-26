@@ -14,7 +14,7 @@ allowed-tools:
 
 # Plan Analysis
 
-Use this agent-local skill from the Employee System Analyst Expert workspace. It analyzes and plans work for any client project managed under `memory/clients/`; it does not install or copy the canonical skill globally, copy itself into a client repository, or modify application code. The only allowed Codex-facing global surface is the thin bridge at `C:\Users\Msi\.codex\skills\plan-analysis`, which loads this canonical source at runtime and is not the source of truth.
+Use this agent-local skill from the Employee System Analyst Expert workspace. It analyzes and plans work for any client project managed under `memory/clients/`; it does not install or copy the canonical skill globally, copy itself into a client repository, or modify application code. The only allowed Codex-facing global surface is the thin bridge at `%USERPROFILE%\.codex\skills\plan-analysis`, which loads this canonical source at runtime and is not the source of truth.
 
 ## Scope and invocation
 

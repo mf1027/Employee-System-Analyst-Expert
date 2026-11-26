@@ -55,7 +55,7 @@ If missing: ask which client/project and what the document should contain.
    - SRS / PRD / BRD → `requirements.md` + `decisions.md` + stakeholder notes
    - SDD / Architecture → `decisions.md` + ADRs + `requirements.md`
    - Project plan / tracker → `plan.md` + `risks.md`
-   - Status report → `plan.md` + `risks.md` + recent `memory/memory.md` entries
+   - Status report → `plan.md` + `risks.md` + current canonical Obsidian/project memory entries
 
 4. **Run Understanding Check.** Confirm document title, audience, sections, and
    output path before generating.
@@ -67,8 +67,7 @@ If missing: ask which client/project and what the document should contain.
    captured by `backup.ps1`). **Fallback:** if the document has no client/project context
    (an ad-hoc or workspace-level doc), use the repo-root `deliverables/documents/` instead.
 
-6. **Log the deliverable.** Add a `KB-` entry to claude-mem:
-   `category:deliverable source:[path] client:[name] project:[name]`
+6. **Log the deliverable.** Add a source-backed `KB-` entry to the canonical project memory lane, including the source path, client, and project.
 
 ---
 
@@ -131,6 +130,6 @@ the document as a `.md` file in `memory/clients/[client]/[project]/deliverables/
 - [ ] Source content gathered from correct memory lane files
 - [ ] Document type and audience confirmed
 - [ ] Deliverable saved to `memory/clients/[client]/[project]/deliverables/documents/` (or repo-root `deliverables/` fallback for non-client docs)
-- [ ] KB- entry logged to claude-mem with path and client/project tags
+- [ ] KB- entry recorded in the canonical project memory lane with source path and client/project tags
 - [ ] Triple-lens applied to extracted content (REQ-/RISK-/REC- auto-logged)
 - [ ] Engine dependency handled gracefully if LibreOffice missing (setup.ps1 fixes it)

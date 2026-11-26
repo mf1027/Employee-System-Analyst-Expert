@@ -42,7 +42,7 @@ expected, not a failure.
 
 ---
 
-## The 7 Questions
+## The 10 Questions
 
 Ask ALL of these for every entity being designed/restructured. Do not skip any.
 Use the ingested schema to ask SPECIFIC questions (name actual tables and columns),

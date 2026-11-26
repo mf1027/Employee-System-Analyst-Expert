@@ -18,8 +18,7 @@ If missing: run gather-requirements first.
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md`. Search claude-mem:
-   `mem search "[project] design decisions"` to retrieve prior architecture knowledge.
+1. Consult current canonical Obsidian/project memory and the project decision records for prior architecture knowledge. Do not invoke the disabled claude-mem integration.
 2. Read the project's `requirements.md` (confirmed P0 scope), `stakeholders.md`
    (constraints, non-functional expectations), `risks.md`, and `database.md`.
 3. **NFR → design mapping** — extract all `REQ-NF` entries from `requirements.md`.

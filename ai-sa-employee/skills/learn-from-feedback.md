@@ -2,8 +2,8 @@
 
 ## Purpose
 Capture feedback — a client reply, a stakeholder note, a UAT finding, or a
-post-incident review — into **claude-mem** with the same depth enforcement as
-`end-of-task`, so the system learns from real outcomes without bloating memory.md.
+post-incident review — into **canonical project memory** with the same depth enforcement as
+`end-of-task`, so the system learns from real outcomes without duplicating canonical project records.
 
 ## Trigger
 Invoke when the operator says "the client said X", "got feedback on [task]",
@@ -15,17 +15,16 @@ Invoke when the operator says "the client said X", "got feedback on [task]",
 The trigger is always manual — the operator provides the feedback.
 
 ## Steps
-1. Search claude-mem for prior lessons on this topic: `mem search "[feedback topic]"` —
-   check for patterns before writing.
+1. Review the relevant project lesson and decision records for patterns before writing.
 2. Read the relevant client record at `memory/clients/[name].md` for context.
 3. Interpret the feedback: what does it reveal? What was the underlying cause?
 4. Compose a lesson entry with the **depth check** — must include root cause AND
    lesson-learned. Rewrite if shallow.
-5. Store in claude-mem via `memory_add`:
+5. Store in canonical project memory via approved project-memory update:
    - **Title:** `Feedback — [topic] — [YYYY-MM-DD]`
    - **Content:** source + root cause + lesson (what to do differently)
    - **Tags:** `type:lesson`, `type:feedback`, `client:[name]`, `project:[name]`
-6. Run the same pattern-surfacing check as `end-of-task`: search claude-mem for
+6. Run the same pattern-surfacing check as `end-of-task`: search canonical project memory for
    3+ similar root causes → ask whether to update the relevant skill.
 7. If the feedback reveals a new risk, flag it for addition to the project's
    `risks.md` as a new `RISK-` entry.
@@ -36,7 +35,7 @@ FEEDBACK CAPTURED
 Client/Project: [name / name]
 Related to: [task or deliverable]
 
-Lesson stored in claude-mem:
+Lesson stored in canonical project memory:
   Title: Feedback — [topic] — [YYYY-MM-DD]
   Source: [client / stakeholder / UAT / other]
   Root cause: [specific cause]

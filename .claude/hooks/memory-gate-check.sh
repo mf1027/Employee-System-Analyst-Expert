@@ -1,28 +1,13 @@
 #!/usr/bin/env bash
-# PreToolUse(Write|Edit|MultiEdit) hook for SKL-045: session-start memory
-# gate. Non-blocking -- fires a one-time reminder per session if
-# memory/memory.md hasn't been read yet, per CLAUDE.md's hard gate
-# (skipped silently twice before: SKL-044 and its 2026-08-21 recurrence).
+# PreToolUse(Write|Edit|MultiEdit): one-time session reminder only.
+# No permissionDecision is emitted; the host retains its normal approval flow.
+set -euo pipefail
 IN=$(cat)
-SID=$(echo "$IN" | jq -r '.session_id // "default"')
-mkdir -p ".claude/memory/gate"
-
-if [ -f ".claude/memory/gate/${SID}.read" ]; then
-  exit 0
-fi
-if [ -f ".claude/memory/gate/${SID}.reminded" ]; then
-  exit 0
-fi
-touch ".claude/memory/gate/${SID}.reminded"
-
-MSG='Reminder (session-start gate, SKL-045): memory/memory.md has not been read yet this session. Per this repos CLAUDE.md hard gate, read it (plus the relevant memory/clients/[client].md) before this deliverable goes further -- this has been skipped silently twice before (SKL-044) at real cost. This is a one-time reminder, not a block.'
-
-jq -n --arg msg "$MSG" '{
-  systemMessage: $msg,
-  hookSpecificOutput: {
-    hookEventName: "PreToolUse",
-    permissionDecision: "allow",
-    additionalContext: $msg
-  }
-}'
-exit 0
+SID=$(printf '%s' "$IN" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{let v={};try{v=JSON.parse(s)}catch{};process.stdout.write(String(v.session_id||"default").replace(/[^A-Za-z0-9_-]/g,""))})')
+[ -n "$SID" ] || SID=default
+GATE_DIR=".claude/memory/gate"
+mkdir -p "$GATE_DIR"
+[ -f "$GATE_DIR/${SID}.reminded" ] && exit 0
+touch "$GATE_DIR/${SID}.reminded"
+MSG='Reminder (session-start gate): read the current canonical memory source and relevant project decision records before making changes. This is a reminder only; the host permission system remains responsible for approving or denying the tool call.'
+printf '%s' "$MSG" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify({systemMessage:s,hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:s}})))'

@@ -1,23 +1,24 @@
 {
   "name": "ai-sa-employee",
-  "version": "1.0.0",
+  "version": "2.3.1",
   "description": "AI System Analyst / Architect / PM Employee",
   "private": true,
   "scripts": {
-    "test": "npm run test:plan-analysis && npm run test:ollama-setup && npm run test:runtime-sync && npm run test:soup-setup",
+    "test": "npm run test:plan-analysis && npm run test:ollama-setup && npm run test:runtime-sync && npm run test:soup-setup && npm run test:security-boundary && npm run test:backup && npm run test:packaging",
     "test:plan-analysis": "node --test .claude/skills/plan-analysis/scripts/validate-artifacts.test.mjs",
     "test:ollama-setup": "node --test scripts/ollama-setup.test.mjs",
     "test:runtime-sync": "node --test scripts/runtime-sync.test.mjs",
     "test:soup-setup": "node --test scripts/soup-setup.test.mjs",
     "verify:ollama": "node scripts/verify-ollama-runtime.mjs",
-    "verify:soup": "node scripts/soup-setup.mjs"
+    "verify:soup": "node scripts/soup-setup.mjs",
+    "test:security-boundary": "node --test scripts/skill-security-boundary.test.mjs",
+    "test:backup": "python -m unittest scripts.test_backup -v",
+    "test:packaging": "node --test scripts/packaging.test.mjs"
   },
   "dependencies": {
-    "claude-mem": "latest",
-    "context-mode": "latest",
-    "@opendataloader/pdf": "latest"
+    "@opendataloader/pdf": "2.4.7"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.19.0"
   }
 }

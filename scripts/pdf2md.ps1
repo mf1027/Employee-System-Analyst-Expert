@@ -9,7 +9,7 @@
 #
 # Converter priority:
 #   1. @opendataloader/pdf  (installed in node_modules - primary, best quality)
-#   2. pypdf                (pip install pypdf - fallback, plain text extraction only)
+#   2. pypdf                (project .venv fallback, plain text extraction only)
 #
 # Output: <name>.md next to each source PDF (unless -OutputFile is given for a single file).
 # After conversion: put the .md in reference/ (or ingest from pdf-source/) then run ingest-reference.
@@ -32,6 +32,8 @@ function Write-WARN { param($msg) Write-Host "[WARN] $msg" -ForegroundColor Yell
 function Write-INFO { param($msg) Write-Host "       $msg" -ForegroundColor Gray }
 
 $root      = Split-Path $PSScriptRoot -Parent
+$pythonCmd = Join-Path $root ".venv\Scripts\python.exe"
+if (-not (Test-Path $pythonCmd)) { $pythonCmd = $null }
 $pdfSource = Join-Path $root "pdf-source"
 $childArgs = @{ Filter = "*.pdf"; File = $true }
 if ($Recurse) { $childArgs.Recurse = $true }
@@ -107,10 +109,11 @@ $script:usedFallback = $false
 function Test-Pypdf {
     if (-not $script:pypdfChecked) {
         $script:pypdfChecked = $true
+        if (-not $pythonCmd) { return $false }
         # $ErrorActionPreference = "Stop" causes PowerShell 5.1 to turn native
         # stderr into a terminating NativeCommandError — temporarily suspend it.
         $prev = $ErrorActionPreference; $ErrorActionPreference = "SilentlyContinue"
-        try { python -c "import pypdf" 2>&1 | Out-Null } catch {}
+        try { & $pythonCmd -c "import pypdf" 2>&1 | Out-Null } catch {}
         $script:pypdfReady = ($LASTEXITCODE -eq 0)
         $ErrorActionPreference = $prev
         if ($script:pypdfReady) {
@@ -145,7 +148,7 @@ function Convert-OnePdf {
     }
     if (Test-Pypdf) {
         $prev = $ErrorActionPreference; $ErrorActionPreference = "SilentlyContinue"
-        try { python $tempPy $inputAbs $outPath 2>&1 | Out-Null } catch {}
+        try { & $pythonCmd $tempPy $inputAbs $outPath 2>&1 | Out-Null } catch {}
         $ErrorActionPreference = $prev
         if (Test-Path $outPath) { $script:usedFallback = $true; return "pypdf" }
     }
@@ -176,7 +179,7 @@ if ($converted -eq 0 -and -not $odlAvailable -and -not $script:pypdfReady) {
     Write-Host ""
     Write-FAIL "No converter available."
     Write-Host "    Primary:  npm install   (installs @opendataloader/pdf in node_modules)" -ForegroundColor Yellow
-    Write-Host "    Fallback: pip install pypdf" -ForegroundColor Yellow
+    Write-Host "    Fallback: run scripts\setup.ps1 to create the project .venv" -ForegroundColor Yellow
     Write-Host ""
     exit 1
 }

@@ -28,11 +28,11 @@ Write-Step "Checking prerequisites"
 # Node.js >= 20
 try {
     $nodeVer = node --version 2>&1
-    $nodeMajor = [int]($nodeVer -replace 'v(\d+)\..*', '$1')
-    if ($nodeMajor -ge 20) {
+    $nodeVersion = [version]($nodeVer.TrimStart('v').Split('-')[0])
+    if ($nodeVersion -ge [version]'20.19.0') {
         Write-OK "Node.js $nodeVer"
     } else {
-        Write-FAIL "Node.js $nodeVer detected - need >= 20. Get it: https://nodejs.org"
+        Write-FAIL "Node.js $nodeVer detected - need >= 20.19.0. Get it: https://nodejs.org"
     }
 } catch {
     Write-FAIL "Node.js not found. Get it: https://nodejs.org"
@@ -73,46 +73,28 @@ if ($script:failed) {
 
 # -- 2. Node dependencies ------------------------------------------------------
 
-Write-Step "Installing Node.js dependencies (npm install)"
+Write-Step "Installing locked Node.js dependencies (npm ci)"
 Set-Location $root
-npm install
-if ($LASTEXITCODE -ne 0) {
-    Write-FAIL "npm install failed"
-    exit 1
-}
-Write-OK "node_modules ready (claude-mem + context-mode + @opendataloader/pdf included)"
-
-# -- Verify @opendataloader/pdf binary -----------------------------------------
+npm ci
+if ($LASTEXITCODE -ne 0) { throw "npm ci failed" }
+Write-OK "locked Node.js dependencies ready"
 
 $odlBin = Join-Path $root "node_modules\.bin\opendataloader-pdf"
-if (Test-Path $odlBin) {
-    Write-OK "@opendataloader/pdf binary ready"
-} else {
-    Write-WARN "@opendataloader/pdf binary not found - pdf2md.ps1 will fall back to pypdf"
-}
+if (Test-Path $odlBin) { Write-OK "@opendataloader/pdf binary ready" }
+else { Write-WARN "@opendataloader/pdf binary not found - pdf2md.ps1 will fall back to pypdf" }
 
-# -- 3. Python dependencies ----------------------------------------------------
+# -- 3. Isolated Python document dependencies ---------------------------------
 
-Write-Step "Installing Python dependencies"
+Write-Step "Installing pinned Python document dependencies into .venv"
 try {
-    pip install chromadb --quiet | Out-Null
-    $chromaVer = python -c "import chromadb; print(chromadb.__version__)"
-    Write-OK "chromadb $chromaVer"
+    python -m venv (Join-Path $root ".venv")
+    if ($LASTEXITCODE -ne 0) { throw "python -m venv failed" }
+    $venvPython = Join-Path $root ".venv\Scripts\python.exe"
+    & $venvPython -m pip install --disable-pip-version-check -r (Join-Path $root "requirements-docs.txt") --quiet
+    if ($LASTEXITCODE -ne 0) { throw "venv dependency install failed" }
+    Write-OK "pinned document dependencies installed in .venv"
 } catch {
-    Write-WARN "chromadb install failed - semantic memory search will fall back to keyword mode"
-}
-
-# Document-skills packages (docx/pptx/xlsx/pdf generation + reading)
-try {
-    pip install defusedxml lxml openpyxl pdf2image pdfplumber pillow pypdf --quiet | Out-Null
-    python -c "import defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf" 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-OK "document-skills Python packages (7) ready"
-    } else {
-        Write-WARN "some document-skills packages failed to import - docx/pptx/xlsx/pdf skills may not work"
-    }
-} catch {
-    Write-WARN "document-skills package install failed - docx/pptx/xlsx/pdf skills may not work"
+    Write-WARN "Python document dependencies unavailable - no global Python packages were changed: $_"
 }
 
 # -- 3b. Document engines: LibreOffice + Poppler + Java (Phase 2) ---------------
@@ -172,10 +154,8 @@ if (Get-Command java -ErrorAction SilentlyContinue) {
 Write-Step "Checking Claude Code plugins"
 
 $ipPath = "$env:USERPROFILE\.claude\plugins\installed_plugins.json"
-$claudeMemKey   = "claude-mem@thedotmack"
 $contextModeKey = "context-mode@context-mode"
 $ponytailKey    = "ponytail@ponytail"
-$claudeMemOK    = $false
 $contextModeOK  = $false
 $ponytailClaudeOK = $false
 $ponytailCodexOK  = $false
@@ -198,7 +178,6 @@ if (Test-Path $claudeSettingsPath) {
 if (Test-Path $ipPath) {
     $ip = Get-Content $ipPath -Raw | ConvertFrom-Json
     $pluginNames = $ip.plugins.PSObject.Properties.Name
-    $claudeMemOK   = $pluginNames -contains $claudeMemKey
     $contextModeOK = $pluginNames -contains $contextModeKey
     $ponytailClaudeOK = $pluginNames -contains $ponytailKey
     $duplicateClaudePonytail = @($pluginNames | Where-Object { $_ -match '(?i)ponytail' -and $_ -ne $ponytailKey })
@@ -257,8 +236,6 @@ if ($codexCLIAvailable) {
     } catch { Write-WARN "Could not inspect Codex plugin marketplaces - verify with: codex plugin marketplace list" }
 }
 
-if ($claudeMemOK)   { Write-OK "claude-mem plugin installed" }
-else                { Write-WARN "claude-mem NOT installed" }
 
 if ($contextModeOK) { Write-OK "context-mode plugin installed" }
 else                { Write-WARN "context-mode NOT installed" }
@@ -289,13 +266,9 @@ if ($claudeProjectTrustOK -or $codexProjectTrustOK) {
 Write-WARN "Ponytail hook trust verified by fresh-host smoke: NOT VERIFIED by setup"
 Write-INFO "Review any first-run lifecycle-hook prompt in each host. Setup never bypasses hook trust."
 
-if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
+if (-not $contextModeOK -or -not $ponytailClaudeOK -or -not $ponytailCodexOK) {
     Write-Host ""
     Write-Host "    Open Claude Code in this directory and run:" -ForegroundColor White
-    if (-not $claudeMemOK) {
-        Write-Host "      /plugin marketplace add thedotmack/claude-mem" -ForegroundColor Yellow
-        Write-Host "      /plugin install claude-mem@thedotmack" -ForegroundColor Yellow
-    }
     if (-not $contextModeOK) {
         Write-Host "      /plugin marketplace add mksglu/context-mode" -ForegroundColor Yellow
         Write-Host "      /plugin install context-mode@context-mode" -ForegroundColor Yellow
@@ -409,7 +382,7 @@ Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "  Setup complete" -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 
-if (-not $claudeMemOK -or -not $contextModeOK -or -not $ponytailRuntimeOK -or -not $claudeCLIAvailable -or -not $codexCLIAvailable -or
+if (-not $contextModeOK -or -not $ponytailRuntimeOK -or -not $claudeCLIAvailable -or -not $codexCLIAvailable -or
     -not $ponytailHooksTrusted -or
     -not $ollamaInstalled -or -not $ollamaCapabilityOK -or
     (($InstallSoup -or $InstallSoupTraining) -and $soupExit -ne 0)) {

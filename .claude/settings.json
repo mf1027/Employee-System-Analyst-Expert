@@ -1,7 +1,4 @@
 {
-  "env": {
-    "CLAUDE_MEM_DATA_DIR": "./.claude-mem"
-  },
   "permissions": {
     "allow": [],
     "additionalDirectories": []
@@ -29,15 +26,6 @@
       }
     ],
     "PostToolUse": [
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/memory-gate-mark-read.sh"
-          }
-        ]
-      },
       {
         "matcher": "Read|Write|Edit|MultiEdit|Bash|mcp__.*",
         "hooks": [

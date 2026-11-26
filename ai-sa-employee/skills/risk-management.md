@@ -19,8 +19,7 @@ If missing: ask for the project. Risk identification can start from a scope desc
 
 ## Steps
 
-1. Read `memory/memory.md` and `memory/clients/[client-name].md`. Search claude-mem:
-   `mem search "[project] risks"` to retrieve prior RAID knowledge.
+1. Consult current canonical Obsidian/project memory and the client lane files for prior RAID knowledge. Do not invoke the disabled claude-mem integration.
 2. Read the project's `risks.md` (existing RAID log), `requirements.md`, `plan.md`,
    and `database.md` (DB-specific risks).
 3. **RISKS — Identify new risks** across all categories:

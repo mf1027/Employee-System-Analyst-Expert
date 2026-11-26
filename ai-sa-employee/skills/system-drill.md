@@ -19,15 +19,11 @@ None. The drill is fully self-contained and uses canned answers.
 ## Drill sequence
 
 Use client name `_drill` (leading underscore = synthetic, never a real client).
-Run every step; record PASS/FAIL per step; do not stop on first failure.
+Run every step in a disposable copy of the repository with synthetic data only; record PASS/FAIL per step; do not stop on first failure. Never run this drill against a live client folder or the canonical Obsidian vault.
 
-> **Shell-path guardrail (Windows-critical).** Run every shell command with **absolute paths
-> from the repo root**. **Never `cd` into `memory/clients/*`** (or any subfolder of it). Because
-> `CLAUDE_MEM_DATA_DIR=./.claude-mem` is CWD-relative, a shell whose working directory sits inside
-> a client folder makes claude-mem spawn a **project-local `.claude-mem` store there** — which the
-> live claude-mem process then holds open, so it cannot be deleted mid-session on Windows (leaves
-> un-cleanable residue at Step 7). Use file tools (Read/Write/Edit) for the scaffold, and keep any
-> shell command rooted at the repo, e.g. `Remove-Item "<repo>\memory\clients\_drill" -Recurse -Force`.
+> **Shell-path guardrail.** Run shell commands with absolute paths from the repository root. Never
+> change the working directory into `memory/clients/*`; this keeps file operations scoped and
+> avoids leaving generated files in a client lane. The legacy claude-mem integration is disabled.
 
 ### Step 1 — Onboarding (new-client-setup)
 Run the wizard with canned answers:
@@ -38,7 +34,7 @@ Run the wizard with canned answers:
 
 **Verify:** `memory/clients/_drill/_drill.md` exists with the tech stack;
 `memory/clients/_drill/smoke-test/` has all 10 files + deliverables/ subfolders;
-Client Index in `memory/memory.md` has a `_drill` row.
+The disposable test fixture records the `_drill` client row in its local index fixture.
 
 ### Step 2 — ID minting + Next-ID
 Add one entry of each type to the project files:
@@ -65,31 +61,20 @@ Run the resume-client flow against `_drill` as if freshly copied.
 **Verify:** status card shows the project, the open RISK-001, TASK-001,
 and the next milestone; no crash on the synthetic data.
 
-### Step 6 — Memory sync (Tier 0, corrected 2026-08-24 — see Gap Analysis below)
-This system runs at **Tier 0 — file memory only** (`CLAUDE.md` Memory Tiers, ADR-111,
-2026-08-23). claude-mem is confirmed dead — its store has not been written since 2026-07-02, and
-its MCP tools do not connect. This is a **structural fact**, not a per-run degradation, so it is no
-longer something this step "checks for" each time.
+### Step 6 — Canonical memory verification
+The claude-mem integration is disabled. The canonical Obsidian/project memory files and project lane records are the durable source of truth. The repository working-memory snapshot is stale and must not be treated as current.
 
-**Verify instead:** the drill's entries actually landed in file memory — `memory/memory.md`'s
-Client Index has the `_drill` row (already checked in Step 1) and the lane files written in Step 3
-are the durable record. If context-mode (`ctx_search`) is available, optionally confirm it indexed
-this session's `_drill` activity — but its absence is not a drill failure either; it is not the
-system of record.
+**Verify instead:** the drill writes are confined to the disposable copy and the synthetic project lane files. Do not write to the canonical Obsidian vault or use the stale repository snapshot as memory authority. No secondary memory service is invoked.
 
 ### Step 7 — Cleanup (always runs, even after failures)
 1. Delete `memory/clients/_drill/` entirely — use an **absolute path from the repo root**
    (e.g. `Remove-Item "<repo>\memory\clients\_drill" -Recurse -Force`), never a `cd`-relative one.
-2. Remove the `_drill` row from the Client Index in `memory/memory.md`.
-3. Note: claude-mem `_drill` entries stay (harmless, tagged synthetic).
+2. Remove the `_drill` row from the disposable local index fixture.
+3. Confirm no `_drill` records were written to the canonical Obsidian vault or any secondary memory service.
 
 **Verify:** no `_drill` traces left in `memory/clients/` or the Client Index.
 
-> **Windows lock edge case.** If a nested `.claude-mem` folder appears under the project and the
-> delete fails with "in use", a claude-mem process is holding its log open. This is **residue, not
-> drill data** — confirm the drill `.md` files are gone (`*.md` residue count = 0), report cleanup
-> as PARTIAL with the exact leftover path, and note it clears when the session ends. Do not treat a
-> locked `.claude-mem` as a drill failure. (Avoid it entirely via the Shell-path guardrail above.)
+> **Legacy residue.** If an old nested `.claude-mem` directory is found, treat it as historical local residue, not an active store. Inspect and report the exact path; do not delete unknown data without authorization.
 
 ---
 

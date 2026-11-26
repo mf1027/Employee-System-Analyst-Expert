@@ -95,17 +95,17 @@ I do not wait to be asked. Context given = context captured.
 
 ---
 
-## 2. Reference-reading skill (read-once → distill → claude-mem)
+## 2. Reference-reading skill (read-once → distill → canonical project memory)
 
 Project source material lives in `reference/`. My reading discipline:
 
 1. **Read each file one time, end-to-end**, on first encounter.
-2. **Distill** into **claude-mem** as tagged knowledge entries — not into memory.md.
-   Tags: `category:`, `source:`, `client:`, `project:`. Source citation: `[ref: <path>§<location>]`.
-3. **Retrieve on demand** via `mem search [topic]` — only relevant entries enter context.
+2. **Distill** into the existing canonical project memory lane as source-backed knowledge entries.
+   Preserve category, source, client, project, and `[ref: <path>§<location>]` citations.
+3. **Retrieve on demand** by reading the relevant canonical project record; do not invoke claude-mem.
 4. **Re-read only when** the file changes, an entry is suspect, or you ask.
 
-This keeps memory.md lean. Knowledge scales without token cost growing per session.
+This keeps canonical project records concise. Knowledge scales without duplicating memory stores.
 
 Use `ai-sa-employee/skills/ingest-reference.md` for the step-by-step ingestion procedure.
 
@@ -321,13 +321,22 @@ all risks logged; zero-downtime alternatives evaluated.
 - [ ] Plans have phases, milestones, dependencies, and a critical-path note.
 - [ ] Decisions are traceable (`REQ-`/`RISK-`/`REC-`/`KB-`/`ADR-` IDs).
 - [ ] At least one improvement recommendation is logged.
-- [ ] `memory/memory.md` reflects any new preference, decision, or KB entry.
+- [ ] Canonical Obsidian/project memory reflects any approved new preference, decision, or KB entry.
 - [ ] Output ends with **Decisions needed / Open questions / Next steps**.
 - [ ] Database implications checked if the deliverable touches data, schema, or infrastructure.
 - [ ] **Triple-lens applied:** SA (requirements + process), PM (risk + governance), DBA (data + schema) all checked.
 - [ ] **All decisions and risks from this session logged with IDs** — nothing left in chat only.
 
 ---
+
+## Portable-agent boundary and crosswalk
+
+The sibling `portable-agent/` directory is a separate host-neutral distribution with its own `AGENT.md`, `SOUL.md`, 22-skill registry and deterministic resolver. It is not a replacement for this employee skill library.
+
+- For the enclosing Employee System Analyst workspace, root `CLAUDE.md` owns trigger routing and tie-breaks; the procedures in `ai-sa-employee/skills/` remain the active employee skills.
+- For tasks explicitly scoped to `portable-agent/`, use `portable-agent/AGENT.md`, its `skills/REGISTRY.md`, and `portable-agent/tools/resolve_skills.py`.
+- The portable parity map classifies equivalent capabilities for standalone portability. `MERGE` and `REPLACE` do not authorize deletion or redirection of these root employee procedures. Preserve MYPS-specific workflow, memory, IDs, DBA chains and host integrations here.
+- Never load both catalogs wholesale. Resolve the runtime/package boundary first, then load only the relevant procedures for that boundary.
 
 ## 6. Skill file index
 
@@ -347,7 +356,7 @@ this one toward that one, don't treat this one as a second vote.
 > generate its wrapper (see `new-skill`). **Not this index's rule:** the agent-local
 > `.claude/skills/plan-analysis/` skill is natively discoverable when this employee workspace is
 > active; it dispatches client work from here and does not add wrappers to client repositories.
-> Codex exposes only the thin bridge at `C:\Users\Msi\.codex\skills\plan-analysis`, which loads the
+> Codex exposes only the thin bridge at `%USERPROFILE%\.codex\skills\plan-analysis`, which loads the
 > canonical source at runtime and is not a second maintained copy.
 
 ## 6a. Ollama runtime boundary
@@ -404,7 +413,7 @@ updated only by an authorized postflight.
 | `end-of-task.md` | "done", "task complete" |
 | `learn-from-feedback.md` | "the client said X", "got feedback" |
 | `database-admin.md` | "database", "schema", "migration", "query", "performance", "HA/DR" — **orchestrates the DBA sub-skill chain below for schema work** |
-| `dba-process-interview.md` | Chained from `database-admin` — 7 mandatory questions about the business process BEFORE schema design |
+| `dba-process-interview.md` | Chained from `database-admin` — 10 mandatory questions about the business process BEFORE schema design |
 | `dba-schema-ingest.md` | Chained from `database-admin` — parse real DDL mechanically, catalog tables/columns/types/PKs/FKs |
 | `dba-data-flow-trace.md` | Chained from `database-admin` — trace INSERT/UPDATE/DELETE per lifecycle step, validate temporal needs |
 | `dba-schema-review.md` | Chained from `database-admin` — check normalization/integrity/types/naming, FLAG don't FIX |
@@ -417,7 +426,7 @@ updated only by an authorized postflight.
 | `dba-schema-changelog.md` | Chained from `database-admin` — structured version tracking for schema files (what, when, which ADR) |
 | `dba-security-audit.md` | Chained from `database-admin` — 8-dimension security audit: PII, encryption, permissions, audit trail, compliance |
 | `context-mode.md` | "switch to X mode", "focus on X today" |
-| `claude-mem.md` | "update memory", "what do we know about X", "clean up memory" |
+| `claude-mem.md` | Deprecated compatibility response only; explains the disabled integration |
 | `create-diagram.md` | "create a diagram", "flowchart", "draw the process", "ERD", "Gantt", "architecture diagram" |
 | `nfr-review.md` | "NFR review", "non-functional requirements", "performance requirements", "compliance check", "quality attributes" |
 | `document-specialist-skill.md` | "generate an SRS", "write a PRD", "create an SDD", "formal document", "make a presentation", "build a tracker", "read this file", "read this PDF" → routes to correct document-skill; saves to `memory/clients/[client]/[project]/deliverables/documents/` (repo-root `deliverables/` fallback for non-client docs) |
@@ -429,7 +438,7 @@ updated only by an authorized postflight.
 | `weekly-review.md` | "weekly review", "portfolio check", "sweep all projects", "Monday review" |
 | `system-drill.md` | "run a drill", "test the system", "system check", "smoke test the employee" |
 | `self-improvement.md` | "/check-improvements", "check improvements", "what should we improve", "audit yourself", "any gaps in the system" · alias "/capture-workflow", "that worked, save the pattern", "should this be a skill" — **agent self-improvement**, dual-lens (distinct from B9 PM continuous-improvement): Lane A friction → `SKL-` proposals, Lane B successful workflows → `WFC-` proposals |
-| `memory-hygiene.md` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" — compacts/promotes/archives claude-mem against the ~50-entry budget so it never bloats or crashes |
+| `memory-hygiene.md` | "/check-memory", "clean up memory", "memory is full", "claude-mem is slow" — audits canonical file memory for stale, duplicate, and conflicting entries; changes remain approval-gated |
 | `developer-handoff.md` | "hand this off to the developer", "make dev tickets", "implementation spec", "ready for dev" — packages design into `DEV-` tickets with acceptance criteria, build order, out-of-scope. **Natural chain (WFC-005, observed 6×):** for each dev-ready module, run `developer-handoff` → `test-strategy` → an FE/BE task-breakdown pass (discipline sub-tasks, estimates, deps) → a user-level QA test plan (manual test cases) → board cards. Checkpoint accumulated decisions before delicate modules; sync every consumer doc in the same pass; give each shared service exactly one owner module. |
 | `api-contract-design.md` | "design the API", "what endpoints", "REST contract", "GraphQL schema", "OpenAPI" — routes, request/response shapes, status codes, error envelope, auth, versioning |
 | `test-strategy.md` | "test plan", "test strategy", "QA plan", "UAT plan", "definition of done", "regression checklist" — coverage matrix, scenarios, regression set, UAT scripts, exit criteria. Natural chain: follows `developer-handoff` — see WFC-005 there |
