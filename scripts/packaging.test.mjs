@@ -67,12 +67,16 @@ test('setup scripts use lockfile installs and project-local Python dependencies'
   assert.doesNotMatch(requirements, /latest|>=|~/i);
 });
 
-test('release packager excludes local memory, red-team payloads and runtime caches', () => {
+test('release packager excludes local memory, operational inboxes, red-team payloads and runtime caches', () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'employee-release-test-'));
   const archive = path.join(out, 'release.zip');
-  execFileSync('python', [path.join(root, 'scripts/package-release.py'), '--root', root, '--output', archive]);
-  const listing = execFileSync('python', ['-c', 'import sys,zipfile; print("\\n".join(zipfile.ZipFile(sys.argv[1]).namelist()))', archive], { encoding: 'utf8' });
-  assert.match(listing, /portable-agent\/AGENT\.md/);
-  assert.doesNotMatch(listing, /memory\/memory\.md|memory\/archive\/|memory\/clients\/|quarantine\/red-team\/|\.claude-mem\/|node_modules\/|\.venv\/|temp\//);
-  fs.rmSync(out, { recursive: true, force: true });
+  try {
+    execFileSync('python', [path.join(root, 'scripts/package-release.py'), '--root', root, '--output', archive]);
+    const listing = execFileSync('python', ['-c', 'import sys,zipfile; print("\\n".join(zipfile.ZipFile(sys.argv[1]).namelist()))', archive], { encoding: 'utf8' });
+    assert.match(listing, /portable-agent\/AGENT\.md/);
+    assert.doesNotMatch(listing, /memory\/memory\.md|memory\/archive\/|memory\/clients\/|quarantine\/red-team\/|\.claude-mem\/|node_modules\/|\.venv\/|temp\//);
+    assert.doesNotMatch(listing, /^(reference|deliverables|pdf-source|engines)\//m, 'local-only roots, including README sentinels, must be excluded');
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true });
+  }
 });

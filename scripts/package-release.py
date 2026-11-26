@@ -25,7 +25,9 @@ def include(path: Path, root: Path) -> bool:
         return False
     if any(part in LOCAL_ONLY_DIRS for part in parts):
         return False
-    if parts[0] in LOCAL_ONLY_ROOTS and path.name != 'README.md':
+    # All files under these operational inbox/output roots are local-only,
+    # including README sentinels. They can contain client names or ingestion logs.
+    if parts[0] in LOCAL_ONLY_ROOTS:
         return False
     if path.name in EXCLUDED_FILES or path.suffix.lower() in {'.pyc', '.zip', '.pem', '.key', '.p12', '.pfx', '.sqlite', '.db', '.log'}:
         return False

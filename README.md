@@ -69,7 +69,7 @@ For a distributable production package, build a privacy-filtered archive outside
 python scripts/package-release.py --output ../Employee-System-Analysis-Expert-2.3.1.zip
 ```
 
-The packager excludes local operator/client memory, reference documents, deliverables, runtime caches, and the quarantined red-team payload; it verifies the ZIP manifest and writes a SHA-256 sidecar.
+The packager excludes local operator/client memory, all content under reference, deliverables, pdf-source, and engines (including tracked README sentinels that can contain ingestion logs), runtime caches, and the quarantined red-team payload; it verifies the ZIP manifest and writes a SHA-256 sidecar.
 
 ### Optional local Ollama model
 

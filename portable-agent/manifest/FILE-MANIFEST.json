@@ -267,9 +267,14 @@
       "bytes": 8065
     },
     {
+      "path": "docs/PRODUCTION-READINESS-NEXT-STEPS-2.3.1.md",
+      "sha256": "1ca23f6105f0572a7af7425f9ab044c9a17de8d6e23d9c818ce419c49b9396c0",
+      "bytes": 21024
+    },
+    {
       "path": "docs/PRODUCTION-READINESS-REMEDIATION-2.3.1.md",
-      "sha256": "a35fa391ed34ac52e2ca410dfe8fdaba40fe0b5da9a2b81e62387f565ff994c1",
-      "bytes": 9936
+      "sha256": "590726f77f99ca750b1b2f71dac1d8190959946c3768e23371c9a51a23e1771f",
+      "bytes": 9928
     },
     {
       "path": "docs/PRODUCTION-READINESS-REVIEW.md",
