@@ -55,6 +55,15 @@ test('setup scripts use lockfile installs and project-local Python dependencies'
     assert.match(content, /requirements-docs\.txt/);
     assert.doesNotMatch(content, /npm install|pip install chromadb|pip install defusedxml/i);
   }
+  const windowsSetup = fs.readFileSync(path.join(root, 'scripts/setup.ps1'), 'utf8');
+  assert.match(windowsSetup, /@\{ Name = "py"; Prefix = @\("-3"\) \}/);
+  assert.match(windowsSetup, /Get-Command \$candidate\.Name -All/);
+  assert.match(windowsSetup, /WindowsApps\\\\python/);
+  assert.match(windowsSetup, /import sys, venv/);
+  assert.match(windowsSetup, /\$script:pythonCommand @venvArgs/);
+  assert.match(windowsSetup, /defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf/);
+  assert.match(windowsSetup, /-m pip install --disable-pip-version-check -r/);
+  assert.doesNotMatch(windowsSetup, /^\s*python -m venv/m, 'venv creation must use the verified interpreter');
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
   assert.equal(pkg.engines.node, '>=20.19.0');

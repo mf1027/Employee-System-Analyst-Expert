@@ -38,22 +38,46 @@ try {
     Write-FAIL "Node.js not found. Get it: https://nodejs.org"
 }
 
-# Python >= 3.10
-try {
-    $pyRaw = python --version 2>&1
-    if ($pyRaw -match 'Python (\d+)\.(\d+)') {
-        $pyMajor = [int]$Matches[1]
-        $pyMinor = [int]$Matches[2]
-        if ($pyMajor -gt 3 -or ($pyMajor -eq 3 -and $pyMinor -ge 10)) {
-            Write-OK "Python $pyRaw"
-        } else {
-            Write-WARN "Python $pyRaw detected - need >= 3.10 for Python-backed skills and Soup. Get it: https://python.org"
+# Python >= 3.10. Prefer an executable Python, but support the Windows `py` launcher
+# when Python is installed yet `python.exe` is absent from PATH or is a Store alias.
+$script:pythonCommand = $null
+$script:pythonPrefix = @()
+$pythonCandidates = @(
+    @{ Name = "python"; Prefix = @() },
+    @{ Name = "python3"; Prefix = @() },
+    @{ Name = "py"; Prefix = @("-3") }
+)
+$pythonProbe = "import sys, venv; print(f'PYTHON_VERSION={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')"
+foreach ($candidate in $pythonCandidates) {
+    $resolvedCandidates = @(Get-Command $candidate.Name -All -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.CommandType -eq "Application" -and
+            $_.Source -notmatch "WindowsApps\\python(?:3)?\.exe$"
+        })
+    foreach ($resolved in $resolvedCandidates) {
+        $probeArgs = @($candidate.Prefix) + @("-c", $pythonProbe)
+        try {
+            $probeOutput = & $resolved.Source @probeArgs 2>&1
+            $probeExit = $LASTEXITCODE
+            if ($probeExit -ne 0 -or "$probeOutput" -notmatch "PYTHON_VERSION=(\d+)\.(\d+)\.(\d+)") { continue }
+            $pyMajor = [int]$Matches[1]
+            $pyMinor = [int]$Matches[2]
+            if ($pyMajor -lt 3 -or ($pyMajor -eq 3 -and $pyMinor -lt 10)) {
+                Write-WARN "Python $probeOutput detected via $($candidate.Name) - need >= 3.10 for Python-backed skills and Soup."
+                continue
+            }
+            $script:pythonCommand = $resolved.Source
+            $script:pythonPrefix = @($candidate.Prefix)
+            Write-OK "Python $probeOutput verified via $($candidate.Name) ($($resolved.Source))"
+            break
+        } catch {
+            continue
         }
-    } else {
-        Write-WARN "Could not parse Python version; Python-backed skills and Soup may be unavailable. Get it: https://python.org"
     }
-} catch {
-    Write-WARN "Python not found - Python-backed skills and Soup are unavailable. Get it: https://python.org"
+    if ($script:pythonCommand) { break }
+}
+if (-not $script:pythonCommand) {
+    Write-WARN "No runnable Python >= 3.10 with the venv module found via python, python3, or the py launcher - Python-backed skills and Soup may be unavailable. Get it: https://python.org"
 }
 
 # Bun (needed for context-mode hooks)
@@ -86,15 +110,24 @@ else { Write-WARN "@opendataloader/pdf binary not found - pdf2md.ps1 will fall b
 # -- 3. Isolated Python document dependencies ---------------------------------
 
 Write-Step "Installing pinned Python document dependencies into .venv"
-try {
-    python -m venv (Join-Path $root ".venv")
-    if ($LASTEXITCODE -ne 0) { throw "python -m venv failed" }
-    $venvPython = Join-Path $root ".venv\Scripts\python.exe"
-    & $venvPython -m pip install --disable-pip-version-check -r (Join-Path $root "requirements-docs.txt") --quiet
-    if ($LASTEXITCODE -ne 0) { throw "venv dependency install failed" }
-    Write-OK "pinned document dependencies installed in .venv"
-} catch {
-    Write-WARN "Python document dependencies unavailable - no global Python packages were changed: $_"
+if ($script:pythonCommand) {
+    try {
+        $venvArgs = @($script:pythonPrefix) + @("-m", "venv", (Join-Path $root ".venv"))
+        & $script:pythonCommand @venvArgs
+        if ($LASTEXITCODE -ne 0) { throw "selected Python command failed to create .venv (exit $LASTEXITCODE)" }
+        $venvPython = Join-Path $root ".venv\Scripts\python.exe"
+        if (-not (Test-Path $venvPython)) { throw "venv Python executable was not created" }
+        & $venvPython -m pip install --disable-pip-version-check -r (Join-Path $root "requirements-docs.txt") --quiet
+        if ($LASTEXITCODE -ne 0) { throw "venv dependency install failed (exit $LASTEXITCODE)" }
+        $dependencyProbe = "import sys, venv, defusedxml, lxml, openpyxl, pdf2image, pdfplumber, PIL, pypdf; print(f'Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}; all 7 document packages import successfully')"
+        $verification = & $venvPython -c $dependencyProbe 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "venv runtime/dependency verification failed: $verification" }
+        Write-OK "pinned document dependencies installed and verified in .venv: $verification"
+    } catch {
+        Write-WARN "Python document dependencies unavailable - no global Python packages were changed: $_"
+    }
+} else {
+    Write-WARN "Skipping Python .venv setup because no compatible runnable interpreter was verified. Install Python 3.10+ with venv support, then rerun setup."
 }
 
 # -- 3b. Document engines: LibreOffice + Poppler + Java (Phase 2) ---------------
